@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttendPro — Offline</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:#1a1a2e; color:#fff; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; }
+  .icon { font-size:64px; }
+  h1 { font-size:24px; font-weight:800; }
+  p { color:rgba(255,255,255,0.6); font-size:14px; max-width:280px; line-height:1.6; }
+  button { background:#6c63ff; color:#fff; border:none; border-radius:12px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; margin-top:8px; }
+</style>
+</head>
+<body>
+  <div class="icon">📡</div>
+  <h1>You're Offline</h1>
+  <p>AttendPro needs an internet connection to sync your data. Please check your connection and try again.</p>
+  <button onclick="location.reload()">Try Again</button>
+</body>
+</html>

@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AttendPro">
+<title>AttendPro — Amar Furniture</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192x192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a1a2e;
+    --navy2: #16213e;
+    --purple: #6c63ff;
+    --purple-light: #8b85ff;
+    --purple-dark: #4f46e5;
+    --blue-bg: #eef2ff;
+    --blue-mid: #dde6ff;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --orange: #f97316;
+    --text: #1e1e2e;
+    --text2: #6b7280;
+    --white: #ffffff;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --shadow: 0 4px 20px rgba(108,99,255,0.08);
+    --shadow2: 0 8px 32px rgba(108,99,255,0.15);
+
+    /* Attendance colors */
+    --att-0: #ef4444;
+    --att-half: #f97316;
+    --att-1: #22c55e;
+    --att-ot: #6c63ff;
+    --att-double: #ec4899;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; font-family:'Nunito',sans-serif; background:var(--blue-bg); color:var(--text); overflow-x:hidden; }
+
+  /* ── SCREENS ── */
+  .screen { display:none; flex-direction:column; min-height:100vh; }
+  .screen.active { display:flex; }
+
+  /* ── LOGIN ── */
+  #loginScreen {
+    background: linear-gradient(160deg, var(--navy) 0%, var(--navy2) 50%, #0f3460 100%);
+    align-items:center; justify-content:center; padding:24px;
+  }
+  .login-logo { text-align:center; margin-bottom:32px; }
+  .login-logo .bucket { font-size:56px; margin-bottom:8px; }
+  .login-logo h1 { font-family:'Poppins',sans-serif; font-size:28px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+  .login-logo p { color:rgba(255,255,255,0.6); font-size:13px; margin-top:4px; }
+  .login-card { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:28px 24px; width:100%; max-width:380px; }
+  .login-card h2 { color:#fff; font-size:20px; font-weight:700; margin-bottom:4px; }
+  .login-card p { color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:24px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .form-group input { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:12px 16px; color:#fff; font-size:15px; font-family:'Nunito',sans-serif; outline:none; transition:border-color 0.2s; }
+  .form-group input::placeholder { color:rgba(255,255,255,0.3); }
+  .form-group input:focus { border-color:var(--purple-light); }
+  .btn-login { width:100%; background:linear-gradient(135deg,var(--purple),var(--purple-dark)); border:none; border-radius:12px; padding:14px; color:#fff; font-size:16px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; margin-top:8px; transition:transform 0.1s, box-shadow 0.2s; box-shadow:0 4px 20px rgba(108,99,255,0.4); }
+  .btn-login:active { transform:scale(0.98); }
+  .login-error { color:#ff6b6b; font-size:13px; margin-top:8px; text-align:center; display:none; }
+
+  /* ── HEADER ── */
+  .app-header { background:linear-gradient(135deg,var(--navy),var(--navy2)); padding:12px 16px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; box-shadow:0 2px 20px rgba(0,0,0,0.3); }
+  .header-logo { width:36px; height:36px; background:linear-gradient(135deg,#f59e0b,#ea580c); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .header-title { flex:1; }
+  .header-title h1 { color:#fff; font-size:16px; font-weight:800; font-family:'Poppins',sans-serif; line-height:1.1; }
+  .header-title p { color:rgba(255,255,255,0.5); font-size:11px; }
+  .header-avatar { width:34px; height:34px; background:linear-gradient(135deg,var(--purple),var(--purple-dark)); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
+  .header-notif { width:34px; height:34px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; cursor:pointer; position:relative; }
+  .notif-badge { position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--red); border-radius:50%; border:1.5px solid var(--navy); }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav { background:#fff; border-top:1px solid var(--border); display:flex; position:sticky; bottom:0; z-index:100; box-shadow:0 -4px 20px rgba(0,0,0,0.06); }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 4px 8px; cursor:pointer; gap:3px; transition:color 0.2s; color:var(--text2); }
+  .nav-item.active { color:var(--purple); }
+  .nav-item .nav-icon { font-size:20px; line-height:1; }
+  .nav-item .nav-label { font-size:10px; font-weight:600; }
+  .nav-item.active .nav-label { color:var(--purple); }
+
+  /* ── PAGE CONTENT ── */
+  .page-content { flex:1; overflow-y:auto; padding:16px; padding-bottom:8px; }
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* ── CARDS ── */
+  .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:var(--shadow); margin-bottom:12px; }
+  .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .card-title { font-size:14px; font-weight:700; color:var(--text); }
+  .card-action { font-size:12px; color:var(--purple); font-weight:600; cursor:pointer; }
+
+  /* ── WELCOME BANNER ── */
+  .welcome-banner { background:linear-gradient(135deg,var(--navy),#0f3460); border-radius:20px; padding:20px; margin-bottom:16px; color:#fff; position:relative; overflow:hidden; }
+  .welcome-banner::after { content:''; position:absolute; right:-20px; top:-20px; width:120px; height:120px; background:rgba(108,99,255,0.2); border-radius:50%; }
+  .welcome-banner::before { content:''; position:absolute; right:40px; bottom:-30px; width:80px; height:80px; background:rgba(255,255,255,0.05); border-radius:50%; }
+  .welcome-banner h2 { font-size:20px; font-weight:800; font-family:'Poppins',sans-serif; position:relative; z-index:1; }
+  .welcome-banner p { font-size:12px; opacity:0.6; margin-top:2px; position:relative; z-index:1; }
+  .welcome-date { font-size:11px; opacity:0.5; margin-top:8px; position:relative; z-index:1; }
+
+  /* ── STAT GRID ── */
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .stat-card { background:#fff; border-radius:16px; padding:14px; box-shadow:var(--shadow); }
+  .stat-icon { font-size:24px; margin-bottom:6px; }
+  .stat-value { font-size:24px; font-weight:800; font-family:'Poppins',sans-serif; }
+  .stat-label { font-size:11px; color:var(--text2); font-weight:600; margin-top:2px; }
+
+  /* ── ATTENDANCE MARK ── */
+  .att-mark-card { background:linear-gradient(135deg,#6c63ff,#4f46e5); border-radius:20px; padding:20px; margin-bottom:16px; color:#fff; }
+  .att-mark-card h3 { font-size:16px; font-weight:700; margin-bottom:4px; }
+  .att-mark-card p { font-size:12px; opacity:0.7; margin-bottom:16px; }
+  .att-options { display:flex; gap:8px; flex-wrap:wrap; }
+  .att-btn { flex:1; min-width:56px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.2); border-radius:12px; padding:10px 4px; text-align:center; cursor:pointer; transition:all 0.2s; }
+  .att-btn:hover, .att-btn.selected { background:rgba(255,255,255,0.25); border-color:rgba(255,255,255,0.6); }
+  .att-btn .att-val { font-size:18px; font-weight:800; display:block; }
+  .att-btn .att-name { font-size:9px; opacity:0.8; display:block; margin-top:2px; }
+  .att-confirm-btn { width:100%; background:#fff; color:var(--purple-dark); border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; margin-top:12px; transition:transform 0.1s; }
+  .att-confirm-btn:active { transform:scale(0.98); }
+  .att-marked { background:rgba(255,255,255,0.15); border-radius:12px; padding:12px; text-align:center; margin-top:4px; }
+  .att-marked .marked-val { font-size:32px; font-weight:800; }
+  .att-marked p { font-size:12px; opacity:0.7; margin-top:4px; }
+
+  /* ── CALENDAR ── */
+  .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-day-name { text-align:center; font-size:10px; font-weight:700; color:var(--text2); padding:4px 0; }
+  .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; position:relative; }
+  .cal-day.empty { background:transparent; }
+  .cal-day.att-0 { background:#fee2e2; color:#dc2626; }
+  .cal-day.att-half { background:#ffedd5; color:#ea580c; }
+  .cal-day.att-1 { background:#dcfce7; color:#16a34a; }
+  .cal-day.att-ot { background:#ede9fe; color:#7c3aed; }
+  .cal-day.att-double { background:#fce7f3; color:#be185d; }
+  .cal-day.today { outline:2px solid var(--purple); outline-offset:1px; }
+  .cal-day.future { opacity:0.3; cursor:default; }
+  .cal-legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .legend-item { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text2); }
+  .legend-dot { width:10px; height:10px; border-radius:3px; }
+
+  /* ── MONTH NAV ── */
+  .month-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .month-nav h3 { font-size:15px; font-weight:700; }
+  .month-nav-btn { width:32px; height:32px; background:var(--blue-bg); border:none; border-radius:8px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+
+  /* ── REQUESTS ── */
+  .request-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow); border-left:4px solid var(--purple); }
+  .request-card.pending { border-color:var(--yellow); }
+  .request-card.approved { border-color:var(--green); }
+  .request-card.rejected { border-color:var(--red); }
+  .request-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .request-type { font-size:13px; font-weight:700; }
+  .request-badge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; }
+  .badge-pending { background:#fef3c7; color:#92400e; }
+  .badge-approved { background:#dcfce7; color:#15803d; }
+  .badge-rejected { background:#fee2e2; color:#dc2626; }
+  .request-detail { font-size:12px; color:var(--text2); }
+  .request-actions { display:flex; gap:8px; margin-top:10px; }
+  .btn-approve { flex:1; background:var(--green); color:#fff; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; }
+  .btn-reject { flex:1; background:#fee2e2; color:var(--red); border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; }
+
+  /* ── STAFF LIST ── */
+  .staff-item { display:flex; align-items:center; gap:12px; padding:12px; background:#fff; border-radius:14px; margin-bottom:8px; box-shadow:var(--shadow); cursor:pointer; }
+  .staff-avatar { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:#fff; flex-shrink:0; }
+  .staff-info { flex:1; }
+  .staff-name { font-size:14px; font-weight:700; }
+  .staff-role { font-size:11px; color:var(--text2); }
+  .staff-wage { font-size:12px; font-weight:700; color:var(--purple); }
+  .staff-att-today { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; }
+
+  /* ── SALARY CARD ── */
+  .salary-card { background:linear-gradient(135deg,#0f3460,var(--navy)); border-radius:20px; padding:20px; color:#fff; margin-bottom:12px; }
+  .salary-card h3 { font-size:13px; opacity:0.6; font-weight:600; margin-bottom:4px; }
+  .salary-amount { font-size:32px; font-weight:800; font-family:'Poppins',sans-serif; }
+  .salary-breakdown { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:16px; }
+  .salary-item { background:rgba(255,255,255,0.1); border-radius:10px; padding:10px; text-align:center; }
+  .salary-item .val { font-size:16px; font-weight:700; }
+  .salary-item .lbl { font-size:9px; opacity:0.6; margin-top:2px; }
+
+  /* ── ADVANCE CARD ── */
+  .advance-item { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; border-radius:12px; margin-bottom:8px; box-shadow:var(--shadow); }
+  .advance-info .adv-date { font-size:11px; color:var(--text2); }
+  .advance-info .adv-note { font-size:13px; font-weight:600; }
+  .advance-amount { font-size:16px; font-weight:800; color:var(--red); }
+
+  /* ── FORMS ── */
+  .form-row { margin-bottom:14px; }
+  .form-row label { display:block; font-size:12px; font-weight:700; color:var(--text2); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.4px; }
+  .form-row input, .form-row select, .form-row textarea { width:100%; background:#f8faff; border:1.5px solid var(--border); border-radius:10px; padding:11px 14px; font-size:14px; font-family:'Nunito',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color:var(--purple); background:#fff; }
+  .form-row textarea { resize:none; height:80px; }
+
+  /* ── BUTTONS ── */
+  .btn-primary { background:linear-gradient(135deg,var(--purple),var(--purple-dark)); color:#fff; border:none; border-radius:12px; padding:13px 20px; font-size:14px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; width:100%; transition:transform 0.1s; box-shadow:0 4px 15px rgba(108,99,255,0.3); }
+  .btn-primary:active { transform:scale(0.98); }
+  .btn-secondary { background:var(--blue-bg); color:var(--purple); border:none; border-radius:12px; padding:13px 20px; font-size:14px; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; width:100%; }
+  .btn-sm { padding:7px 14px; font-size:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700; font-family:'Nunito',sans-serif; }
+  .btn-sm-purple { background:var(--purple); color:#fff; }
+  .btn-sm-red { background:#fee2e2; color:var(--red); }
+  .btn-sm-green { background:#dcfce7; color:var(--green); }
+
+  /* ── MODAL ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal-sheet { background:#fff; border-radius:24px 24px 0 0; padding:20px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; animation:slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+  .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 16px; }
+  .modal-title { font-size:18px; font-weight:800; margin-bottom:16px; }
+
+  /* ── TABS ── */
+  .tabs { display:flex; background:var(--blue-bg); border-radius:12px; padding:4px; margin-bottom:16px; gap:2px; }
+  .tab { flex:1; text-align:center; padding:8px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; color:var(--text2); transition:all 0.2s; }
+  .tab.active { background:#fff; color:var(--purple); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; margin-top:4px; }
+  .section-title { font-size:13px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; }
+
+  /* ── CHIP ── */
+  .chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+  .chip-purple { background:#ede9fe; color:var(--purple); }
+  .chip-green { background:#dcfce7; color:var(--green); }
+  .chip-red { background:#fee2e2; color:var(--red); }
+  .chip-yellow { background:#fef3c7; color:#92400e; }
+  .chip-orange { background:#ffedd5; color:#ea580c; }
+  .chip-pink { background:#fce7f3; color:#be185d; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align:center; padding:40px 20px; color:var(--text2); }
+  .empty-state .emoji { font-size:48px; margin-bottom:12px; }
+  .empty-state p { font-size:14px; font-weight:600; }
+  .empty-state small { font-size:12px; opacity:0.6; }
+
+  /* ── TOAST ── */
+  #toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--navy); color:#fff; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:all 0.3s; z-index:300; white-space:nowrap; pointer-events:none; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── ADMIN ATTENDANCE GRID ── */
+  .admin-att-row { background:#fff; border-radius:14px; padding:14px; margin-bottom:8px; box-shadow:var(--shadow); }
+  .admin-att-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .admin-att-options { display:flex; gap:6px; }
+  .admin-att-btn { flex:1; background:var(--blue-bg); border:2px solid transparent; border-radius:8px; padding:6px 2px; text-align:center; cursor:pointer; transition:all 0.15s; }
+  .admin-att-btn.sel-0 { background:#fee2e2; border-color:#dc2626; }
+  .admin-att-btn.sel-half { background:#ffedd5; border-color:#ea580c; }
+  .admin-att-btn.sel-1 { background:#dcfce7; border-color:#16a34a; }
+  .admin-att-btn.sel-ot { background:#ede9fe; border-color:#7c3aed; }
+  .admin-att-btn.sel-double { background:#fce7f3; border-color:#be185d; }
+  .admin-att-btn span { font-size:12px; font-weight:700; display:block; }
+  .admin-att-btn small { font-size:9px; color:var(--text2); display:block; }
+
+  /* ── PROFILE ── */
+  .profile-header { background:linear-gradient(135deg,var(--navy),var(--navy2)); border-radius:20px; padding:24px; text-align:center; color:#fff; margin-bottom:16px; }
+  .profile-avatar-big { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:#fff; margin:0 auto 12px; border:3px solid rgba(255,255,255,0.3); }
+  .profile-name { font-size:20px; font-weight:800; font-family:'Poppins',sans-serif; }
+  .profile-role { font-size:12px; opacity:0.6; margin-top:2px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  /* ── UTILS ── */
+  .mt8 { margin-top:8px; }
+  .mt12 { margin-top:12px; }
+  .mt16 { margin-top:16px; }
+  .mb8 { margin-bottom:8px; }
+  .flex-between { display:flex; justify-content:space-between; align-items:center; }
+  .text-red { color:var(--red); }
+  .text-green { color:var(--green); }
+  .text-purple { color:var(--purple); }
+  .text-sm { font-size:12px; }
+  .text-xs { font-size:11px; color:var(--text2); }
+  .fw700 { font-weight:700; }
+  .divider { height:1px; background:var(--border); margin:12px 0; }
+
+  /* ── NOTIFICATION PANEL ── */
+  .notif-item { display:flex; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); }
+  .notif-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .notif-content .notif-title { font-size:13px; font-weight:700; }
+  .notif-content .notif-body { font-size:12px; color:var(--text2); margin-top:2px; }
+  .notif-content .notif-time { font-size:10px; color:var(--text2); margin-top:4px; }
+
+  /* Pending count badge */
+  .pending-count { background:var(--red); color:#fff; border-radius:20px; font-size:10px; font-weight:700; padding:1px 6px; margin-left:4px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+  <div class="login-logo">
+    <div class="bucket">🪣</div>
+    <h1>AttendPro</h1>
+    <p>Amar Furniture · Bhiwandi</p>
+  </div>
+  <div class="login-card">
+    <h2>Welcome back 👋</h2>
+    <p>Sign in to your account</p>
+    <div class="form-group">
+      <label>User ID</label>
+      <input type="text" id="loginId" placeholder="Enter your user ID" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter your password" autocomplete="current-password">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError">Invalid user ID or password</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appScreen" class="screen">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-logo">🪣</div>
+    <div class="header-title">
+      <h1>AttendPro</h1>
+      <p id="headerSub">Amar Furniture</p>
+    </div>
+    <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
+      🔔
+      <div class="notif-badge" id="notifBadge" style="display:none"></div>
+    </div>
+    <div class="header-avatar" id="headerAvatar" onclick="goToProfile()">R</div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="page-content">
+
+    <!-- HOME PAGE -->
+    <div class="page active" id="pageHome">
+      <div class="welcome-banner">
+        <p style="opacity:0.6;font-size:12px;">Good day 👋</p>
+        <h2>Welcome back, <span id="welcomeName">Rahul</span> 🙌</h2>
+        <div class="welcome-date" id="welcomeDate"></div>
+      </div>
+
+      <!-- Admin home -->
+      <div id="adminHome">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value text-purple" id="statTotal">0</div>
+            <div class="stat-label">Total Staff</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value text-green" id="statPresent">0</div>
+            <div class="stat-label">Present Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value text-yellow" id="statPending">0</div>
+            <div class="stat-label">Pending Requests</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value text-red" id="statAdvances">₹0</div>
+            <div class="stat-label">Advances This Month</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-title">Today's Attendance</span>
+          <span class="card-action" onclick="switchPage('attendance')">Mark All →</span>
+        </div>
+
+        <div id="todayAttendanceList"></div>
+      </div>
+
+      <!-- Employee home -->
+      <div id="employeeHome" style="display:none">
+        <!-- Mark attendance card -->
+        <div id="markAttCard" class="att-mark-card">
+          <h3>Mark Today's Attendance</h3>
+          <p id="attCardSubtitle">Select your attendance for today</p>
+          <div class="att-options" id="attOptions">
+            <div class="att-btn" onclick="selectAtt(0)">
+              <span class="att-val">0</span>
+              <span class="att-name">Absent</span>
+            </div>
+            <div class="att-btn" onclick="selectAtt(0.5)">
+              <span class="att-val">½</span>
+              <span class="att-name">Half Day</span>
+            </div>
+            <div class="att-btn" onclick="selectAtt(1)">
+              <span class="att-val">1</span>
+              <span class="att-name">Full Day</span>
+            </div>
+            <div class="att-btn" onclick="selectAtt(1.5)">
+              <span class="att-val">1.5</span>
+              <span class="att-name">Overtime</span>
+            </div>
+          </div>
+          <button class="att-confirm-btn" onclick="confirmAttendance()">Confirm Attendance ✓</button>
+        </div>
+
+        <!-- Already marked -->
+        <div id="alreadyMarkedCard" class="att-mark-card" style="display:none">
+          <h3>Today's Attendance</h3>
+          <div class="att-marked">
+            <div class="marked-val" id="markedValue">1</div>
+            <p id="markedLabel">Full Day</p>
+          </div>
+        </div>
+
+        <!-- After cutoff -->
+        <div id="cutoffCard" class="att-mark-card" style="display:none;background:linear-gradient(135deg,#374151,#1f2937)">
+          <h3>Attendance Window Closed</h3>
+          <p>Attendance can only be marked before 11:00 PM. Contact admin to update.</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value text-purple" id="empStatDays">0</div>
+            <div class="stat-label">Days This Month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💵</div>
+            <div class="stat-value text-green" id="empStatEarned">₹0</div>
+            <div class="stat-label">Earned This Month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔻</div>
+            <div class="stat-value text-red" id="empStatAdvance">₹0</div>
+            <div class="stat-label">Advance Balance</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏦</div>
+            <div class="stat-value text-purple" id="empStatNet">₹0</div>
+            <div class="stat-label">Net Payable</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE PAGE (Admin/Manager) -->
+    <div class="page" id="pageAttendance">
+      <div class="tabs" id="attTabs">
+        <div class="tab active" onclick="switchAttTab('daily')">Daily Mark</div>
+        <div class="tab" onclick="switchAttTab('calendar')">Calendar</div>
+        <div class="tab" onclick="switchAttTab('report')">Report</div>
+      </div>
+
+      <!-- Daily Tab -->
+      <div id="attTabDaily">
+        <div class="section-header">
+          <span class="section-title" id="dailyDateLabel"></span>
+          <button class="btn-sm btn-sm-purple" onclick="saveAllAttendance()">Save All</button>
+        </div>
+        <div id="dailyAttList"></div>
+      </div>
+
+      <!-- Calendar Tab -->
+      <div id="attTabCalendar" style="display:none">
+        <div class="form-row">
+          <label>Select Employee</label>
+          <select id="calEmpSelect" onchange="renderCalendar()">
+            <option value="">-- Select Employee --</option>
+          </select>
+        </div>
+        <div class="card" id="calendarCard" style="display:none">
+          <div class="month-nav">
+            <button class="month-nav-btn" onclick="changeCalMonth(-1)">‹</button>
+            <h3 id="calMonthLabel"></h3>
+            <button class="month-nav-btn" onclick="changeCalMonth(1)">›</button>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+          <div class="cal-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#fee2e2"></div>Absent</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ffedd5"></div>Half</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#dcfce7"></div>Full</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ede9fe"></div>OT</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fce7f3"></div>Double</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Tab -->
+      <div id="attTabReport" style="display:none">
+        <div class="form-row">
+          <label>Month</label>
+          <input type="month" id="reportMonth">
+        </div>
+        <div id="reportList"></div>
+      </div>
+    </div>
+
+    <!-- EMPLOYEE CALENDAR PAGE (for employee role) -->
+    <div class="page" id="pageCalendar">
+      <div class="card">
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="changeEmpCalMonth(-1)">‹</button>
+          <h3 id="empCalMonthLabel"></h3>
+          <button class="month-nav-btn" onclick="changeEmpCalMonth(1)">›</button>
+        </div>
+        <div class="calendar-grid" id="empCalendarGrid"></div>
+        <div class="cal-legend mt12">
+          <div class="legend-item"><div class="legend-dot" style="background:#fee2e2"></div>Absent</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffedd5"></div>Half</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#dcfce7"></div>Full</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ede9fe"></div>OT</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fce7f3"></div>Double</div>
+        </div>
+      </div>
+
+      <div class="card mt8" id="empMonthSummary"></div>
+    </div>
+
+    <!-- REQUESTS PAGE -->
+    <div class="page" id="pageRequests">
+      <div class="tabs">
+        <div class="tab active" onclick="switchReqTab('advance')">Advances</div>
+        <div class="tab" onclick="switchReqTab('leave')">Leaves</div>
+      </div>
+
+      <div id="reqTabAdvance">
+        <!-- Admin view -->
+        <div id="adminAdvanceView">
+          <div class="section-header">
+            <span class="section-title">Advance Requests</span>
+            <button class="btn-sm btn-sm-purple" onclick="openAddAdvanceModal()">+ Add</button>
+          </div>
+          <div id="adminAdvanceList"></div>
+        </div>
+        <!-- Employee view -->
+        <div id="empAdvanceView" style="display:none">
+          <div class="card" style="background:linear-gradient(135deg,var(--navy),#0f3460);color:#fff;margin-bottom:16px">
+            <p style="font-size:12px;opacity:0.6">Outstanding Advance Balance</p>
+            <div style="font-size:32px;font-weight:800;font-family:'Poppins',sans-serif" id="empAdvBalance">₹0</div>
+          </div>
+          <button class="btn-primary mb8" onclick="openRequestAdvModal()">Request Advance</button>
+          <div class="section-title mb8">My Advance History</div>
+          <div id="empAdvanceList"></div>
+        </div>
+      </div>
+
+      <div id="reqTabLeave" style="display:none">
+        <!-- Admin view -->
+        <div id="adminLeaveView">
+          <div class="section-header">
+            <span class="section-title">Leave Requests</span>
+          </div>
+          <div id="adminLeaveList"></div>
+        </div>
+        <!-- Employee view -->
+        <div id="empLeaveView" style="display:none">
+          <button class="btn-primary mb8" onclick="openRequestLeaveModal()">Request Leave</button>
+          <div class="section-title mb8">My Leave Requests</div>
+          <div id="empLeaveList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAFF PAGE (Admin only) -->
+    <div class="page" id="pageStaff">
+      <div class="section-header">
+        <span class="section-title">Staff Members</span>
+        <button class="btn-sm btn-sm-purple" onclick="openAddStaffModal()">+ Add Staff</button>
+      </div>
+      <div id="staffList"></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="pageProfile">
+      <div class="profile-header" id="profileHeader">
+        <div class="profile-avatar-big" id="profileAvatarBig">R</div>
+        <div class="profile-name" id="profileName">Rahul</div>
+        <div class="profile-role" id="profileRoleLabel">Administrator</div>
+      </div>
+
+      <!-- Employee salary section -->
+      <div id="empSalarySection" style="display:none">
+        <div class="salary-card" id="empSalaryCard"></div>
+        <div class="section-header mt8">
+          <span class="section-title">Advance History</span>
+        </div>
+        <div id="profileAdvanceList"></div>
+      </div>
+
+      <!-- Admin salary section -->
+      <div id="adminSalarySection" style="display:none">
+        <div class="section-header">
+          <span class="section-title">Select Employee</span>
+        </div>
+        <div class="form-row">
+          <select id="salaryEmpSelect" onchange="renderSalaryView()">
+            <option value="">-- Select Employee --</option>
+          </select>
+        </div>
+        <div id="adminSalaryView"></div>
+      </div>
+
+      <div class="card mt8">
+        <button class="btn-secondary mb8" onclick="openModal('whatsNewModal')">🆕 What's New</button>
+        <button class="btn-secondary mb8" id="changePassBtn" onclick="openChangePassModal()">🔑 Change Password</button>
+        <button class="btn-secondary" style="color:var(--red)" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </div>
+
+  </div><!-- end page-content -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" onclick="switchPage('home')" id="nav-home">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('attendance')" id="nav-attendance">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">Attendance</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('requests')" id="nav-requests">
+      <div class="nav-icon">📩</div>
+      <div class="nav-label">Requests</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('staff')" id="nav-staff">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Staff</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('profile')" id="nav-profile">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Profile</div>
+    </div>
+  </div>
+</div><!-- end appScreen -->
+
+<!-- MODALS -->
+
+<!-- Add Staff Modal -->
+<div class="modal-overlay" id="addStaffModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="addStaffTitle">Add Staff Member</div>
+    <div class="form-row"><label>Full Name</label><input type="text" id="sfName" placeholder="e.g. Ramesh Kumar"></div>
+    <div class="form-row"><label>Phone Number</label><input type="tel" id="sfPhone" placeholder="e.g. 9876543210"></div>
+    <div class="form-row"><label>Daily Wage (₹)</label><input type="number" id="sfWage" placeholder="e.g. 500"></div>
+    <div class="form-row">
+      <label>Role</label>
+      <select id="sfRole">
+        <option value="employee">Employee</option>
+        <option value="manager">Manager</option>
+      </select>
+    </div>
+    <div class="form-row"><label>User ID (for login)</label><input type="text" id="sfUserId" placeholder="e.g. ramesh01"></div>
+    <div class="form-row"><label>Password</label><input type="text" id="sfPass" placeholder="Set a password"></div>
+    <div class="form-row"><label>Join Date</label><input type="date" id="sfJoinDate"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('addStaffModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveStaff()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Detail Modal -->
+<div class="modal-overlay" id="staffDetailModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="staffDetailContent"></div>
+  </div>
+</div>
+
+<!-- Add Advance Modal (Admin) -->
+<div class="modal-overlay" id="addAdvanceModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Advance / Expense</div>
+    <div class="form-row">
+      <label>Employee</label>
+      <select id="advEmpSelect"></select>
+    </div>
+    <div class="form-row"><label>Amount (₹)</label><input type="number" id="advAmount" placeholder="e.g. 500"></div>
+    <div class="form-row"><label>Note</label><input type="text" id="advNote" placeholder="e.g. Food expense, advance for festival..."></div>
+    <div class="form-row"><label>Date</label><input type="date" id="advDate"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('addAdvanceModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveAdvance()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deduct Advance Modal -->
+<div class="modal-overlay" id="deductModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Deduct Advance</div>
+    <div id="deductEmpInfo" class="mb8"></div>
+    <div class="form-row"><label>Deduction Amount (₹)</label><input type="number" id="deductAmount" placeholder="Enter amount to deduct"></div>
+    <div class="form-row"><label>Note</label><input type="text" id="deductNote" placeholder="e.g. Monthly salary deduction"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('deductModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveDeduction()">Deduct</button>
+    </div>
+  </div>
+</div>
+
+<!-- Request Advance Modal (Employee) -->
+<div class="modal-overlay" id="requestAdvModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Request Advance</div>
+    <div class="form-row"><label>Amount (₹)</label><input type="number" id="reqAdvAmount" placeholder="e.g. 500"></div>
+    <div class="form-row"><label>Reason</label><textarea id="reqAdvReason" placeholder="Why do you need this advance?"></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('requestAdvModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="submitAdvanceRequest()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Request Leave Modal (Employee) -->
+<div class="modal-overlay" id="requestLeaveModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Request Leave</div>
+    <div class="form-row"><label>From Date</label><input type="date" id="leaveFrom"></div>
+    <div class="form-row"><label>To Date</label><input type="date" id="leaveTo"></div>
+    <div class="form-row"><label>Reason</label><textarea id="leaveReason" placeholder="Reason for leave..."></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('requestLeaveModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="submitLeaveRequest()">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Attendance Modal -->
+<div class="modal-overlay" id="editAttModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Attendance</div>
+    <div id="editAttInfo" class="mb8"></div>
+    <div class="form-row"><label>Date</label><input type="date" id="editAttDate"></div>
+    <div class="form-row">
+      <label>Attendance Value</label>
+      <select id="editAttValue">
+        <option value="0">0 — Absent / Holiday</option>
+        <option value="0.5">0.5 — Half Day</option>
+        <option value="1">1 — Full Day</option>
+        <option value="1.5">1.5 — Overtime</option>
+        <option value="2">2 — Double</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('editAttModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveEditedAttendance()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<div class="modal-overlay" id="notifPanel">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Notifications</div>
+    <div id="notifList"></div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="changePassModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Change Password</div>
+    <div class="form-row"><label>Current Password</label><input type="password" id="curPass" placeholder="Enter current password"></div>
+    <div class="form-row"><label>New Password</label><input type="password" id="newPass" placeholder="Enter new password"></div>
+    <div class="form-row"><label>Confirm New Password</label><input type="password" id="confirmPass" placeholder="Re-enter new password"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('changePassModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveNewPassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script type="module">
+// ══════════════════════════════════════════
+// FIREBASE CONFIG — paste your config here
+// ══════════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection,
+  getDocs, addDoc, updateDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "REPLACE_API_KEY",
+  authDomain: "REPLACE_AUTH_DOMAIN",
+  projectId: "REPLACE_PROJECT_ID",
+  storageBucket: "REPLACE_STORAGE_BUCKET",
+  messagingSenderId: "REPLACE_MESSAGING_SENDER_ID",
+  appId: "REPLACE_APP_ID"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+// ══════════════════════════════════════════
+// LOCAL CACHE — keeps UI fast
+// ══════════════════════════════════════════
+const _cache = {};
+function getData(key, def) { return _cache[key] !== undefined ? _cache[key] : def; }
+function setCache(key, val) { _cache[key] = val; }
+
+// ══════════════════════════════════════════
+// LOADER
+// ══════════════════════════════════════════
+function showLoader(on) {
+  let el = document.getElementById('appLoader');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'appLoader';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(26,26,46,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:#fff;font-family:Nunito,sans-serif;gap:12px;';
+    el.innerHTML = '<div style="font-size:40px">🪣</div><div style="font-size:16px;font-weight:700;">Loading AttendPro…</div>';
+    document.body.appendChild(el);
+  }
+  el.style.display = on ? 'flex' : 'none';
+}
+
+// ══════════════════════════════════════════
+// LOAD ALL DATA FROM FIRESTORE
+// ══════════════════════════════════════════
+async function loadAllData() {
+  showLoader(true);
+  try {
+    // Users
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const users = [];
+    usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
+    if (users.length === 0) {
+      // First-ever run — seed admin account
+      await setDoc(doc(db, 'users', 'admin'), {
+        name: 'Rahul', role: 'admin', userId: 'admin',
+        password: 'admin123', phone: '', wage: 0,
+        joinDate: todayStr(), color: '#6c63ff'
+      });
+      users.push({ id: 'admin', name: 'Rahul', role: 'admin', userId: 'admin', password: 'admin123', phone: '', wage: 0, joinDate: todayStr(), color: '#6c63ff' });
+    }
+    setCache('users', users);
+
+    // Attendance  { docId = userId, fields = { 'YYYY-MM-DD': value } }
+    const attSnap = await getDocs(collection(db, 'attendance'));
+    const att = {};
+    attSnap.forEach(d => { att[d.id] = d.data(); });
+    setCache('attendance', att);
+
+    // Advances
+    const advSnap = await getDocs(collection(db, 'advances'));
+    const advances = [];
+    advSnap.forEach(d => advances.push({ id: d.id, ...d.data() }));
+    setCache('advances', advances);
+
+    // Requests
+    const reqSnap = await getDocs(collection(db, 'requests'));
+    const requests = [];
+    reqSnap.forEach(d => requests.push({ id: d.id, ...d.data() }));
+    setCache('requests', requests);
+
+    // Notifications
+    const notifSnap = await getDocs(collection(db, 'notifications'));
+    const notifs = [];
+    notifSnap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+    notifs.sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
+    setCache('notifications', notifs);
+
+  } catch(e) {
+    console.error('Firebase load error:', e);
+    showToast('⚠️ Database connection failed. Check your config.');
+  }
+  showLoader(false);
+}
+
+// ══════════════════════════════════════════
+// FIRESTORE WRITE HELPERS
+// ══════════════════════════════════════════
+async function saveUserDoc(userId, data) {
+  await setDoc(doc(db, 'users', userId), data, { merge: true });
+  const users = getData('users', []);
+  const idx = users.findIndex(u => u.id === userId);
+  const fullData = { id: userId, ...data };
+  if (idx >= 0) users[idx] = { ...users[idx], ...fullData };
+  else users.push(fullData);
+  setCache('users', users);
+}
+async function deleteUserDoc(userId) {
+  await deleteDoc(doc(db, 'users', userId));
+  setCache('users', getData('users', []).filter(u => u.id !== userId));
+}
+async function saveAttendance(userId, date, value) {
+  const att = getData('attendance', {});
+  if (!att[userId]) att[userId] = {};
+  att[userId][date] = value;
+  setCache('attendance', att);
+  // Firestore field key can't have slashes — date is YYYY-MM-DD, fine
+  await setDoc(doc(db, 'attendance', userId), { [date]: value }, { merge: true });
+}
+async function addAdvance(data) {
+  const ref = await addDoc(collection(db, 'advances'), data);
+  const advances = getData('advances', []);
+  advances.push({ id: ref.id, ...data });
+  setCache('advances', advances);
+}
+async function addRequestDoc(data) {
+  const ref = await addDoc(collection(db, 'requests'), data);
+  const requests = getData('requests', []);
+  requests.push({ id: ref.id, ...data });
+  setCache('requests', requests);
+}
+async function updateRequestDoc(reqId, data) {
+  await updateDoc(doc(db, 'requests', reqId), data);
+  const requests = getData('requests', []);
+  const idx = requests.findIndex(r => r.id === reqId);
+  if (idx >= 0) requests[idx] = { ...requests[idx], ...data };
+  setCache('requests', requests);
+}
+async function addNotifDoc(data) {
+  const ref = await addDoc(collection(db, 'notifications'), data);
+  const notifs = getData('notifications', []);
+  notifs.unshift({ id: ref.id, ...data });
+  setCache('notifications', notifs);
+}
+async function markNotifsRead(userId, isAdmin) {
+  const notifs = getData('notifications', []);
+  for (const n of notifs) {
+    if (!n.read && (isAdmin ? n.for === 'admin' : n.for === userId)) {
+      n.read = true;
+      try { await updateDoc(doc(db, 'notifications', n.id), { read: true }); } catch(e) {}
+    }
+  }
+  setCache('notifications', notifs);
+}
+
+function initData() {} // no-op — Firebase handles everything
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let currentUser = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let empCalYear = new Date().getFullYear();
+let empCalMonth = new Date().getMonth();
+let selectedAttValue = null;
+let editingStaffId = null;
+let deductingUserId = null;
+
+const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double' };
+const ATT_COLORS = { '0':'att-0','0.5':'att-half','1':'att-1','1.5':'att-ot','2':'att-double' };
+const COLORS = ['#6c63ff','#22c55e','#f59e0b','#ef4444','#ec4899','#06b6d4','#8b5cf6','#f97316'];
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function monthStr(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
+function fmtDate(str) {
+  if (!str) return '';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+function fmtMoney(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+function doLogin() {
+  const id = document.getElementById('loginId').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const users = getData('users', []);
+  const user = users.find(u => u.userId === id && u.password === pass);
+  if (!user) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  currentUser = user;
+  // Save session in localStorage (just the ID, data is in Firebase)
+  localStorage.setItem('af_session', user.id);
+  document.getElementById('loginError').style.display = 'none';
+  startApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('af_session');
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('loginId').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ══════════════════════════════════════════
+// APP START
+// ══════════════════════════════════════════
+function startApp() {
+  document.getElementById('loginScreen').classList.remove('active');
+  document.getElementById('appScreen').classList.add('active');
+
+  document.getElementById('headerAvatar').textContent = currentUser.name[0].toUpperCase();
+  document.getElementById('headerSub').textContent = currentUser.role === 'admin' ? 'Administrator' : currentUser.role === 'manager' ? 'Manager' : 'Employee';
+
+  setupNav();
+
+  document.getElementById('welcomeName').textContent = currentUser.name;
+  document.getElementById('welcomeDate').textContent = new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+    document.getElementById('adminHome').style.display = 'block';
+    document.getElementById('employeeHome').style.display = 'none';
+  } else {
+    document.getElementById('adminHome').style.display = 'none';
+    document.getElementById('employeeHome').style.display = 'block';
+  }
+
+  calYear = new Date().getFullYear();
+  calMonth = new Date().getMonth();
+
+  const t = todayStr();
+  document.getElementById('advDate').value = t;
+  document.getElementById('editAttDate').value = t;
+  document.getElementById('sfJoinDate').value = t;
+
+  const now = new Date();
+  document.getElementById('reportMonth').value = monthStr(now.getFullYear(), now.getMonth());
+
+  switchPage('home');
+  scheduleNotifications();
+}
+
+function setupNav() {
+  const staffNav = document.getElementById('nav-staff');
+  const attNav = document.getElementById('nav-attendance');
+  if (currentUser.role === 'employee') {
+    staffNav.style.display = 'none';
+    attNav.querySelector('.nav-label').textContent = 'Calendar';
+    attNav.querySelector('.nav-icon').textContent = '📅';
+  } else {
+    staffNav.style.display = 'flex';
+    attNav.querySelector('.nav-label').textContent = 'Attendance';
+    attNav.querySelector('.nav-icon').textContent = '📋';
+  }
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  if (currentUser.role === 'employee' && page === 'attendance') page = 'calendar';
+
+  const pageMap = { home:'pageHome', attendance:'pageAttendance', requests:'pageRequests', staff:'pageStaff', profile:'pageProfile', calendar:'pageCalendar' };
+  const navMap  = { home:'nav-home', attendance:'nav-attendance', requests:'nav-requests', staff:'nav-staff', profile:'nav-profile', calendar:'nav-attendance' };
+
+  if (pageMap[page]) document.getElementById(pageMap[page]).classList.add('active');
+  if (navMap[page])  document.getElementById(navMap[page]).classList.add('active');
+
+  if (page === 'home')       renderHome();
+  if (page === 'attendance') { renderDailyAtt(); document.getElementById('dailyDateLabel').textContent = fmtDate(todayStr()); }
+  if (page === 'requests')   renderRequests();
+  if (page === 'staff')      renderStaff();
+  if (page === 'profile')    renderProfile();
+  if (page === 'calendar')   renderEmpCalendar();
+}
+
+function goToProfile() { switchPage('profile'); }
+
+// ══════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════
+function renderHome() {
+  if (currentUser.role === 'admin' || currentUser.role === 'manager') renderAdminHome();
+  else renderEmpHome();
+  updateNotifBadge();
+}
+
+function renderAdminHome() {
+  const users   = getData('users', []).filter(u => u.role !== 'admin');
+  const att     = getData('attendance', {});
+  const advances = getData('advances', []);
+  const requests = getData('requests', []);
+  const today   = todayStr();
+  const nowMonth = monthStr(new Date().getFullYear(), new Date().getMonth());
+
+  document.getElementById('statTotal').textContent   = users.length;
+
+  let presentToday = 0;
+  users.forEach(u => { if (att[u.id]?.[today] > 0) presentToday++; });
+  document.getElementById('statPresent').textContent = presentToday;
+
+  const pending = requests.filter(r => r.status === 'pending').length;
+  document.getElementById('statPending').textContent = pending;
+
+  const advTotal = advances.filter(a => a.month === nowMonth && a.type === 'advance').reduce((s,a) => s + Number(a.amount), 0);
+  document.getElementById('statAdvances').textContent = fmtMoney(advTotal);
+
+  const list = document.getElementById('todayAttendanceList');
+  if (users.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p><small>Go to Staff tab to add employees</small></div>';
+    return;
+  }
+  list.innerHTML = users.map(u => {
+    const v = att[u.id]?.[today];
+    const label = v !== undefined ? ATT_LABELS[String(v)] : '—';
+    const chip = v !== undefined
+      ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${label}</span>`
+      : `<span class="chip chip-yellow">Not Marked</span>`;
+    return `<div class="staff-item" onclick="openEditAttModal('${u.id}','${today}')">
+      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}">${u.name[0].toUpperCase()}</div>
+      <div class="staff-info"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role}</div></div>
+      ${chip}
+    </div>`;
+  }).join('');
+}
+
+function renderEmpHome() {
+  const today = todayStr();
+  const now   = new Date();
+  const att   = getData('attendance', {});
+
+  const isPast11pm = now.getHours() >= 23;
+  const markedToday = att[currentUser.id]?.[today] !== undefined;
+
+  document.getElementById('markAttCard').style.display    = 'none';
+  document.getElementById('alreadyMarkedCard').style.display = 'none';
+  document.getElementById('cutoffCard').style.display     = 'none';
+
+  if (markedToday) {
+    const v = att[currentUser.id][today];
+    document.getElementById('alreadyMarkedCard').style.display = 'block';
+    document.getElementById('markedValue').textContent  = v;
+    document.getElementById('markedLabel').textContent  = ATT_LABELS[String(v)];
+  } else if (isPast11pm) {
+    document.getElementById('cutoffCard').style.display = 'block';
+  } else {
+    document.getElementById('markAttCard').style.display = 'block';
+  }
+
+  const month = monthStr(now.getFullYear(), now.getMonth());
+  const empAtt = att[currentUser.id] || {};
+  let totalDays = 0, earned = 0;
+  Object.entries(empAtt).forEach(([d, v]) => {
+    if (d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * Number(currentUser.wage || 0); }
+  });
+
+  const advBalance = getAdvanceBalance(currentUser.id);
+  const net = Math.max(0, earned - advBalance);
+
+  document.getElementById('empStatDays').textContent    = totalDays;
+  document.getElementById('empStatEarned').textContent  = fmtMoney(earned);
+  document.getElementById('empStatAdvance').textContent = fmtMoney(advBalance);
+  document.getElementById('empStatNet').textContent     = fmtMoney(net);
+}
+
+function getAdvanceBalance(userId) {
+  const advances = getData('advances', []);
+  let balance = 0;
+  advances.filter(a => a.userId === userId).forEach(a => {
+    if (a.type === 'advance')   balance += Number(a.amount);
+    if (a.type === 'deduction') balance -= Number(a.amount);
+  });
+  return Math.max(0, balance);
+}
+
+// ══════════════════════════════════════════
+// ATTENDANCE MARK (Employee)
+// ══════════════════════════════════════════
+function selectAtt(val) {
+  selectedAttValue = val;
+  document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+async function confirmAttendance() {
+  if (selectedAttValue === null) { showToast('Please select an attendance value'); return; }
+  showLoader(true);
+  await saveAttendance(currentUser.id, todayStr(), selectedAttValue);
+  showLoader(false);
+  showToast('✅ Attendance marked!');
+  selectedAttValue = null;
+  renderHome();
+}
+
+// ══════════════════════════════════════════
+// DAILY ATTENDANCE (Admin)
+// ══════════════════════════════════════════
+function renderDailyAtt() {
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const att   = getData('attendance', {});
+  const today = todayStr();
+  const list  = document.getElementById('dailyAttList');
+
+  if (users.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p></div>';
+    return;
+  }
+
+  list.innerHTML = users.map(u => {
+    const cur = att[u.id]?.[today];
+    const vals = [0, 0.5, 1, 1.5, 2];
+    const btnClass = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+    return `<div class="admin-att-row" id="attrow_${u.id}">
+      <div class="admin-att-top">
+        <div class="staff-avatar" style="background:${u.color||'#6c63ff'};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
+        <div style="flex:1"><div class="staff-name">${u.name}</div><div class="text-xs">${fmtMoney(u.wage)}/day</div></div>
+      </div>
+      <div class="admin-att-options">
+        ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}" onclick="setDailyAtt('${u.id}',${v})">
+          <span>${v===0.5?'½':v}</span>
+          <small>${['Absent','Half','Full','OT','Dbl'][i]}</small>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function setDailyAtt(userId, val) {
+  await saveAttendance(userId, todayStr(), val);
+  // Update button UI instantly
+  const row = document.getElementById('attrow_' + userId);
+  if (!row) return;
+  row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
+  const classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+  const vals    = [0,0.5,1,1.5,2];
+  const idx = vals.indexOf(val);
+  if (idx >= 0) document.getElementById(`attbtn_${userId}_${val}`)?.classList.add(classes[idx]);
+}
+
+function saveAllAttendance() { showToast('✅ All attendance saved!'); renderHome(); }
+
+function switchAttTab(tab) {
+  document.querySelectorAll('#attTabs .tab').forEach((t,i) => {
+    t.classList.toggle('active', ['daily','calendar','report'][i] === tab);
+  });
+  document.getElementById('attTabDaily').style.display    = tab==='daily'    ? 'block':'none';
+  document.getElementById('attTabCalendar').style.display = tab==='calendar' ? 'block':'none';
+  document.getElementById('attTabReport').style.display   = tab==='report'   ? 'block':'none';
+  if (tab==='calendar') populateCalEmpSelect();
+  if (tab==='report')   renderReport();
+}
+
+// ══════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════
+function populateCalEmpSelect() {
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  document.getElementById('calEmpSelect').innerHTML =
+    '<option value="">-- Select Employee --</option>' +
+    users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+}
+
+function renderCalendar() {
+  const empId = document.getElementById('calEmpSelect').value;
+  const card  = document.getElementById('calendarCard');
+  if (!empId) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  renderCalGrid('calendarGrid', 'calMonthLabel', empId, calYear, calMonth, true);
+}
+
+function renderEmpCalendar() {
+  renderCalGrid('empCalendarGrid', 'empCalMonthLabel', currentUser.id, empCalYear, empCalMonth, false);
+  renderEmpMonthSummary();
+}
+
+function renderCalGrid(gridId, labelId, empId, year, month, isAdmin) {
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById(labelId).textContent = `${monthNames[month]} ${year}`;
+
+  const att    = getData('attendance', {});
+  const empAtt = att[empId] || {};
+  const grid   = document.getElementById(gridId);
+  const today  = todayStr();
+
+  const firstDay    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayDate   = new Date();
+
+  const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const v       = empAtt[dateStr];
+    const isToday  = dateStr === today;
+    const isFuture = new Date(dateStr) > todayDate;
+    let cls = 'cal-day';
+    if (v !== undefined) cls += ' ' + ATT_COLORS[String(v)];
+    if (isToday)  cls += ' today';
+    if (isFuture) cls += ' future';
+    const editClick = isAdmin ? `onclick="openEditAttModal('${empId}','${dateStr}')"` : '';
+    html += `<div class="${cls}" ${editClick}>${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function changeCalMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
+  renderCalendar();
+}
+function changeEmpCalMonth(dir) {
+  empCalMonth += dir;
+  if (empCalMonth < 0)  { empCalMonth = 11; empCalYear--; }
+  if (empCalMonth > 11) { empCalMonth = 0;  empCalYear++; }
+  renderEmpCalendar();
+}
+
+function renderEmpMonthSummary() {
+  const att    = getData('attendance', {});
+  const empAtt = att[currentUser.id] || {};
+  const month  = monthStr(empCalYear, empCalMonth);
+  let total = 0, earned = 0;
+  Object.entries(empAtt).forEach(([d,v]) => {
+    if (d.startsWith(month)) { total += Number(v); earned += Number(v) * Number(currentUser.wage||0); }
+  });
+  const adv = getAdvanceBalance(currentUser.id);
+  document.getElementById('empMonthSummary').innerHTML = `
+    <div class="card-header"><span class="card-title">Month Summary</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="text-align:center;padding:10px;background:var(--blue-bg);border-radius:10px">
+        <div style="font-size:20px;font-weight:800;color:var(--purple)">${total}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">Days Worked</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:#dcfce7;border-radius:10px">
+        <div style="font-size:18px;font-weight:800;color:var(--green)">${fmtMoney(earned)}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">Earned</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:#fee2e2;border-radius:10px">
+        <div style="font-size:18px;font-weight:800;color:var(--red)">${fmtMoney(adv)}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">Advance</div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// REPORT
+// ══════════════════════════════════════════
+function renderReport() {
+  const month = document.getElementById('reportMonth').value;
+  if (!month) return;
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const att   = getData('attendance', {});
+  const list  = document.getElementById('reportList');
+
+  if (users.length === 0) { list.innerHTML = '<div class="empty-state"><div class="emoji">📊</div><p>No staff data</p></div>'; return; }
+
+  list.innerHTML = users.map(u => {
+    const empAtt = att[u.id] || {};
+    let days = 0, earned = 0;
+    Object.entries(empAtt).forEach(([d,v]) => {
+      if (d.startsWith(month)) { days += Number(v); earned += Number(v) * Number(u.wage||0); }
+    });
+    const adv = getAdvanceBalance(u.id);
+    const net = Math.max(0, earned - adv);
+    return `<div class="card mb8">
+      <div class="flex-between mb8">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="staff-avatar" style="background:${u.color};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
+          <div><div class="fw700">${u.name}</div><div class="text-xs">${fmtMoney(u.wage)}/day</div></div>
+        </div>
+        <button class="btn-sm btn-sm-purple" onclick="openDeductModal('${u.id}')">Deduct</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
+        <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:8px">
+          <div style="font-size:16px;font-weight:800;color:var(--purple)">${days}</div>
+          <div style="font-size:9px;color:var(--text2)">Days</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:#dcfce7;border-radius:8px">
+          <div style="font-size:14px;font-weight:800;color:var(--green)">${fmtMoney(earned)}</div>
+          <div style="font-size:9px;color:var(--text2)">Earned</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:#fee2e2;border-radius:8px">
+          <div style="font-size:14px;font-weight:800;color:var(--red)">${fmtMoney(adv)}</div>
+          <div style="font-size:9px;color:var(--text2)">Advance</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:#ede9fe;border-radius:8px">
+          <div style="font-size:14px;font-weight:800;color:var(--purple)">${fmtMoney(net)}</div>
+          <div style="font-size:9px;color:var(--text2)">Net Pay</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('reportMonth').addEventListener('change', renderReport);
+
+// ══════════════════════════════════════════
+// REQUESTS
+// ══════════════════════════════════════════
+function renderRequests() {
+  const isAdmin = currentUser.role === 'admin';
+  const isMgr   = currentUser.role === 'manager';
+  document.getElementById('adminAdvanceView').style.display = (isAdmin||isMgr) ? 'block':'none';
+  document.getElementById('empAdvanceView').style.display   = (!isAdmin&&!isMgr) ? 'block':'none';
+  document.getElementById('adminLeaveView').style.display   = (isAdmin||isMgr) ? 'block':'none';
+  document.getElementById('empLeaveView').style.display     = (!isAdmin&&!isMgr) ? 'block':'none';
+  if (isAdmin||isMgr) renderAdminRequests();
+  else renderEmpRequests();
+}
+
+function renderAdminRequests() {
+  const requests = getData('requests', []);
+  const users    = getData('users', []);
+
+  const advList   = document.getElementById('adminAdvanceList');
+  const advReqs   = requests.filter(r => r.type === 'advance');
+  advList.innerHTML = advReqs.length === 0
+    ? '<div class="empty-state"><div class="emoji">💰</div><p>No advance requests</p></div>'
+    : advReqs.map(r => {
+        const u = users.find(x => x.id === r.userId);
+        return `<div class="request-card ${r.status}">
+          <div class="request-top">
+            <div class="request-type">💰 ${u?u.name:'Unknown'} — ${fmtMoney(r.amount)}</div>
+            <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+          </div>
+          <div class="request-detail">${r.reason||''} · ${fmtDate(r.date)}</div>
+          ${r.status==='pending'?`<div class="request-actions">
+            <button class="btn-approve" onclick="handleRequest('${r.id}','approved','advance')">✓ Approve</button>
+            <button class="btn-reject"  onclick="handleRequest('${r.id}','rejected','advance')">✗ Reject</button>
+          </div>`:''}
+        </div>`;
+      }).join('');
+
+  const leaveList  = document.getElementById('adminLeaveList');
+  const leaveReqs  = requests.filter(r => r.type === 'leave');
+  leaveList.innerHTML = leaveReqs.length === 0
+    ? '<div class="empty-state"><div class="emoji">🗓️</div><p>No leave requests</p></div>'
+    : leaveReqs.map(r => {
+        const u = users.find(x => x.id === r.userId);
+        return `<div class="request-card ${r.status}">
+          <div class="request-top">
+            <div class="request-type">🗓️ ${u?u.name:'Unknown'}</div>
+            <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+          </div>
+          <div class="request-detail">${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)} · ${r.reason||''}</div>
+          ${r.status==='pending'?`<div class="request-actions">
+            <button class="btn-approve" onclick="handleRequest('${r.id}','approved','leave')">✓ Approve</button>
+            <button class="btn-reject"  onclick="handleRequest('${r.id}','rejected','leave')">✗ Reject</button>
+          </div>`:''}
+        </div>`;
+      }).join('');
+}
+
+function renderEmpRequests() {
+  const requests = getData('requests', []);
+  const empReqs  = requests.filter(r => r.userId === currentUser.id);
+  document.getElementById('empAdvBalance').textContent = fmtMoney(getAdvanceBalance(currentUser.id));
+
+  const advList = document.getElementById('empAdvanceList');
+  const advReqs = empReqs.filter(r => r.type === 'advance');
+  advList.innerHTML = advReqs.length === 0
+    ? '<div class="empty-state"><div class="emoji">💰</div><p>No advance requests yet</p></div>'
+    : advReqs.map(r => `<div class="request-card ${r.status}">
+        <div class="request-top">
+          <div class="request-type">💰 ${fmtMoney(r.amount)}</div>
+          <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+        </div>
+        <div class="request-detail">${r.reason||''} · ${fmtDate(r.date)}</div>
+      </div>`).join('');
+
+  const leaveList  = document.getElementById('empLeaveList');
+  const leaveReqs  = empReqs.filter(r => r.type === 'leave');
+  leaveList.innerHTML = leaveReqs.length === 0
+    ? '<div class="empty-state"><div class="emoji">🗓️</div><p>No leave requests yet</p></div>'
+    : leaveReqs.map(r => `<div class="request-card ${r.status}">
+        <div class="request-top">
+          <div class="request-type">🗓️ ${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)}</div>
+          <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+        </div>
+        <div class="request-detail">${r.reason||''}</div>
+      </div>`).join('');
+}
+
+async function handleRequest(reqId, status, type) {
+  showLoader(true);
+  await updateRequestDoc(reqId, { status });
+  const req = getData('requests', []).find(r => r.id === reqId);
+  if (type === 'advance' && status === 'approved' && req) {
+    await addAdvance({
+      userId: req.userId, amount: req.amount,
+      note: req.reason || 'Advance request',
+      date: req.date, month: req.date.substring(0,7), type: 'advance'
+    });
+  }
+  if (req) await addNotifDoc({ for: req.userId, title: type==='advance'?'💰 Advance Request':'🗓️ Leave Request', body:`Your request has been ${status}.`, time: new Date().toISOString(), read: false });
+  showLoader(false);
+  showToast(`Request ${status}!`);
+  renderRequests();
+}
+
+function switchReqTab(tab) {
+  document.querySelectorAll('#pageRequests .tab').forEach((t,i) => {
+    t.classList.toggle('active', ['advance','leave'][i]===tab);
+  });
+  document.getElementById('reqTabAdvance').style.display = tab==='advance'?'block':'none';
+  document.getElementById('reqTabLeave').style.display   = tab==='leave'  ?'block':'none';
+}
+
+// ══════════════════════════════════════════
+// STAFF
+// ══════════════════════════════════════════
+function renderStaff() {
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const att   = getData('attendance', {});
+  const today = todayStr();
+  const list  = document.getElementById('staffList');
+
+  if (users.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p><small>Tap "+ Add Staff" to add your first employee</small></div>';
+    return;
+  }
+  list.innerHTML = users.map(u => {
+    const v = att[u.id]?.[today];
+    const chip = v !== undefined
+      ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${ATT_LABELS[String(v)]}</span>`
+      : `<span class="chip chip-yellow">—</span>`;
+    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')">
+      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}">${u.name[0].toUpperCase()}</div>
+      <div class="staff-info"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role} · ${u.userId}</div></div>
+      <div style="text-align:right"><div class="staff-wage">${fmtMoney(u.wage)}/day</div><div class="mt8">${chip}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function openAddStaffModal() {
+  editingStaffId = null;
+  document.getElementById('addStaffTitle').textContent = 'Add Staff Member';
+  ['sfName','sfPhone','sfWage','sfUserId','sfPass'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sfRole').value     = 'employee';
+  document.getElementById('sfJoinDate').value = todayStr();
+  openModal('addStaffModal');
+}
+
+async function saveStaff() {
+  const name     = document.getElementById('sfName').value.trim();
+  const phone    = document.getElementById('sfPhone').value.trim();
+  const wage     = document.getElementById('sfWage').value;
+  const role     = document.getElementById('sfRole').value;
+  const userId   = document.getElementById('sfUserId').value.trim();
+  const pass     = document.getElementById('sfPass').value.trim();
+  const joinDate = document.getElementById('sfJoinDate').value;
+
+  if (!name || !userId || !pass) { showToast('Name, User ID and Password are required'); return; }
+
+  const users = getData('users', []);
+  showLoader(true);
+
+  if (editingStaffId) {
+    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate };
+    await saveUserDoc(editingStaffId, data);
+    showToast('✅ Staff updated!');
+  } else {
+    if (users.find(u => u.userId === userId)) { showLoader(false); showToast('User ID already exists!'); return; }
+    const colorIdx = users.filter(u => u.role !== 'admin').length % COLORS.length;
+    const newId    = 'emp_' + Date.now();
+    const data     = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, color: COLORS[colorIdx] };
+    await saveUserDoc(newId, data);
+    showToast('✅ Staff added!');
+  }
+
+  showLoader(false);
+  closeModal('addStaffModal');
+  renderStaff();
+  populateAdvEmpSelect();
+}
+
+function openStaffDetail(userId) {
+  const users    = getData('users', []);
+  const u        = users.find(x => x.id === userId);
+  if (!u) return;
+  const advances = getData('advances', []).filter(a => a.userId === userId);
+  const balance  = getAdvanceBalance(userId);
+
+  document.getElementById('staffDetailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div class="staff-avatar" style="background:${u.color};width:56px;height:56px;font-size:22px">${u.name[0].toUpperCase()}</div>
+      <div>
+        <div style="font-size:20px;font-weight:800">${u.name}</div>
+        <div class="text-xs">${u.role} · Joined ${fmtDate(u.joinDate)}</div>
+        <div style="font-size:12px;color:var(--purple);font-weight:700">${fmtMoney(u.wage)}/day</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--blue-bg);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:12px;color:var(--text2)">Phone</div>
+        <div style="font-weight:700">${u.phone||'—'}</div>
+      </div>
+      <div style="background:#fee2e2;border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:12px;color:var(--text2)">Advance Balance</div>
+        <div style="font-weight:700;color:var(--red)">${fmtMoney(balance)}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn-primary" style="flex:1" onclick="editStaff('${u.id}')">✏️ Edit</button>
+      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff('${u.id}')">🗑️ Delete</button>
+    </div>
+    <div class="section-title mb8">Advance/Expense History</div>
+    ${advances.length===0 ? '<div class="empty-state" style="padding:20px"><p>No records yet</p></div>' :
+      advances.map(a=>`<div class="advance-item">
+        <div class="advance-info">
+          <div class="adv-date">${fmtDate(a.date)}</div>
+          <div class="adv-note">${a.note||'Advance'}</div>
+          ${a.type==='deduction'?'<div style="font-size:10px;color:var(--green)">DEDUCTION</div>':''}
+        </div>
+        <div class="advance-amount" style="${a.type==='deduction'?'color:var(--green)':''}">${a.type==='deduction'?'-':'+'}${fmtMoney(a.amount)}</div>
+      </div>`).join('')}`;
+  openModal('staffDetailModal');
+}
+
+function editStaff(userId) {
+  const u = getData('users', []).find(x => x.id === userId);
+  if (!u) return;
+  editingStaffId = userId;
+  document.getElementById('addStaffTitle').textContent = 'Edit Staff Member';
+  document.getElementById('sfName').value     = u.name;
+  document.getElementById('sfPhone').value    = u.phone||'';
+  document.getElementById('sfWage').value     = u.wage;
+  document.getElementById('sfRole').value     = u.role;
+  document.getElementById('sfUserId').value   = u.userId;
+  document.getElementById('sfPass').value     = u.password;
+  document.getElementById('sfJoinDate').value = u.joinDate||'';
+  closeModal('staffDetailModal');
+  openModal('addStaffModal');
+}
+
+async function deleteStaff(userId) {
+  if (!confirm('Delete this staff member? This cannot be undone.')) return;
+  showLoader(true);
+  await deleteUserDoc(userId);
+  showLoader(false);
+  closeModal('staffDetailModal');
+  renderStaff();
+  showToast('Staff removed');
+}
+
+// ══════════════════════════════════════════
+// ADVANCES
+// ══════════════════════════════════════════
+function populateAdvEmpSelect() {
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  document.getElementById('advEmpSelect').innerHTML = users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+}
+
+function openAddAdvanceModal() {
+  populateAdvEmpSelect();
+  document.getElementById('advAmount').value = '';
+  document.getElementById('advNote').value   = '';
+  document.getElementById('advDate').value   = todayStr();
+  openModal('addAdvanceModal');
+}
+
+async function saveAdvance() {
+  const userId = document.getElementById('advEmpSelect').value;
+  const amount = document.getElementById('advAmount').value;
+  const note   = document.getElementById('advNote').value;
+  const date   = document.getElementById('advDate').value;
+  if (!userId||!amount||!date) { showToast('Please fill all fields'); return; }
+  showLoader(true);
+  await addAdvance({ userId, amount: Number(amount), note, date, month: date.substring(0,7), type:'advance' });
+  await addNotifDoc({ for: userId, title:'💰 Advance Added', body:`${fmtMoney(amount)} has been added to your account.`, time: new Date().toISOString(), read: false });
+  showLoader(false);
+  showToast('✅ Advance saved!');
+  closeModal('addAdvanceModal');
+  renderRequests();
+}
+
+function openRequestAdvModal() {
+  document.getElementById('reqAdvAmount').value  = '';
+  document.getElementById('reqAdvReason').value  = '';
+  openModal('requestAdvModal');
+}
+
+async function submitAdvanceRequest() {
+  const amount = document.getElementById('reqAdvAmount').value;
+  const reason = document.getElementById('reqAdvReason').value;
+  if (!amount) { showToast('Please enter an amount'); return; }
+  showLoader(true);
+  await addRequestDoc({ userId: currentUser.id, type:'advance', amount: Number(amount), reason, date: todayStr(), status:'pending' });
+  await addNotifDoc({ for:'admin', title:'📩 New Advance Request', body:`${currentUser.name} requested ${fmtMoney(amount)}.`, time: new Date().toISOString(), read: false });
+  showLoader(false);
+  showToast('✅ Request submitted!');
+  closeModal('requestAdvModal');
+  renderRequests();
+}
+
+function openRequestLeaveModal() {
+  document.getElementById('leaveFrom').value   = '';
+  document.getElementById('leaveTo').value     = '';
+  document.getElementById('leaveReason').value = '';
+  openModal('requestLeaveModal');
+}
+
+async function submitLeaveRequest() {
+  const from   = document.getElementById('leaveFrom').value;
+  const to     = document.getElementById('leaveTo').value;
+  const reason = document.getElementById('leaveReason').value;
+  if (!from||!to) { showToast('Please select dates'); return; }
+  showLoader(true);
+  await addRequestDoc({ userId: currentUser.id, type:'leave', fromDate: from, toDate: to, reason, status:'pending' });
+  await addNotifDoc({ for:'admin', title:'📩 New Leave Request', body:`${currentUser.name} requested leave from ${fmtDate(from)} to ${fmtDate(to)}.`, time: new Date().toISOString(), read: false });
+  showLoader(false);
+  showToast('✅ Leave request submitted!');
+  closeModal('requestLeaveModal');
+  renderRequests();
+}
+
+function openDeductModal(userId) {
+  deductingUserId = userId;
+  const u       = getData('users', []).find(x => x.id === userId);
+  const balance = getAdvanceBalance(userId);
+  document.getElementById('deductEmpInfo').innerHTML = `<div class="flex-between"><span class="fw700">${u?.name}</span><span class="text-red fw700">Balance: ${fmtMoney(balance)}</span></div>`;
+  document.getElementById('deductAmount').value = '';
+  document.getElementById('deductNote').value   = '';
+  openModal('deductModal');
+}
+
+async function saveDeduction() {
+  const amount = document.getElementById('deductAmount').value;
+  const note   = document.getElementById('deductNote').value;
+  if (!amount||!deductingUserId) { showToast('Enter amount'); return; }
+  const balance = getAdvanceBalance(deductingUserId);
+  if (Number(amount) > balance) { showToast('Amount exceeds balance!'); return; }
+  showLoader(true);
+  await addAdvance({ userId: deductingUserId, amount: Number(amount), note: note||'Salary deduction', date: todayStr(), month: todayStr().substring(0,7), type:'deduction' });
+  showLoader(false);
+  showToast('✅ Deduction saved!');
+  closeModal('deductModal');
+  renderReport();
+}
+
+// ══════════════════════════════════════════
+// EDIT ATTENDANCE (Admin)
+// ══════════════════════════════════════════
+let editAttUserId = null;
+
+function openEditAttModal(userId, date) {
+  if (currentUser.role !== 'admin') return;
+  editAttUserId = userId;
+  const u   = getData('users', []).find(x => x.id === userId);
+  const att = getData('attendance', {});
+  const cur = att[userId]?.[date];
+  document.getElementById('editAttInfo').innerHTML   = `<div class="fw700">${u?.name||'Unknown'}</div>`;
+  document.getElementById('editAttDate').value       = date;
+  document.getElementById('editAttValue').value      = cur !== undefined ? String(cur) : '1';
+  openModal('editAttModal');
+}
+
+async function saveEditedAttendance() {
+  const date = document.getElementById('editAttDate').value;
+  const val  = Number(document.getElementById('editAttValue').value);
+  if (!editAttUserId||!date) return;
+  showLoader(true);
+  await saveAttendance(editAttUserId, date, val);
+  showLoader(false);
+  showToast('✅ Attendance updated!');
+  closeModal('editAttModal');
+  renderHome();
+  renderDailyAtt();
+  if (document.getElementById('calendarCard').style.display!=='none') renderCalendar();
+}
+
+// ══════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════
+function renderProfile() {
+  document.getElementById('changePassBtn').style.display = currentUser.role==='admin' ? 'block':'none';
+  document.getElementById('profileAvatarBig').textContent  = currentUser.name[0].toUpperCase();
+  document.getElementById('profileAvatarBig').style.background = currentUser.color||'var(--purple)';
+  document.getElementById('profileName').textContent       = currentUser.name;
+  document.getElementById('profileRoleLabel').textContent  = currentUser.role==='admin'?'Administrator':currentUser.role==='manager'?'Manager':'Employee';
+
+  const isEmp = currentUser.role==='employee';
+  document.getElementById('empSalarySection').style.display   = isEmp  ? 'block':'none';
+  document.getElementById('adminSalarySection').style.display = !isEmp ? 'block':'none';
+
+  if (isEmp) renderEmpSalary();
+  else populateSalaryEmpSelect();
+}
+
+function renderEmpSalary() {
+  const now    = new Date();
+  const month  = monthStr(now.getFullYear(), now.getMonth());
+  const att    = getData('attendance', {})[currentUser.id] || {};
+  let days = 0, earned = 0;
+  Object.entries(att).forEach(([d,v]) => {
+    if (d.startsWith(month)) { days += Number(v); earned += Number(v)*Number(currentUser.wage||0); }
+  });
+  const adv = getAdvanceBalance(currentUser.id);
+  const net = Math.max(0, earned-adv);
+  document.getElementById('empSalaryCard').innerHTML = `
+    <h3>This Month's Salary</h3>
+    <div class="salary-amount">${fmtMoney(net)}</div>
+    <div class="salary-breakdown">
+      <div class="salary-item"><div class="val">${days}</div><div class="lbl">Days</div></div>
+      <div class="salary-item"><div class="val">${fmtMoney(earned)}</div><div class="lbl">Earned</div></div>
+      <div class="salary-item"><div class="val">${fmtMoney(adv)}</div><div class="lbl">Advance</div></div>
+    </div>`;
+
+  const advances = getData('advances', []).filter(a => a.userId===currentUser.id);
+  document.getElementById('profileAdvanceList').innerHTML = advances.length===0
+    ? '<div class="empty-state" style="padding:20px"><p>No transactions yet</p></div>'
+    : advances.map(a=>`<div class="advance-item">
+        <div class="advance-info"><div class="adv-date">${fmtDate(a.date)}</div><div class="adv-note">${a.note||'Advance'}</div></div>
+        <div class="advance-amount" style="${a.type==='deduction'?'color:var(--green)':''}">${a.type==='deduction'?'-':'+'}${fmtMoney(a.amount)}</div>
+      </div>`).join('');
+}
+
+function populateSalaryEmpSelect() {
+  const users = getData('users', []).filter(u => u.role!=='admin');
+  document.getElementById('salaryEmpSelect').innerHTML =
+    '<option value="">-- Select Employee --</option>' +
+    users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+}
+
+function renderSalaryView() {
+  const userId = document.getElementById('salaryEmpSelect').value;
+  const view   = document.getElementById('adminSalaryView');
+  if (!userId) { view.innerHTML=''; return; }
+  const u     = getData('users', []).find(x => x.id===userId);
+  const now   = new Date();
+  const month = monthStr(now.getFullYear(), now.getMonth());
+  const att   = getData('attendance', {})[userId] || {};
+  let days=0, earned=0;
+  Object.entries(att).forEach(([d,v])=>{
+    if (d.startsWith(month)) { days+=Number(v); earned+=Number(v)*Number(u.wage||0); }
+  });
+  const adv = getAdvanceBalance(userId);
+  const net = Math.max(0, earned-adv);
+  view.innerHTML=`
+    <div class="salary-card mb8">
+      <h3>This Month — ${u.name}</h3>
+      <div class="salary-amount">${fmtMoney(net)}</div>
+      <div class="salary-breakdown">
+        <div class="salary-item"><div class="val">${days}</div><div class="lbl">Days</div></div>
+        <div class="salary-item"><div class="val">${fmtMoney(earned)}</div><div class="lbl">Earned</div></div>
+        <div class="salary-item"><div class="val">${fmtMoney(adv)}</div><div class="lbl">Advance</div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-primary" style="flex:1" onclick="openDeductModal('${userId}')">Deduct Advance</button>
+      <button class="btn-secondary" style="flex:1" onclick="openAddAdvanceModal()">Add Advance</button>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════
+async function addAdminNotification(title, body) {
+  await addNotifDoc({ for:'admin', title, body, time: new Date().toISOString(), read: false });
+  updateNotifBadge();
+}
+
+function updateNotifBadge() {
+  const notifs = getData('notifications', []);
+  const unread = notifs.filter(n =>
+    (currentUser.role==='admin' ? n.for==='admin' : n.for===currentUser.id) && !n.read
+  ).length;
+  document.getElementById('notifBadge').style.display = unread>0 ? 'block':'none';
+}
+
+async function openNotifPanel() {
+  const notifs   = getData('notifications', []);
+  const myNotifs = notifs.filter(n => currentUser.role==='admin' ? n.for==='admin' : n.for===currentUser.id);
+  const list     = document.getElementById('notifList');
+  list.innerHTML = myNotifs.length===0
+    ? '<div class="empty-state"><div class="emoji">🔔</div><p>No notifications</p></div>'
+    : myNotifs.map(n => {
+        const d = new Date(n.time);
+        const timeStr = d.toLocaleDateString('en-IN')+' '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="notif-item">
+          <div class="notif-icon" style="background:var(--blue-bg)">${n.title[0]}</div>
+          <div class="notif-content">
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-body">${n.body}</div>
+            <div class="notif-time">${timeStr}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+  await markNotifsRead(currentUser.id, currentUser.role==='admin');
+  updateNotifBadge();
+  openModal('notifPanel');
+}
+
+function scheduleNotifications() {
+  if (currentUser.role==='employee') {
+    const now = new Date();
+    const msUntil11pm = new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,0,0)-now;
+    if (msUntil11pm>0 && msUntil11pm<3600000) {
+      setTimeout(async ()=>{
+        const att = getData('attendance',{});
+        if (att[currentUser.id]?.[todayStr()]===undefined) {
+          await addNotifDoc({ for: currentUser.id, title:'⏰ Reminder', body:'Please mark your attendance before 11:00 PM!', time: new Date().toISOString(), read: false });
+          updateNotifBadge();
+        }
+      }, msUntil11pm);
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+// PASSWORD CHANGE
+// ══════════════════════════════════════════
+function openChangePassModal() {
+  document.getElementById('curPass').value     = '';
+  document.getElementById('newPass').value     = '';
+  document.getElementById('confirmPass').value = '';
+  openModal('changePassModal');
+}
+
+async function saveNewPassword() {
+  const cur     = document.getElementById('curPass').value;
+  const nw      = document.getElementById('newPass').value;
+  const confirm = document.getElementById('confirmPass').value;
+  if (!cur||!nw||!confirm) { showToast('Please fill all fields'); return; }
+  if (cur !== currentUser.password) { showToast('❌ Current password is incorrect'); return; }
+  if (nw !== confirm) { showToast('❌ New passwords do not match'); return; }
+  if (nw.length < 4)  { showToast('Password must be at least 4 characters'); return; }
+  showLoader(true);
+  await saveUserDoc(currentUser.id, { password: nw });
+  currentUser.password = nw;
+  showLoader(false);
+  closeModal('changePassModal');
+  showToast('✅ Password updated!');
+}
+
+// ══════════════════════════════════════════
+// MODAL HELPERS
+// ══════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target===overlay) overlay.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+initData();
+
+(async () => {
+  await loadAllData();
+  // Restore session
+  const savedId = localStorage.getItem('af_session');
+  if (savedId) {
+    const users = getData('users', []);
+    const u = users.find(x => x.id === savedId);
+    if (u) { currentUser = u; startApp(); }
+  }
+})();
+</script>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- WHAT'S NEW MODAL                          -->
+<!-- ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="whatsNewModal">
+  <div class="modal-sheet" style="max-height:85vh">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" style="margin:0">🆕 What's New</div>
+      <button onclick="closeModal('whatsNewModal')" style="background:var(--blue-bg);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text2)">Close</button>
+    </div>
+
+    <!-- v1.0.0 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.0</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Initial Release</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🎉 <strong>AttendPro launched for Amar Furniture!</strong><br>
+        ✅ Mark attendance: 0, 0.5, 1, 1.5 (employees) · 2 (admin only)<br>
+        📅 Monthly calendar view with color coding<br>
+        👥 Admin can add/edit/delete staff with login credentials<br>
+        💰 Advance & expense tracking with carry-forward balance<br>
+        📊 Monthly salary report per employee<br>
+        📩 Leave & advance request system<br>
+        🔔 In-app notifications for requests & reminders<br>
+        🔑 Admin password change from profile<br>
+        📱 PWA — installable on Android & iOS<br>
+        ☁️ Firebase Firestore — data syncs across all devices
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:10px;font-size:11px;color:var(--text2)">
+      More updates coming soon 🚀
+    </div>
+  </div>
+</div>
+
+<!-- SW REGISTRATION -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
