@@ -1968,6 +1968,44 @@ function showToast(msg) {
 // ══════════════════════════════════════════
 initData();
 
+// Expose functions to global scope (required for type="module")
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.switchPage = switchPage;
+window.goToProfile = goToProfile;
+window.selectAtt = selectAtt;
+window.confirmAttendance = confirmAttendance;
+window.saveAllAttendance = saveAllAttendance;
+window.switchAttTab = switchAttTab;
+window.renderCalendar = renderCalendar;
+window.changeCalMonth = changeCalMonth;
+window.changeEmpCalMonth = changeEmpCalMonth;
+window.switchReqTab = switchReqTab;
+window.handleRequest = handleRequest;
+window.openAddStaffModal = openAddStaffModal;
+window.openStaffDetail = openStaffDetail;
+window.editStaff = editStaff;
+window.deleteStaff = deleteStaff;
+window.saveStaff = saveStaff;
+window.openAddAdvanceModal = openAddAdvanceModal;
+window.saveAdvance = saveAdvance;
+window.openRequestAdvModal = openRequestAdvModal;
+window.submitAdvanceRequest = submitAdvanceRequest;
+window.openRequestLeaveModal = openRequestLeaveModal;
+window.submitLeaveRequest = submitLeaveRequest;
+window.openDeductModal = openDeductModal;
+window.saveDeduction = saveDeduction;
+window.openEditAttModal = openEditAttModal;
+window.saveEditedAttendance = saveEditedAttendance;
+window.renderSalaryView = renderSalaryView;
+window.openNotifPanel = openNotifPanel;
+window.openChangePassModal = openChangePassModal;
+window.saveNewPassword = saveNewPassword;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.setDailyAtt = setDailyAtt;
+window.populateCalEmpSelect = populateCalEmpSelect;
+
 (async () => {
   await loadAllData();
   // Enable login button now that data is ready
@@ -2025,6 +2063,19 @@ initData();
         🐛 <strong>Login fix</strong> — Fixed issue where Sign In button was clickable before Firebase finished loading, causing login to silently fail<br>
         ⏳ Login button now shows "Loading..." until database is ready<br>
         💬 Better error messages on login failure
+      </div>
+    </div>
+
+    <!-- v1.0.2 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:#22c55e;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.2</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Bug Fix</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🐛 <strong>Critical fix</strong> — All app functions now correctly accessible in browser<br>
+        ⚡ Fixed "Can't find variable" errors caused by ES module scope<br>
+        ✅ Login, attendance, staff, advances all working correctly
       </div>
     </div>
 
