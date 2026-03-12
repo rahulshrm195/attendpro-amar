@@ -287,6 +287,10 @@
   .notif-content .notif-body { font-size:12px; color:var(--text2); margin-top:2px; }
   .notif-content .notif-time { font-size:10px; color:var(--text2); margin-top:4px; }
 
+  .admin-att-btn.sel-clear { background:#f1f5f9; border-color:#94a3b8; }
+  .att-clear-btn { background:#f1f5f9; border:2px solid #94a3b8; border-radius:8px; padding:6px 8px; font-size:11px; font-weight:700; color:#64748b; cursor:pointer; white-space:nowrap; }
+  .att-clear-btn:active { background:#e2e8f0; }
+
   /* Pending count badge */
   .pending-count { background:var(--red); color:#fff; border-radius:20px; font-size:10px; font-weight:700; padding:1px 6px; margin-left:4px; }
 </style>
@@ -1120,10 +1124,13 @@ function renderAdminHome() {
     const chip = v !== undefined
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${label}</span>`
       : `<span class="chip chip-yellow">Not Marked</span>`;
-    return `<div class="staff-item" onclick="openEditAttModal('${u.id}','${today}')">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}">${u.name[0].toUpperCase()}</div>
-      <div class="staff-info"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role}</div></div>
-      ${chip}
+    return `<div class="staff-item">
+      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}" onclick="openEditAttModal('${u.id}','${today}')">${u.name[0].toUpperCase()}</div>
+      <div class="staff-info" onclick="openEditAttModal('${u.id}','${today}')"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role}</div></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${chip}
+        ${v !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt('${u.id}')">✕</button>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -1224,6 +1231,7 @@ function renderDailyAtt() {
           <span>${v===0.5?'½':v}</span>
           <small>${['Absent','Half','Full','OT','Dbl'][i]}</small>
         </div>`).join('')}
+        ${cur !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt('${u.id}')">✕ Clear</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1239,6 +1247,24 @@ async function setDailyAtt(userId, val) {
   const vals    = [0,0.5,1,1.5,2];
   const idx = vals.indexOf(val);
   if (idx >= 0) document.getElementById(`attbtn_${userId}_${val}`)?.classList.add(classes[idx]);
+}
+
+async function clearDailyAtt(userId) {
+  const att = getData('attendance', {});
+  if (att[userId]) {
+    delete att[userId][todayStr()];
+    setCache('attendance', att);
+    // Update Firestore — set field to deleteField sentinel
+    try {
+      const { deleteField } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await updateDoc(doc(db, 'attendance', userId), { [todayStr()]: deleteField() });
+    } catch(e) {
+      // If doc doesn't exist yet, nothing to delete
+    }
+  }
+  showToast('Attendance cleared');
+  renderDailyAtt();
+  renderHome();
 }
 
 function saveAllAttendance() { showToast('✅ All attendance saved!'); renderHome(); }
@@ -2076,6 +2102,19 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         🐛 <strong>Critical fix</strong> — All app functions now correctly accessible in browser<br>
         ⚡ Fixed "Can't find variable" errors caused by ES module scope<br>
         ✅ Login, attendance, staff, advances all working correctly
+      </div>
+    </div>
+
+    <!-- v1.0.3 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:#22c55e;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.3</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Improvement</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        ✕ <strong>Clear attendance</strong> — Admin can now clear/reset a marked attendance back to unmarked<br>
+        📋 Clear button available in both Home screen and Attendance tab<br>
+        👤 Employee view unaffected — clear is admin-only
       </div>
     </div>
 
