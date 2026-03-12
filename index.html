@@ -386,19 +386,19 @@
           <h3>Mark Today's Attendance</h3>
           <p id="attCardSubtitle">Select your attendance for today</p>
           <div class="att-options" id="attOptions">
-            <div class="att-btn" onclick="selectAtt(0)">
+            <div class="att-btn" onclick="selectAtt(0, this)">
               <span class="att-val">0</span>
               <span class="att-name">Absent</span>
             </div>
-            <div class="att-btn" onclick="selectAtt(0.5)">
+            <div class="att-btn" onclick="selectAtt(0.5, this)">
               <span class="att-val">½</span>
               <span class="att-name">Half Day</span>
             </div>
-            <div class="att-btn" onclick="selectAtt(1)">
+            <div class="att-btn" onclick="selectAtt(1, this)">
               <span class="att-val">1</span>
               <span class="att-name">Full Day</span>
             </div>
-            <div class="att-btn" onclick="selectAtt(1.5)">
+            <div class="att-btn" onclick="selectAtt(1.5, this)">
               <span class="att-val">1.5</span>
               <span class="att-name">Overtime</span>
             </div>
@@ -1176,7 +1176,7 @@ function getAdvanceBalance(userId) {
 // ══════════════════════════════════════════
 // ATTENDANCE MARK (Employee)
 // ══════════════════════════════════════════
-function selectAtt(val) {
+function selectAtt(val, el) {
   if (selectedAttValue === val) {
     // Tap same → deselect
     selectedAttValue = null;
@@ -1185,7 +1185,7 @@ function selectAtt(val) {
     // Tap different → select
     selectedAttValue = val;
     document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
+    el.classList.add('selected');
   }
 }
 
