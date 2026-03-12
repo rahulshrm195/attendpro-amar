@@ -311,7 +311,7 @@
       <label>Password</label>
       <input type="password" id="loginPass" placeholder="Enter your password" autocomplete="current-password">
     </div>
-    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()" disabled style="opacity:0.6">Loading...</button>
     <div class="login-error" id="loginError">Invalid user ID or password</div>
   </div>
 </div>
@@ -977,13 +977,18 @@ function doLogin() {
   const id = document.getElementById('loginId').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
   const users = getData('users', []);
+  if (users.length === 0) {
+    document.getElementById('loginError').textContent = 'Still connecting to database, please wait...';
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
   const user = users.find(u => u.userId === id && u.password === pass);
   if (!user) {
+    document.getElementById('loginError').textContent = 'Invalid user ID or password';
     document.getElementById('loginError').style.display = 'block';
     return;
   }
   currentUser = user;
-  // Save session in localStorage (just the ID, data is in Firebase)
   localStorage.setItem('af_session', user.id);
   document.getElementById('loginError').style.display = 'none';
   startApp();
@@ -1965,6 +1970,9 @@ initData();
 
 (async () => {
   await loadAllData();
+  // Enable login button now that data is ready
+  const btn = document.getElementById('loginBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; btn.style.opacity = '1'; }
   // Restore session
   const savedId = localStorage.getItem('af_session');
   if (savedId) {
@@ -2004,6 +2012,19 @@ initData();
         🔑 Admin password change from profile<br>
         📱 PWA — installable on Android & iOS<br>
         ☁️ Firebase Firestore — data syncs across all devices
+      </div>
+    </div>
+
+    <!-- v1.0.1 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:#22c55e;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.1</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Bug Fix</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🐛 <strong>Login fix</strong> — Fixed issue where Sign In button was clickable before Firebase finished loading, causing login to silently fail<br>
+        ⏳ Login button now shows "Loading..." until database is ready<br>
+        💬 Better error messages on login failure
       </div>
     </div>
 
