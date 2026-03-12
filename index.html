@@ -55,7 +55,6 @@
     align-items:center; justify-content:center; padding:24px;
   }
   .login-logo { text-align:center; margin-bottom:32px; }
-  .login-logo .bucket { font-size:56px; margin-bottom:8px; }
   .login-logo h1 { font-family:'Poppins',sans-serif; font-size:28px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
   .login-logo p { color:rgba(255,255,255,0.6); font-size:13px; margin-top:4px; }
   .login-card { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:28px 24px; width:100%; max-width:380px; }
@@ -300,7 +299,7 @@
 <!-- LOGIN -->
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
-    <div class="bucket">🪣</div>
+    <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
     <h1>AttendPro</h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
@@ -324,7 +323,7 @@
 <div id="appScreen" class="screen">
   <!-- Header -->
   <div class="app-header">
-    <div class="header-logo">🪣</div>
+    <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
       <h1>AttendPro</h1>
       <p id="headerSub">Amar Furniture</p>
@@ -794,7 +793,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, collection,
-  getDocs, addDoc, updateDoc, deleteDoc
+  getDocs, addDoc, updateDoc, deleteDoc, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -825,7 +824,7 @@ function showLoader(on) {
     el = document.createElement('div');
     el.id = 'appLoader';
     el.style.cssText = 'position:fixed;inset:0;background:rgba(26,26,46,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:#fff;font-family:Nunito,sans-serif;gap:12px;';
-    el.innerHTML = '<div style="font-size:40px">🪣</div><div style="font-size:16px;font-weight:700;">Loading AttendPro…</div>';
+    el.innerHTML = '<img src="icon-192x192.png" style="width:56px;height:56px;border-radius:16px;" alt="AttendPro"><div style="font-size:16px;font-weight:700;">Loading AttendPro…</div>';
     document.body.appendChild(el);
   }
   el.style.display = on ? 'flex' : 'none';
@@ -1251,18 +1250,16 @@ async function setDailyAtt(userId, val) {
 
 async function clearDailyAtt(userId) {
   const att = getData('attendance', {});
-  if (att[userId]) {
+  if (att[userId] && att[userId][todayStr()] !== undefined) {
     delete att[userId][todayStr()];
     setCache('attendance', att);
-    // Update Firestore — set field to deleteField sentinel
     try {
-      const { deleteField } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
       await updateDoc(doc(db, 'attendance', userId), { [todayStr()]: deleteField() });
     } catch(e) {
-      // If doc doesn't exist yet, nothing to delete
+      console.log('Clear att error:', e);
     }
   }
-  showToast('Attendance cleared');
+  showToast('✅ Attendance cleared!');
   renderDailyAtt();
   renderHome();
 }
@@ -2030,6 +2027,7 @@ window.saveNewPassword = saveNewPassword;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.setDailyAtt = setDailyAtt;
+window.clearDailyAtt = clearDailyAtt;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
 (async () => {
@@ -2115,6 +2113,30 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         ✕ <strong>Clear attendance</strong> — Admin can now clear/reset a marked attendance back to unmarked<br>
         📋 Clear button available in both Home screen and Attendance tab<br>
         👤 Employee view unaffected — clear is admin-only
+      </div>
+    </div>
+
+    <!-- v1.0.4 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:#22c55e;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.4</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Bug Fix</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🐛 <strong>Clear attendance fix</strong> — Fixed clear button not working due to missing Firebase import<br>
+        ⚡ deleteField now properly imported at startup
+      </div>
+    </div>
+
+    <!-- v1.0.5 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:#22c55e;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.5</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Improvement</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🎨 <strong>Branding update</strong> — Replaced placeholder bucket icon with official AttendPro logo<br>
+        ✅ Logo now shows on login screen, header and loading screen
       </div>
     </div>
 
