@@ -11,8 +11,8 @@ const PRECACHE_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/offline.html',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
 // Install — cache core assets
@@ -77,8 +77,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title || 'AttendPro', {
       body: data.body || '',
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/icon-72x72.png',
+      icon: '/icon-192x192.png',
+      badge: '/icon-192x192.png',
       vibrate: [200, 100, 200],
       data: { url: data.url || '/' }
     })
