@@ -1177,6 +1177,8 @@ function getAdvanceBalance(userId) {
 // ATTENDANCE MARK (Employee)
 // ══════════════════════════════════════════
 function selectAtt(val, el) {
+  // Always get the .att-btn parent in case a child span was clicked
+  const btn = el.closest('.att-btn') || el;
   if (selectedAttValue === val) {
     // Tap same → deselect
     selectedAttValue = null;
@@ -1185,7 +1187,7 @@ function selectAtt(val, el) {
     // Tap different → select
     selectedAttValue = val;
     document.querySelectorAll('.att-btn').forEach(b => b.classList.remove('selected'));
-    el.classList.add('selected');
+    btn.classList.add('selected');
   }
 }
 
