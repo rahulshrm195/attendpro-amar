@@ -1017,8 +1017,7 @@ function checkNightSummary() {
     `✅ Present: ${present.map(u=>u.name).join(', ') || 'None'}`,
     `❌ Absent: ${absent.map(u=>u.name).join(', ') || 'None'}`,
     `⚠️ Not Marked: ${unmarked.map(u=>u.name).join(', ') || 'None'}`
-  ].join('
-');
+  ].join('\n');
   setTimeout(() => alert(lines), 1000);
 }
 
