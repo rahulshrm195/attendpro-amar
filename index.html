@@ -292,6 +292,17 @@
 
   /* Pending count badge */
   .pending-count { background:var(--red); color:#fff; border-radius:20px; font-size:10px; font-weight:700; padding:1px 6px; margin-left:4px; }
+
+  /* ── INLINE ADVANCE (Daily Mark) ── */
+  .daily-adv-section { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+  .daily-adv-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .daily-adv-chip { display:inline-flex; align-items:center; gap:5px; background:#fee2e2; border-radius:20px; padding:4px 10px; font-size:11px; font-weight:700; color:var(--red); }
+  .daily-adv-chip button { background:none; border:none; cursor:pointer; color:var(--red); font-size:12px; font-weight:800; padding:0; line-height:1; }
+  .daily-adv-inputs { display:flex; gap:6px; }
+  .daily-adv-inputs input { background:#f8faff; border:1.5px solid var(--border); border-radius:8px; padding:7px 10px; font-size:13px; font-family:'Nunito',sans-serif; color:var(--text); outline:none; }
+  .daily-adv-inputs input:focus { border-color:var(--purple); background:#fff; }
+  .daily-adv-amount { width:90px; flex-shrink:0; }
+  .daily-adv-note { flex:1; }
 </style>
 </head>
 <body>
@@ -300,7 +311,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.9</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.10</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -325,7 +336,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.9</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.10</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -1242,10 +1253,11 @@ async function confirmAttendance() {
 // DAILY ATTENDANCE (Admin)
 // ══════════════════════════════════════════
 function renderDailyAtt() {
-  const users = getData('users', []).filter(u => u.role !== 'admin');
-  const att   = getData('attendance', {});
-  const date  = dailySelectedDate;
-  const list  = document.getElementById('dailyAttList');
+  const users    = getData('users', []).filter(u => u.role !== 'admin');
+  const att      = getData('attendance', {});
+  const advances = getData('advances', []);
+  const date     = dailySelectedDate;
+  const list     = document.getElementById('dailyAttList');
 
   // Sync date picker value and next button state
   const picker = document.getElementById('dailyDatePicker');
@@ -1259,20 +1271,37 @@ function renderDailyAtt() {
   }
 
   list.innerHTML = users.map(u => {
-    const cur = att[u.id]?.[date];
-    const vals = [0, 0.5, 1, 1.5, 2];
+    const cur      = att[u.id]?.[date];
+    const vals     = [0, 0.5, 1, 1.5, 2];
     const btnClass = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+
+    // Existing advances for this user on this date
+    const existingAdv = advances.filter(a => a.userId === u.id && a.date === date && a.type === 'advance');
+    const chipsHtml = existingAdv.map(a =>
+      `<div class="daily-adv-chip">
+        ₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + a.note : ''}
+        <button onclick="deleteAdvanceChip('${a.id}','${u.name}',${a.amount})">✕</button>
+      </div>`
+    ).join('');
+
     return `<div class="admin-att-row" id="attrow_${u.id}">
       <div class="admin-att-top">
         <div class="staff-avatar" style="background:${u.color||'#6c63ff'};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
-        <div style="flex:1"><div class="staff-name">${u.name}</div><div class="text-xs">${fmtMoney(u.wage)}/day</div></div>
+        <div style="flex:1"><div class="staff-name">${u.name}</div></div>
       </div>
       <div class="admin-att-options">
         ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}" onclick="setDailyAtt('${u.id}',${v})">
           <span>${v===0.5?'½':v}</span>
           <small>${['Absent','Half','Full','OT','Dbl'][i]}</small>
         </div>`).join('')}
-        ${cur !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt('${u.id}')">✕ Clear</button>` : ''}
+        ${cur !== undefined ? `<button class="att-clear-btn" onclick="confirmClearAtt('${u.id}','${u.name}')">✕ Clear</button>` : ''}
+      </div>
+      <div class="daily-adv-section">
+        ${chipsHtml ? `<div class="daily-adv-chips">${chipsHtml}</div>` : ''}
+        <div class="daily-adv-inputs">
+          <input type="number" class="daily-adv-amount" id="adv_amt_${u.id}" placeholder="₹ Advance" min="1">
+          <input type="text"   class="daily-adv-note"   id="adv_note_${u.id}" placeholder="Note (optional)">
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1292,7 +1321,15 @@ async function setDailyAtt(userId, val) {
   renderDailyAtt();
 }
 
-async function clearDailyAtt(userId) {
+function confirmClearAtt(userId, userName) {
+  const date = dailySelectedDate;
+  const [y,m,d] = date.split('-');
+  const label = `${d}/${m}/${y}`;
+  if (!confirm(`Clear ${userName}'s attendance for ${label}?\nThis cannot be undone.`)) return;
+  doClearAtt(userId);
+}
+
+async function doClearAtt(userId) {
   const att = getData('attendance', {});
   const date = dailySelectedDate;
   if (att[userId] && att[userId][date] !== undefined) {
@@ -1313,38 +1350,67 @@ async function saveAllAttendance() {
   const users = getData('users', []).filter(u => u.role !== 'admin');
   const date  = dailySelectedDate;
   const vals  = [0, 0.5, 1, 1.5, 2];
-  let saved   = 0;
+  let attSaved = 0;
+  let advSaved = 0;
 
   showLoader(true);
   for (const u of users) {
-    // Find selected button for this user
+    // ── Attendance ──
     let selectedVal = undefined;
     for (const v of vals) {
       const btn = document.getElementById(`attbtn_${u.id}_${v}`);
       if (btn) {
         const classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
         const i = vals.indexOf(v);
-        if (btn.classList.contains(classes[i])) {
-          selectedVal = v;
-          break;
-        }
+        if (btn.classList.contains(classes[i])) { selectedVal = v; break; }
       }
     }
-    // Only save if a value is selected
     if (selectedVal !== undefined) {
       await saveAttendance(u.id, date, selectedVal);
-      saved++;
+      attSaved++;
     }
-    // else: skip — no selection, don't overwrite or clear
+
+    // ── Advance ──
+    const amtEl  = document.getElementById(`adv_amt_${u.id}`);
+    const noteEl = document.getElementById(`adv_note_${u.id}`);
+    const amt    = amtEl ? Number(amtEl.value) : 0;
+    if (amt > 0) {
+      const note = noteEl?.value?.trim() || 'Daily advance';
+      await addAdvance({ userId: u.id, amount: amt, note, date, month: date.substring(0,7), type: 'advance' });
+      advSaved++;
+      // Clear inputs after save
+      if (amtEl)  amtEl.value  = '';
+      if (noteEl) noteEl.value = '';
+    }
   }
   showLoader(false);
 
-  if (saved === 0) {
-    showToast('⚠️ Nothing selected to save');
+  if (attSaved === 0 && advSaved === 0) {
+    showToast('⚠️ Nothing to save');
   } else {
-    showToast(`✅ Saved attendance for ${saved} employee${saved > 1 ? 's' : ''}`);
+    const parts = [];
+    if (attSaved > 0) parts.push(`attendance for ${attSaved}`);
+    if (advSaved > 0) parts.push(`${advSaved} advance${advSaved > 1 ? 's' : ''}`);
+    showToast(`✅ Saved ${parts.join(' + ')}`);
   }
+  renderDailyAtt();
   renderHome();
+}
+
+// Delete advance chip from Daily Mark
+async function deleteAdvanceChip(advId, empName, amount) {
+  if (!confirm(`Delete ₹${Number(amount).toLocaleString('en-IN')} advance for ${empName}?\nThis cannot be undone.`)) return;
+  showLoader(true);
+  try {
+    await deleteDoc(doc(db, 'advances', advId));
+    const advances = getData('advances', []).filter(a => a.id !== advId);
+    setCache('advances', advances);
+    showToast('✅ Advance deleted');
+  } catch(e) {
+    showToast('⚠️ Could not delete advance');
+  }
+  showLoader(false);
+  renderDailyAtt();
 }
 
 // Date navigation for Daily Mark
@@ -1804,7 +1870,9 @@ function editStaff(userId) {
 }
 
 async function deleteStaff(userId) {
-  if (!confirm('Delete this staff member? This cannot be undone.')) return;
+  const u = getData('users', []).find(x => x.id === userId);
+  const name = u ? u.name : 'this staff member';
+  if (!confirm(`Delete ${name}?\nAll their attendance and records will be removed.\nThis cannot be undone.`)) return;
   showLoader(true);
   await deleteUserDoc(userId);
   showLoader(false);
@@ -2176,7 +2244,8 @@ window.saveNewPassword = saveNewPassword;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.setDailyAtt = setDailyAtt;
-window.clearDailyAtt = clearDailyAtt;
+window.confirmClearAtt = confirmClearAtt;
+window.deleteAdvanceChip = deleteAdvanceChip;
 window.dailyPrevDay = dailyPrevDay;
 window.dailyNextDay = dailyNextDay;
 window.onDailyDateChange = onDailyDateChange;
@@ -2345,6 +2414,21 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         ← <strong>Previous day button</strong> — Tap ← to go back one day at a time quickly<br>
         🗓️ <strong>Date picker</strong> — Tap the date to jump to any past date directly<br>
         💾 <strong>Smart Save All</strong> — Saves only employees with a selection, skips unmarked ones
+      </div>
+    </div>
+
+        <!-- v1.0.10 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.10</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Feature Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        💰 <strong>Inline advance recording</strong> — Add advances per employee directly in Daily Mark<br>
+        📌 <strong>Advance chips</strong> — Existing advances for the selected date shown as deletable chips<br>
+        💾 <strong>Save All unified</strong> — Saves both attendance and advances in one tap<br>
+        🧹 <strong>Cleaner cards</strong> — Removed daily wage from Daily Mark employee rows<br>
+        ⚠️ <strong>Confirm before delete</strong> — All clear/delete actions now show a confirmation dialog
       </div>
     </div>
 
