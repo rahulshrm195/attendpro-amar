@@ -300,7 +300,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.8</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.9</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -325,7 +325,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.8</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.9</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -446,8 +446,13 @@
 
       <!-- Daily Tab -->
       <div id="attTabDaily">
-        <div class="section-header">
-          <span class="section-title" id="dailyDateLabel"></span>
+        <div class="section-header" style="gap:8px">
+          <div style="display:flex;align-items:center;gap:6px;flex:1">
+            <button class="month-nav-btn" onclick="dailyPrevDay()" title="Previous day" style="flex-shrink:0">←</button>
+            <input type="date" id="dailyDatePicker"
+              style="flex:1;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);outline:none;cursor:pointer;"
+              onchange="onDailyDateChange(this.value)">
+          </div>
           <button class="btn-sm btn-sm-purple" onclick="saveAllAttendance()">Save All</button>
         </div>
         <div id="dailyAttList"></div>
@@ -944,6 +949,7 @@ let empCalMonth = new Date().getMonth();
 let selectedAttValue = null;
 let editingStaffId = null;
 let deductingUserId = null;
+let dailySelectedDate = todayStr();
 
 const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double' };
 const ATT_COLORS = { '0':'att-0','0.5':'att-half','1':'att-1','1.5':'att-ot','2':'att-double' };
@@ -1086,7 +1092,12 @@ function switchPage(page) {
   if (navMap[page])  document.getElementById(navMap[page]).classList.add('active');
 
   if (page === 'home')       renderHome();
-  if (page === 'attendance') { renderDailyAtt(); document.getElementById('dailyDateLabel').textContent = fmtDate(todayStr()); }
+  if (page === 'attendance') {
+    dailySelectedDate = todayStr();
+    const picker = document.getElementById('dailyDatePicker');
+    if (picker) { picker.value = dailySelectedDate; picker.max = dailySelectedDate; }
+    renderDailyAtt();
+  }
   if (page === 'requests')   renderRequests();
   if (page === 'staff')      renderStaff();
   if (page === 'profile')    renderProfile();
@@ -1232,8 +1243,12 @@ async function confirmAttendance() {
 function renderDailyAtt() {
   const users = getData('users', []).filter(u => u.role !== 'admin');
   const att   = getData('attendance', {});
-  const today = todayStr();
+  const date  = dailySelectedDate;
   const list  = document.getElementById('dailyAttList');
+
+  // Sync date picker value
+  const picker = document.getElementById('dailyDatePicker');
+  if (picker) picker.value = date;
 
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p></div>';
@@ -1241,7 +1256,7 @@ function renderDailyAtt() {
   }
 
   list.innerHTML = users.map(u => {
-    const cur = att[u.id]?.[today];
+    const cur = att[u.id]?.[date];
     const vals = [0, 0.5, 1, 1.5, 2];
     const btnClass = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
     return `<div class="admin-att-row" id="attrow_${u.id}">
@@ -1261,7 +1276,7 @@ function renderDailyAtt() {
 }
 
 async function setDailyAtt(userId, val) {
-  await saveAttendance(userId, todayStr(), val);
+  await saveAttendance(userId, dailySelectedDate, val);
   // Update button UI instantly
   const row = document.getElementById('attrow_' + userId);
   if (!row) return;
@@ -1270,15 +1285,18 @@ async function setDailyAtt(userId, val) {
   const vals    = [0,0.5,1,1.5,2];
   const idx = vals.indexOf(val);
   if (idx >= 0) document.getElementById(`attbtn_${userId}_${val}`)?.classList.add(classes[idx]);
+  // Show clear button if not already visible
+  renderDailyAtt();
 }
 
 async function clearDailyAtt(userId) {
   const att = getData('attendance', {});
-  if (att[userId] && att[userId][todayStr()] !== undefined) {
-    delete att[userId][todayStr()];
+  const date = dailySelectedDate;
+  if (att[userId] && att[userId][date] !== undefined) {
+    delete att[userId][date];
     setCache('attendance', att);
     try {
-      await updateDoc(doc(db, 'attendance', userId), { [todayStr()]: deleteField() });
+      await updateDoc(doc(db, 'attendance', userId), { [date]: deleteField() });
     } catch(e) {
       console.log('Clear att error:', e);
     }
@@ -1288,7 +1306,62 @@ async function clearDailyAtt(userId) {
   renderHome();
 }
 
-function saveAllAttendance() { showToast('✅ All attendance saved!'); renderHome(); }
+async function saveAllAttendance() {
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const date  = dailySelectedDate;
+  const vals  = [0, 0.5, 1, 1.5, 2];
+  let saved   = 0;
+
+  showLoader(true);
+  for (const u of users) {
+    // Find selected button for this user
+    let selectedVal = undefined;
+    for (const v of vals) {
+      const btn = document.getElementById(`attbtn_${u.id}_${v}`);
+      if (btn) {
+        const classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+        const i = vals.indexOf(v);
+        if (btn.classList.contains(classes[i])) {
+          selectedVal = v;
+          break;
+        }
+      }
+    }
+    // Only save if a value is selected
+    if (selectedVal !== undefined) {
+      await saveAttendance(u.id, date, selectedVal);
+      saved++;
+    }
+    // else: skip — no selection, don't overwrite or clear
+  }
+  showLoader(false);
+
+  if (saved === 0) {
+    showToast('⚠️ Nothing selected to save');
+  } else {
+    showToast(`✅ Saved attendance for ${saved} employee${saved > 1 ? 's' : ''}`);
+  }
+  renderHome();
+}
+
+// Date navigation for Daily Mark
+function dailyPrevDay() {
+  const d = new Date(dailySelectedDate + 'T00:00:00');
+  d.setDate(d.getDate() - 1);
+  dailySelectedDate = d.toISOString().split('T')[0];
+  const picker = document.getElementById('dailyDatePicker');
+  if (picker) picker.value = dailySelectedDate;
+  renderDailyAtt();
+}
+
+function onDailyDateChange(val) {
+  if (!val) return;
+  // Clamp to today max
+  const today = todayStr();
+  if (val > today) val = today;
+  dailySelectedDate = val;
+  renderDailyAtt();
+}
 
 function switchAttTab(tab) {
   document.querySelectorAll('#attTabs .tab').forEach((t,i) => {
@@ -1297,6 +1370,12 @@ function switchAttTab(tab) {
   document.getElementById('attTabDaily').style.display    = tab==='daily'    ? 'block':'none';
   document.getElementById('attTabCalendar').style.display = tab==='calendar' ? 'block':'none';
   document.getElementById('attTabReport').style.display   = tab==='report'   ? 'block':'none';
+  if (tab==='daily') {
+    dailySelectedDate = todayStr();
+    const picker = document.getElementById('dailyDatePicker');
+    if (picker) { picker.value = dailySelectedDate; picker.max = dailySelectedDate; }
+    renderDailyAtt();
+  }
   if (tab==='calendar') populateCalEmpSelect();
   if (tab==='report')   renderReport();
 }
@@ -2233,7 +2312,21 @@ window.populateCalEmpSelect = populateCalEmpSelect;
       </div>
     </div>
 
-    <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:10px;font-size:11px;color:var(--text2)">
+    <!-- v1.0.9 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.9</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Feature Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        📅 <strong>Past date attendance</strong> — Daily Mark now supports any past date, not just today<br>
+        ← <strong>Previous day button</strong> — Tap ← to go back one day at a time quickly<br>
+        🗓️ <strong>Date picker</strong> — Tap the date to jump to any past date directly<br>
+        💾 <strong>Smart Save All</strong> — Saves only employees with a selection, skips unmarked ones
+      </div>
+    </div>
+
+        <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:10px;font-size:11px;color:var(--text2)">
       More updates coming soon 🚀
     </div>
   </div>
