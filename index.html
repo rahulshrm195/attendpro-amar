@@ -447,13 +447,13 @@
       <!-- Daily Tab -->
       <div id="attTabDaily">
         <div class="section-header" style="gap:8px">
-          <div style="display:flex;align-items:center;gap:6px;flex:1">
-            <button class="month-nav-btn" onclick="dailyPrevDay()" title="Previous day" style="flex-shrink:0">←</button>
-            <input type="date" id="dailyDatePicker"
-              style="flex:1;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);outline:none;cursor:pointer;"
-              onchange="onDailyDateChange(this.value)">
-            <button class="month-nav-btn" id="dailyNextBtn" onclick="dailyNextDay()" title="Next day" style="flex-shrink:0">→</button>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <button class="month-nav-btn" onclick="dailyPrevDay()" title="Previous day">←</button>
+            <button class="month-nav-btn" id="dailyNextBtn" onclick="dailyNextDay()" title="Next day">→</button>
           </div>
+          <input type="date" id="dailyDatePicker"
+            style="flex:1;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);outline:none;cursor:pointer;"
+            onchange="onDailyDateChange(this.value)">
           <button class="btn-sm btn-sm-purple" onclick="saveAllAttendance()">Save All</button>
         </div>
         <div id="dailyAttList"></div>
