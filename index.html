@@ -452,6 +452,7 @@
             <input type="date" id="dailyDatePicker"
               style="flex:1;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);outline:none;cursor:pointer;"
               onchange="onDailyDateChange(this.value)">
+            <button class="month-nav-btn" id="dailyNextBtn" onclick="dailyNextDay()" title="Next day" style="flex-shrink:0">→</button>
           </div>
           <button class="btn-sm btn-sm-purple" onclick="saveAllAttendance()">Save All</button>
         </div>
@@ -1246,9 +1247,11 @@ function renderDailyAtt() {
   const date  = dailySelectedDate;
   const list  = document.getElementById('dailyAttList');
 
-  // Sync date picker value
+  // Sync date picker value and next button state
   const picker = document.getElementById('dailyDatePicker');
   if (picker) picker.value = date;
+  const nextBtn = document.getElementById('dailyNextBtn');
+  if (nextBtn) nextBtn.style.opacity = date === todayStr() ? '0.3' : '1';
 
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p></div>';
@@ -1345,10 +1348,26 @@ async function saveAllAttendance() {
 }
 
 // Date navigation for Daily Mark
+function dateAddDays(dateStr, days) {
+  // Safe date math — no timezone shift
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
 function dailyPrevDay() {
-  const d = new Date(dailySelectedDate + 'T00:00:00');
-  d.setDate(d.getDate() - 1);
-  dailySelectedDate = d.toISOString().split('T')[0];
+  dailySelectedDate = dateAddDays(dailySelectedDate, -1);
+  const picker = document.getElementById('dailyDatePicker');
+  if (picker) picker.value = dailySelectedDate;
+  renderDailyAtt();
+}
+
+function dailyNextDay() {
+  const next = dateAddDays(dailySelectedDate, 1);
+  const today = todayStr();
+  if (next > today) return; // No future dates
+  dailySelectedDate = next;
   const picker = document.getElementById('dailyDatePicker');
   if (picker) picker.value = dailySelectedDate;
   renderDailyAtt();
@@ -2159,6 +2178,7 @@ window.closeModal = closeModal;
 window.setDailyAtt = setDailyAtt;
 window.clearDailyAtt = clearDailyAtt;
 window.dailyPrevDay = dailyPrevDay;
+window.dailyNextDay = dailyNextDay;
 window.onDailyDateChange = onDailyDateChange;
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
