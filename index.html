@@ -2914,8 +2914,9 @@ async function exportLedgerPDF() {
     if (bg) { doc.setFillColor(248, 250, 255); doc.rect(margin, y - 2, 180, 8, 'F'); }
     doc.setTextColor(30, 30, 46);
     doc.text(fmtDate(e.date), margin + 2, y + 4);
-    const desc = (e.note || e.type).replace(/[^\x20-\x7E]/g, '').trim();
-    doc.text(doc.splitTextToSize(desc.replace(/[^ -]/g, ''), 95)[0], margin + 28, y + 4);
+    const typeLabel = e.type==='earned'?'Earned':e.type==='advance'?'Advance':e.type==='settlement'?'Settlement':'Deduction';
+    const desc = (e.note && e.note.trim()) ? e.note.trim() : typeLabel;
+     doc.text(doc.splitTextToSize(desc, 95)[0], margin + 28, y + 4);
     if (e.type === 'earned' || e.type === 'deduction') {
       doc.setTextColor(22, 163, 74);
       doc.text(pdfMoney(e.amount), margin + 130, y + 4);
