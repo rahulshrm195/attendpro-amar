@@ -304,6 +304,18 @@
   .daily-adv-amount { width:90px; flex-shrink:0; }
   .daily-adv-note { flex:1; }
 
+  /* ── KEYBOARD FOCUS on att buttons ── */
+  .admin-att-btn:focus {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+    background: var(--blue-mid);
+  }
+  .admin-att-btn.sel-0:focus   { outline-color:#dc2626; }
+  .admin-att-btn.sel-half:focus{ outline-color:#ea580c; }
+  .admin-att-btn.sel-1:focus   { outline-color:#16a34a; }
+  .admin-att-btn.sel-ot:focus  { outline-color:#7c3aed; }
+  .admin-att-btn.sel-double:focus { outline-color:#be185d; }
+
   /* ── REMARKS ── */
   .daily-remark-row { margin-top:8px; }
   .daily-remark-row input { width:100%; background:#f8faff; border:1.5px solid var(--border); border-radius:8px; padding:7px 10px; font-size:12px; font-family:'Nunito',sans-serif; color:var(--text); outline:none; }
@@ -1544,8 +1556,12 @@ function renderDailyAtt() {
         <div class="staff-avatar" style="background:${u.color||'#6c63ff'};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
         <div style="flex:1"><div class="staff-name">${u.name}</div></div>
       </div>
-      <div class="admin-att-options">
-        ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}" onclick="setDailyAtt('${u.id}',${v})">
+      <div class="admin-att-options" id="attopts_${u.id}">
+        ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}"
+          tabindex="0"
+          data-userid="${u.id}" data-val="${v}" data-idx="${i}"
+          onclick="setDailyAtt('${u.id}',${v})"
+          onkeydown="attBtnKeydown(event,'${u.id}',${v},${i})">
           <span>${v===0.5?'½':v}</span>
           <small>${['Absent','Half','Full','OT','Dbl'][i]}</small>
         </div>`).join('')}
@@ -1558,7 +1574,10 @@ function renderDailyAtt() {
           <input type="text"   class="daily-adv-note"   id="adv_note_${u.id}" placeholder="Note (optional)">
         </div>
         <div class="daily-remark-row">
-          <input type="text" id="remark_${u.id}" placeholder="📝 Remarks (e.g. No work, came late, village visit...)" value="${att[u.id]?.[date + '_remark'] || ''}">
+          <input type="text" id="remark_${u.id}"
+            placeholder="📝 Remarks (e.g. No work, came late, village visit...)"
+            value="${att[u.id]?.[date + '_remark'] || ''}"
+            onkeydown="remarkKeydown(event,'${u.id}')">
         </div>
       </div>
     </div>`;
@@ -2489,6 +2508,83 @@ function showToast(msg) {
 // ══════════════════════════════════════════
 initData();
 
+// ══════════════════════════════════════════
+// KEYBOARD NAVIGATION — Daily Mark
+// ══════════════════════════════════════════
+
+// Called on keydown inside any attendance button
+function attBtnKeydown(e, userId, val, idx) {
+  const vals = [0, 0.5, 1, 1.5, 2];
+
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    setDailyAtt(userId, val);
+    return;
+  }
+
+  // Arrow left/right — move between att buttons in same row
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    const newIdx = e.key === 'ArrowRight'
+      ? Math.min(idx + 1, vals.length - 1)
+      : Math.max(idx - 1, 0);
+    const newVal = vals[newIdx];
+    document.getElementById(`attbtn_${userId}_${newVal}`)?.focus();
+    return;
+  }
+
+  // Tab from last att button → move to advance amount input
+  if (e.key === 'Tab' && !e.shiftKey && idx === vals.length - 1) {
+    e.preventDefault();
+    document.getElementById(`adv_amt_${userId}`)?.focus();
+    return;
+  }
+
+  // Shift+Tab from first att button → move to previous employee's remarks field
+  if (e.key === 'Tab' && e.shiftKey && idx === 0) {
+    e.preventDefault();
+    // Find previous employee
+    const users = getData('users', []).filter(u => u.role !== 'admin');
+    const curIdx = users.findIndex(u => u.id === userId);
+    if (curIdx > 0) {
+      const prevUser = users[curIdx - 1];
+      document.getElementById(`remark_${prevUser.id}`)?.focus();
+    }
+    return;
+  }
+}
+
+// Tab from remarks → jump to next employee's first att button
+// Handled via keydown on remarks input
+function remarkKeydown(e, userId) {
+  if (e.key === 'Tab' && !e.shiftKey) {
+    const users = getData('users', []).filter(u => u.role !== 'admin');
+    const curIdx = users.findIndex(u => u.id === userId);
+    if (curIdx < users.length - 1) {
+      e.preventDefault();
+      const nextUser = users[curIdx + 1];
+      // Focus first att button of next employee
+      document.getElementById(`attbtn_${nextUser.id}_0`)?.focus();
+    }
+    // else: natural tab to next focusable element (Save All)
+  }
+}
+
+// Cmd+S / Ctrl+S → Save All from anywhere on Daily Mark screen
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', e => {
+    const isAttPage  = document.getElementById('pageAttendance')?.classList.contains('active');
+    const isDailyTab = document.getElementById('attTabDaily')?.style.display !== 'none';
+    if (!isAttPage || !isDailyTab) return;
+
+    // Cmd+S (Mac) or Ctrl+S (Windows)
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault();
+      saveAllAttendance();
+    }
+  });
+}
+
 // Expose functions to global scope (required for type="module")
 window.doLogin = doLogin;
 window.doLogout = doLogout;
@@ -2530,10 +2626,13 @@ window.deleteAdvanceChip = deleteAdvanceChip;
 window.dailyPrevDay = dailyPrevDay;
 window.dailyNextDay = dailyNextDay;
 window.onDailyDateChange = onDailyDateChange;
+window.attBtnKeydown = attBtnKeydown;
+window.remarkKeydown = remarkKeydown;
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
 (async () => {
+  initKeyboardShortcuts();
   await loadAllData();
   // Enable login button now that data is ready
   const btn = document.getElementById('loginBtn');
