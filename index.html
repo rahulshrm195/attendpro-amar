@@ -1567,16 +1567,28 @@ function renderDailyAtt() {
 
 async function setDailyAtt(userId, val) {
   await saveAttendance(userId, dailySelectedDate, val);
-  // Update button UI instantly
+  // Update ONLY this employee's button UI — no full re-render so typed fields are preserved
   const row = document.getElementById('attrow_' + userId);
   if (!row) return;
+
+  // Highlight the selected button
   row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
   const classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
   const vals    = [0,0.5,1,1.5,2];
   const idx = vals.indexOf(val);
   if (idx >= 0) document.getElementById(`attbtn_${userId}_${val}`)?.classList.add(classes[idx]);
-  // Show clear button if not already visible
-  renderDailyAtt();
+
+  // Show Clear button surgically if not already there
+  const attOpts = row.querySelector('.admin-att-options');
+  if (attOpts && !attOpts.querySelector('.att-clear-btn')) {
+    const users = getData('users', []);
+    const u = users.find(x => x.id === userId);
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'att-clear-btn';
+    clearBtn.textContent = '✕ Clear';
+    clearBtn.onclick = () => confirmClearAtt(userId, u ? u.name : userId);
+    attOpts.appendChild(clearBtn);
+  }
 }
 
 function confirmClearAtt(userId, userName) {
@@ -1600,7 +1612,14 @@ async function doClearAtt(userId) {
     }
   }
   showToast('✅ Attendance cleared!');
-  renderDailyAtt();
+
+  // Surgically reset only this employee's row buttons — preserve other rows' typed fields
+  const row = document.getElementById('attrow_' + userId);
+  if (row) {
+    row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
+    const clearBtn = row.querySelector('.att-clear-btn');
+    if (clearBtn) clearBtn.remove();
+  }
   renderHome();
 }
 
