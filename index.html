@@ -557,7 +557,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.11</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.12</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -582,7 +582,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.11</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.12</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -1479,8 +1479,9 @@ function getAdvanceBalance(userId) {
   const advances = getData('advances', []);
   let balance = 0;
   advances.filter(a => a.userId === userId).forEach(a => {
-    if (a.type === 'advance')   balance += Number(a.amount);
-    if (a.type === 'deduction') balance -= Number(a.amount);
+    if (a.type === 'advance')    balance += Number(a.amount);
+    if (a.type === 'deduction')  balance -= Number(a.amount);
+    if (a.type === 'settlement') balance -= Number(a.amount);
   });
   return Math.max(0, balance);
 }
@@ -2130,9 +2131,10 @@ function openStaffDetail(userId) {
       <button class="btn-primary" style="flex:1" onclick="editStaff('${u.id}')">✏️ Edit</button>
       <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff('${u.id}')">🗑️ Delete</button>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor('${u.id}')">+ Add Advance</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor('${u.id}')">+ Advance</button>
       <button class="btn-sm" style="flex:1;background:#dcfce7;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="closeModal('staffDetailModal');openDeductModal('${u.id}')">− Deduct</button>
+      <button class="btn-sm" style="flex:1;background:#ede9fe;color:var(--purple);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="openLedger('${u.id}')">📒 Ledger</button>
     </div>
     <div class="section-title mb8">Advance/Expense History</div>
     ${advances.length===0 ? '<div class="empty-state" style="padding:20px"><p>No records yet</p></div>' :
@@ -2585,6 +2587,342 @@ function initKeyboardShortcuts() {
   });
 }
 
+
+// ══════════════════════════════════════════
+// LEDGER
+// ══════════════════════════════════════════
+let ledgerUserId = null;
+
+function openLedger(userId) {
+  ledgerUserId = userId;
+  const users = getData('users', []);
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+
+  document.getElementById('ledgerTitle').textContent = `📒 ${u.name}'s Ledger`;
+  document.getElementById('ledgerEmpInfo').textContent = `${fmtMoney(u.wage)}/day · Joined ${fmtDate(u.joinDate)}`;
+
+  // Default date range: join date → today
+  document.getElementById('ledgerFrom').value = u.joinDate || todayStr();
+  document.getElementById('ledgerTo').value   = todayStr();
+
+  document.getElementById('ledgerContent').innerHTML = '';
+  document.getElementById('ledgerSettleSection').style.display = 'none';
+  document.getElementById('ledgerPdfBtn').style.display = 'none';
+  document.getElementById('settleDate').value = todayStr();
+
+  closeModal('staffDetailModal');
+  openModal('ledgerModal');
+  renderLedger();
+}
+
+function renderLedger() {
+  const userId  = ledgerUserId;
+  const fromVal = document.getElementById('ledgerFrom').value;
+  const toVal   = document.getElementById('ledgerTo').value;
+  if (!userId || !fromVal || !toVal) return;
+
+  const users   = getData('users', []);
+  const u       = users.find(x => x.id === userId);
+  if (!u) return;
+
+  const att      = getData('attendance', {})[userId] || {};
+  const advances = getData('advances', []).filter(a => a.userId === userId);
+  const wage     = Number(u.wage || 0);
+
+  // ── Build all entries sorted by date ──
+  const allEntries = [];
+
+  // Attendance entries (earned)
+  Object.entries(att).forEach(([dateKey, val]) => {
+    if (dateKey.includes('_')) return; // skip remark keys
+    const v = Number(val);
+    if (isNaN(v) || v === 0) return; // skip absent / zero
+    allEntries.push({ date: dateKey, type: 'earned', amount: v * wage, days: v, note: ATT_LABELS[String(v)] || String(v) });
+  });
+
+  // Advance / deduction / settlement entries
+  advances.forEach(a => {
+    allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
+  });
+
+  allEntries.sort((a, b) => a.date.localeCompare(b.date));
+
+  // ── Calculate opening balance (everything before fromVal) ──
+  let openingBalance = 0;
+  allEntries.forEach(e => {
+    if (e.date >= fromVal) return;
+    if (e.type === 'earned')    openingBalance += e.amount;
+    if (e.type === 'advance')   openingBalance -= e.amount;
+    if (e.type === 'deduction') openingBalance += e.amount; // deduction reduces advance balance = increases net
+    if (e.type === 'settlement') openingBalance -= e.amount;
+  });
+
+  // ── Entries within range ──
+  const rangeEntries = allEntries.filter(e => e.date >= fromVal && e.date <= toVal);
+
+  let totalEarned     = 0;
+  let totalAdvances   = 0;
+  let totalSettlements = 0;
+  let totalDeductions = 0;
+
+  rangeEntries.forEach(e => {
+    if (e.type === 'earned')     totalEarned      += e.amount;
+    if (e.type === 'advance')    totalAdvances    += e.amount;
+    if (e.type === 'settlement') totalSettlements += e.amount;
+    if (e.type === 'deduction')  totalDeductions  += e.amount;
+  });
+
+  const closingBalance = openingBalance + totalEarned - totalAdvances + totalDeductions - totalSettlements;
+
+  // ── Render ──
+  const balColor = (bal) => bal >= 0 ? 'var(--green)' : 'var(--red)';
+  const balLabel = (bal) => bal >= 0 ? `You owe him ${fmtMoney(Math.abs(bal))}` : `He owes you ${fmtMoney(Math.abs(bal))}`;
+
+  let html = '';
+
+  // Opening balance card
+  html += `<div style="background:${openingBalance >= 0 ? '#dcfce7' : '#fee2e2'};border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px">Opening Balance</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Before ${fmtDate(fromVal)}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:18px;font-weight:800;color:${balColor(openingBalance)}">${openingBalance >= 0 ? '+' : '-'}${fmtMoney(Math.abs(openingBalance))}</div>
+      <div style="font-size:10px;color:${balColor(openingBalance)}">${balLabel(openingBalance)}</div>
+    </div>
+  </div>`;
+
+  // Entries table
+  if (rangeEntries.length === 0) {
+    html += `<div class="empty-state" style="padding:30px"><div class="emoji">📭</div><p>No entries in this date range</p></div>`;
+  } else {
+    html += `<div style="background:#fff;border-radius:12px;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)">`;
+
+    // Header row
+    html += `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px;gap:4px;padding:8px 12px;background:var(--navy);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
+      <div>Date</div><div>Description</div><div style="text-align:right">Credit</div><div style="text-align:right">Debit</div>
+    </div>`;
+
+    rangeEntries.forEach((e, i) => {
+      const isEven = i % 2 === 0;
+      const bg     = isEven ? '#fff' : '#f8faff';
+      let credit = '', debit = '', typeIcon = '';
+
+      if (e.type === 'earned')     { credit = fmtMoney(e.amount); typeIcon = '💼'; }
+      if (e.type === 'advance')    { debit  = fmtMoney(e.amount); typeIcon = '💸'; }
+      if (e.type === 'deduction')  { credit = fmtMoney(e.amount); typeIcon = '✂️'; }
+      if (e.type === 'settlement') { debit  = fmtMoney(e.amount); typeIcon = '💵'; }
+
+      html += `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px;gap:4px;padding:9px 12px;background:${bg};border-bottom:1px solid var(--border);font-size:12px">
+        <div style="color:var(--text2);font-size:11px">${fmtDate(e.date)}</div>
+        <div style="font-weight:600">${typeIcon} ${e.note || ''}</div>
+        <div style="text-align:right;color:var(--green);font-weight:700">${credit}</div>
+        <div style="text-align:right;color:var(--red);font-weight:700">${debit}</div>
+      </div>`;
+    });
+
+    html += `</div>`;
+
+    // Totals row
+    html += `<div style="background:var(--blue-bg);border-radius:12px;padding:12px 14px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div style="background:#dcfce7;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Earned</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green)">${fmtMoney(totalEarned)}</div>
+        </div>
+        <div style="background:#fee2e2;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Advances</div>
+          <div style="font-size:16px;font-weight:800;color:var(--red)">${fmtMoney(totalAdvances)}</div>
+        </div>
+      </div>
+      ${totalSettlements > 0 ? `<div style="background:#ede9fe;border-radius:8px;padding:8px;text-align:center;margin-bottom:8px">
+        <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Settlements Paid</div>
+        <div style="font-size:16px;font-weight:800;color:var(--purple)">${fmtMoney(totalSettlements)}</div>
+      </div>` : ''}
+    </div>`;
+  }
+
+  // Closing balance — big prominent card
+  html += `<div style="background:${closingBalance >= 0 ? 'linear-gradient(135deg,#16a34a,#15803d)' : 'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:18px;text-align:center;color:#fff;margin-bottom:4px">
+    <div style="font-size:12px;font-weight:600;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px">Closing Balance · As of ${fmtDate(toVal)}</div>
+    <div style="font-size:36px;font-weight:800;font-family:'Poppins',sans-serif;margin:6px 0">${closingBalance >= 0 ? '+' : '-'}${fmtMoney(Math.abs(closingBalance))}</div>
+    <div style="font-size:14px;font-weight:700;opacity:0.9">${balLabel(closingBalance)}</div>
+  </div>`;
+
+  document.getElementById('ledgerContent').innerHTML = html;
+  document.getElementById('ledgerSettleSection').style.display = closingBalance > 0 ? 'block' : 'none';
+  document.getElementById('ledgerPdfBtn').style.display = rangeEntries.length > 0 ? 'block' : 'none';
+}
+
+async function recordSettlement() {
+  const amount = Number(document.getElementById('settleAmount').value);
+  const date   = document.getElementById('settleDate').value;
+  const note   = document.getElementById('settleNote').value.trim() || 'Settlement payment';
+  if (!amount || amount <= 0) { showToast('Please enter a valid amount'); return; }
+  if (!date) { showToast('Please select a date'); return; }
+  const users = getData('users', []);
+  const u = users.find(x => x.id === ledgerUserId);
+  if (!confirm(`Record settlement of ${fmtMoney(amount)} paid to ${u?.name || 'employee'} on ${fmtDate(date)}?`)) return;
+  showLoader(true);
+  await addAdvance({ userId: ledgerUserId, amount, note, date, month: date.substring(0,7), type: 'settlement' });
+  showLoader(false);
+  document.getElementById('settleAmount').value = '';
+  document.getElementById('settleNote').value   = '';
+  showToast('✅ Settlement recorded!');
+  renderLedger();
+}
+
+async function exportLedgerPDF() {
+  const userId  = ledgerUserId;
+  const fromVal = document.getElementById('ledgerFrom').value;
+  const toVal   = document.getElementById('ledgerTo').value;
+  const users   = getData('users', []);
+  const u       = users.find(x => x.id === userId);
+  if (!u) return;
+
+  // Read the skill for PDF generation
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) {
+    // Load jsPDF dynamically
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  const { jsPDF: JSPDF } = window.jspdf;
+  const doc = new JSPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const att      = getData('attendance', {})[userId] || {};
+  const advances = getData('advances', []).filter(a => a.userId === userId);
+  const wage     = Number(u.wage || 0);
+
+  const allEntries = [];
+  Object.entries(att).forEach(([dateKey, val]) => {
+    if (dateKey.includes('_')) return;
+    const v = Number(val);
+    if (isNaN(v) || v === 0) return;
+    allEntries.push({ date: dateKey, type: 'earned', amount: v * wage, note: ATT_LABELS[String(v)] || String(v) });
+  });
+  advances.forEach(a => {
+    allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
+  });
+  allEntries.sort((a, b) => a.date.localeCompare(b.date));
+
+  let openingBalance = 0;
+  allEntries.forEach(e => {
+    if (e.date >= fromVal) return;
+    if (e.type === 'earned')     openingBalance += e.amount;
+    if (e.type === 'advance')    openingBalance -= e.amount;
+    if (e.type === 'deduction')  openingBalance += e.amount;
+    if (e.type === 'settlement') openingBalance -= e.amount;
+  });
+
+  const rangeEntries = allEntries.filter(e => e.date >= fromVal && e.date <= toVal);
+  let totalEarned = 0, totalAdvances = 0, totalSettlements = 0;
+  rangeEntries.forEach(e => {
+    if (e.type === 'earned')     totalEarned      += e.amount;
+    if (e.type === 'advance')    totalAdvances    += e.amount;
+    if (e.type === 'settlement') totalSettlements += e.amount;
+  });
+  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+
+  const margin = 15;
+  let y = margin;
+
+  // Header
+  doc.setFillColor(26, 26, 46);
+  doc.rect(0, 0, 210, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+  doc.text('AttendPro — Amar Furniture', margin, 13);
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  doc.text('Employee Ledger Statement', margin, 21);
+  doc.text(`Generated: ${fmtDate(todayStr())}`, 210 - margin, 21, { align: 'right' });
+
+  y = 38;
+  doc.setTextColor(30, 30, 46);
+
+  // Employee info
+  doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+  doc.text(u.name, margin, y); y += 6;
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  doc.setTextColor(107, 114, 128);
+  doc.text(`Daily Wage: ${fmtMoney(wage)}  |  Period: ${fmtDate(fromVal)} to ${fmtDate(toVal)}`, margin, y); y += 10;
+
+  // Opening balance box
+  doc.setFillColor(openingBalance >= 0 ? 220 : 254, openingBalance >= 0 ? 252 : 226, openingBalance >= 0 ? 231 : 226);
+  doc.roundedRect(margin, y, 180, 12, 3, 3, 'F');
+  doc.setTextColor(30, 30, 46); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+  doc.text(`Opening Balance (before ${fmtDate(fromVal)}):`, margin + 3, y + 8);
+  const obStr = `${openingBalance >= 0 ? '+' : '-'}${fmtMoney(Math.abs(openingBalance))}  (${openingBalance >= 0 ? 'You owe him' : 'He owes you'})`;
+  doc.text(obStr, 210 - margin - 3, y + 8, { align: 'right' });
+  y += 18;
+
+  // Table header
+  doc.setFillColor(26, 26, 46);
+  doc.rect(margin, y, 180, 8, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+  doc.text('Date',        margin + 2,   y + 5.5);
+  doc.text('Description', margin + 28,  y + 5.5);
+  doc.text('Credit',      margin + 130, y + 5.5);
+  doc.text('Debit',       margin + 158, y + 5.5);
+  y += 10;
+
+  // Table rows
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  rangeEntries.forEach((e, i) => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const bg = i % 2 === 0;
+    if (bg) { doc.setFillColor(248, 250, 255); doc.rect(margin, y - 2, 180, 8, 'F'); }
+    doc.setTextColor(30, 30, 46);
+    doc.text(fmtDate(e.date), margin + 2, y + 4);
+    const desc = (e.type === 'earned' ? '💼 ' : e.type === 'advance' ? '💸 ' : e.type === 'settlement' ? '💵 ' : '✂️ ') + (e.note || '');
+    doc.text(doc.splitTextToSize(desc.replace(/[^ -]/g, ''), 95)[0], margin + 28, y + 4);
+    if (e.type === 'earned' || e.type === 'deduction') {
+      doc.setTextColor(22, 163, 74);
+      doc.text(fmtMoney(e.amount).replace('₹','Rs.'), margin + 130, y + 4);
+    } else {
+      doc.setTextColor(220, 38, 38);
+      doc.text(fmtMoney(e.amount).replace('₹','Rs.'), margin + 158, y + 4);
+    }
+    doc.setTextColor(30,30,46);
+    y += 8;
+  });
+
+  y += 6;
+
+  // Totals
+  doc.setFillColor(238, 242, 255);
+  doc.roundedRect(margin, y, 180, 22, 3, 3, 'F');
+  doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,30,46);
+  doc.text(`Total Earned:`, margin + 3, y + 8);
+  doc.setTextColor(22, 163, 74);
+  doc.text(fmtMoney(totalEarned).replace('₹','Rs.'), margin + 177, y + 8, { align: 'right' });
+  doc.setTextColor(30,30,46);
+  doc.text(`Total Advances:`, margin + 3, y + 16);
+  doc.setTextColor(220, 38, 38);
+  doc.text(fmtMoney(totalAdvances).replace('₹','Rs.'), margin + 177, y + 16, { align: 'right' });
+  y += 28;
+
+  // Closing balance
+  const cbColor = closingBalance >= 0 ? [22,163,74] : [220,38,38];
+  doc.setFillColor(...cbColor);
+  doc.roundedRect(margin, y, 180, 18, 4, 4, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+  doc.text('Closing Balance:', margin + 3, y + 12);
+  const cbStr = `${closingBalance >= 0 ? '+' : '-'}${fmtMoney(Math.abs(closingBalance)).replace('₹','Rs.')}  (${closingBalance >= 0 ? 'You owe him' : 'He owes you'})`;
+  doc.text(cbStr, margin + 177, y + 12, { align: 'right' });
+
+  const filename = `${u.name.replace(/\s+/g,'_')}_Ledger_${fromVal}_to_${toVal}.pdf`;
+  doc.save(filename);
+  showToast('✅ PDF downloaded!');
+}
+
 // Expose functions to global scope (required for type="module")
 window.doLogin = doLogin;
 window.doLogout = doLogout;
@@ -2601,6 +2939,10 @@ window.switchReqTab = switchReqTab;
 window.handleRequest = handleRequest;
 window.openAddStaffModal = openAddStaffModal;
 window.openStaffDetail = openStaffDetail;
+window.openLedger = openLedger;
+window.renderLedger = renderLedger;
+window.recordSettlement = recordSettlement;
+window.exportLedgerPDF = exportLedgerPDF;
 window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
 window.saveStaff = saveStaff;
@@ -2826,8 +3168,72 @@ window.populateCalEmpSelect = populateCalEmpSelect;
       </div>
     </div>
 
+        <!-- v1.0.12 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.12</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Feature Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        📒 <strong>Employee Ledger</strong> — Full running account per employee from joining date<br>
+        📅 <strong>Date range filter</strong> — Pick any From/To date, opening balance auto-calculated<br>
+        💼 Earned · 💸 Advances · 💵 Settlements — all three entry types tracked<br>
+        🟢 <strong>Closing balance</strong> — Instantly shows who owes whom and how much<br>
+        💵 <strong>Record Settlement</strong> — Log final payments directly from ledger<br>
+        📄 <strong>PDF export</strong> — Download clean ledger statement for any date range
+      </div>
+    </div>
+
         <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:10px;font-size:11px;color:var(--text2)">
       More updates coming soon 🚀
+    </div>
+  </div>
+</div>
+
+
+<!-- LEDGER MODAL -->
+<div class="modal-overlay" id="ledgerModal">
+  <div class="modal-sheet" style="max-height:92vh">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title" style="margin:0" id="ledgerTitle">Ledger</div>
+      <button onclick="closeModal('ledgerModal')" style="background:var(--blue-bg);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text2)">✕ Close</button>
+    </div>
+    <div id="ledgerEmpInfo" style="font-size:12px;color:var(--text2);margin-bottom:16px"></div>
+
+    <!-- Date range -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;align-items:flex-end">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">From</div>
+        <input type="date" id="ledgerFrom" style="width:100%;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">To</div>
+        <input type="date" id="ledgerTo" style="width:100%;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+      </div>
+      <button class="btn-sm btn-sm-purple" onclick="renderLedger()" style="flex-shrink:0;height:38px">View</button>
+    </div>
+
+    <!-- Ledger content -->
+    <div id="ledgerContent"></div>
+
+    <!-- Record Settlement -->
+    <div id="ledgerSettleSection" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">💵 Record Settlement</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input type="number" id="settleAmount" placeholder="₹ Amount paid" min="1"
+          style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+        <input type="date" id="settleDate"
+          style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+      </div>
+      <input type="text" id="settleNote" placeholder="Note (optional)"
+        style="width:100%;background:#f8faff;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'Nunito',sans-serif;color:var(--text);outline:none;margin-bottom:10px">
+      <button class="btn-primary" onclick="recordSettlement()">💵 Record Settlement</button>
+    </div>
+
+    <!-- PDF export -->
+    <div style="margin-top:12px">
+      <button class="btn-secondary" onclick="exportLedgerPDF()" id="ledgerPdfBtn" style="display:none">📄 Export PDF</button>
     </div>
   </div>
 </div>
