@@ -309,6 +309,234 @@
   .daily-remark-row input { width:100%; background:#f8faff; border:1.5px solid var(--border); border-radius:8px; padding:7px 10px; font-size:12px; font-family:'Nunito',sans-serif; color:var(--text); outline:none; }
   .daily-remark-row input:focus { border-color:var(--yellow); background:#fff; }
   .daily-remark-row input::placeholder { color:#b0b8c9; }
+
+  /* ════════════════════════════════════════════
+     DESKTOP RESPONSIVE — min-width: 768px
+     Only CSS, zero JS/logic changes
+     Mobile layout completely unchanged
+  ════════════════════════════════════════════ */
+  @media (min-width: 768px) {
+
+    /* ── Base body ── */
+    html, body {
+      background: #1a1a2e;
+    }
+
+    /* ── Login screen — centred card ── */
+    #loginScreen {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy2) 50%, #0f3460 100%);
+    }
+    .login-logo h1 { font-size:34px; }
+    .login-card {
+      max-width: 420px;
+      padding: 36px 32px;
+      border-radius: 28px;
+    }
+
+    /* ── App screen — centred column ── */
+    #appScreen {
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--blue-bg);
+      box-shadow: 0 0 60px rgba(0,0,0,0.4);
+    }
+
+    /* ── Header ── */
+    .app-header {
+      padding: 14px 24px;
+      border-radius: 0;
+    }
+    .app-header img { width:40px; height:40px; }
+    .header-title h1 { font-size:18px; }
+    .header-title p  { font-size:12px; }
+    .header-avatar {
+      width:38px; height:38px; font-size:15px;
+    }
+    .header-notif { width:38px; height:38px; font-size:18px; }
+
+    /* ── Page content ── */
+    .page-content {
+      padding: 24px 28px 16px;
+    }
+
+    /* ── Welcome banner ── */
+    .welcome-banner {
+      padding: 28px 28px;
+      border-radius: 24px;
+      margin-bottom: 20px;
+    }
+    .welcome-banner h2 { font-size:26px; }
+    .welcome-banner p  { font-size:14px; }
+    .welcome-date      { font-size:13px; }
+
+    /* ── Stat grid — 4 columns on desktop ── */
+    .stat-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat-card { padding: 18px 16px; border-radius:18px; }
+    .stat-icon  { font-size:28px; margin-bottom:8px; }
+    .stat-value { font-size:28px; }
+    .stat-label { font-size:12px; }
+
+    /* ── Section headers ── */
+    .section-header { margin-bottom:14px; }
+    .section-title  { font-size:14px; letter-spacing:0.6px; }
+    .card-action    { font-size:13px; }
+
+    /* ── Cards ── */
+    .card {
+      border-radius:20px;
+      padding: 20px;
+      margin-bottom:14px;
+    }
+    .card-title { font-size:15px; }
+
+    /* ── Staff list — 2 columns on desktop ── */
+    #staffList {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    #staffList .staff-item { margin-bottom: 0; }
+    .staff-item {
+      border-radius:16px;
+      padding: 14px;
+    }
+    .staff-name  { font-size:15px; }
+    .staff-role  { font-size:12px; }
+    .staff-wage  { font-size:13px; }
+    .staff-avatar { width:46px; height:46px; font-size:18px; }
+
+    /* ── Today's attendance list on home — 2 columns ── */
+    #todayAttendanceList {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    #todayAttendanceList .staff-item { margin-bottom: 0; }
+
+    /* ── Admin attendance daily mark rows — wider layout ── */
+    .admin-att-row {
+      padding: 16px 18px;
+      border-radius:16px;
+    }
+    .admin-att-btn {
+      padding: 8px 4px;
+      border-radius:10px;
+    }
+    .admin-att-btn span { font-size:14px; }
+    .admin-att-btn small { font-size:10px; }
+
+    /* ── Attendance daily mark — 2 columns ── */
+    #dailyAttList {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    #dailyAttList .admin-att-row { margin-bottom: 0; }
+
+    /* ── Tabs ── */
+    .tabs { border-radius:14px; padding:5px; }
+    .tab  { padding:10px; font-size:13px; border-radius:10px; }
+
+    /* ── Buttons ── */
+    .btn-primary   { padding:14px 24px; font-size:15px; border-radius:14px; }
+    .btn-secondary { padding:14px 24px; font-size:15px; border-radius:14px; }
+    .btn-sm { padding:8px 16px; font-size:12px; border-radius:9px; }
+
+    /* ── Forms ── */
+    .form-row { margin-bottom:16px; }
+    .form-row label { font-size:12px; margin-bottom:7px; }
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      padding: 12px 16px;
+      font-size:15px;
+      border-radius:12px;
+    }
+
+    /* ── Modals — centred, not bottom sheet on desktop ── */
+    .modal-overlay {
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-sheet {
+      border-radius: 24px;
+      max-width: 480px;
+      max-height: 85vh;
+      margin: 0 16px;
+      animation: fadeScale 0.25s ease;
+    }
+    @keyframes fadeScale {
+      from { opacity:0; transform:scale(0.95); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    .modal-handle { display:none; }
+    .modal-title  { font-size:20px; }
+
+    /* ── Bottom nav — make taller, bigger icons ── */
+    .bottom-nav { padding:4px 0; }
+    .nav-item   { padding:12px 4px 10px; gap:4px; }
+    .nav-item .nav-icon  { font-size:22px; }
+    .nav-item .nav-label { font-size:11px; }
+
+    /* ── Salary card ── */
+    .salary-card { padding:24px; border-radius:24px; }
+    .salary-amount { font-size:36px; }
+    .salary-breakdown { gap:10px; margin-top:18px; }
+    .salary-item { padding:12px; border-radius:12px; }
+    .salary-item .val { font-size:18px; }
+    .salary-item .lbl { font-size:10px; }
+
+    /* ── Request cards ── */
+    #adminAdvanceList,
+    #adminLeaveList {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    #adminAdvanceList .request-card,
+    #adminLeaveList .request-card { margin-bottom:0; }
+    .request-card { border-radius:16px; padding:16px; }
+
+    /* ── Calendar grid days — slightly larger ── */
+    .cal-day { border-radius:10px; font-size:13px; font-weight:700; }
+    .cal-day-name { font-size:11px; }
+
+    /* ── Profile header ── */
+    .profile-header { padding:32px; border-radius:24px; }
+    .profile-avatar-big { width:84px; height:84px; font-size:32px; }
+    .profile-name { font-size:24px; }
+    .profile-role { font-size:13px; }
+
+    /* ── Report list ── */
+    #reportList {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    #reportList .card { margin-bottom:0; }
+
+    /* ── Advance items ── */
+    .advance-item { border-radius:14px; padding:14px; }
+    .advance-amount { font-size:18px; }
+
+    /* ── Toast — slightly higher on desktop ── */
+    #toast { bottom:100px; font-size:14px; padding:12px 24px; }
+
+    /* ── Scrollbar — slightly wider ── */
+    ::-webkit-scrollbar { width:6px; }
+
+    /* ── Inline advance inputs wider ── */
+    .daily-adv-amount { width:120px; }
+    .daily-adv-inputs input { font-size:14px; padding:9px 12px; }
+
+    /* ── Remarks row ── */
+    .daily-remark-row input { font-size:13px; padding:9px 12px; }
+  }
 </style>
 </head>
 <body>
