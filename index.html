@@ -3097,17 +3097,25 @@ window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
 (async () => {
-  initKeyboardShortcuts();
-  await loadAllData();
-  // Enable login button now that data is ready
   const btn = document.getElementById('loginBtn');
-  if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; btn.style.opacity = '1'; }
-  // Restore session
-  const savedId = localStorage.getItem('af_session');
-  if (savedId) {
-    const users = getData('users', []);
-    const u = users.find(x => x.id === savedId);
-    if (u) { currentUser = u; startApp(); }
+  const enableBtn = () => {
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; btn.style.opacity = '1'; }
+  };
+  try {
+    initKeyboardShortcuts();
+    await loadAllData();
+    enableBtn();
+    // Restore session
+    const savedId = localStorage.getItem('af_session');
+    if (savedId) {
+      const users = getData('users', []);
+      const u = users.find(x => x.id === savedId);
+      if (u) { currentUser = u; startApp(); }
+    }
+  } catch(e) {
+    console.error('App init error:', e);
+    showToast('⚠️ Failed to load. Please refresh.');
+    enableBtn(); // Always enable button so user can try logging in
   }
 })();
 </script>
