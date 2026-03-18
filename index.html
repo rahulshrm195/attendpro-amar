@@ -557,7 +557,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.12</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.13</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -582,7 +582,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.12</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.13</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -907,6 +907,22 @@
         <option value="advance">Advance (employee owes company)</option>
         <option value="pending_salary">Pending Salary (company owes employee)</option>
       </select>
+    </div>
+    <!-- Wage history section — only shown when editing -->
+    <div class="form-row" id="wageHistorySection" style="display:none">
+      <label>Wage History <span style="font-size:10px;color:var(--text2);font-weight:500">— past wage periods</span></label>
+      <div id="wageHistoryList" style="margin-bottom:8px"></div>
+      <div style="background:var(--blue-bg);border-radius:10px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px">Add New Wage Period</div>
+        <div style="display:flex;gap:6px">
+          <input type="number" id="sfWageHistAmt" placeholder="₹ Wage" min="1"
+            style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+          <input type="date" id="sfWageHistFrom"
+            style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+          <button class="btn-sm btn-sm-purple" onclick="addWageHistoryEntry()" style="flex-shrink:0">Add</button>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px">Sets wage from selected date onwards. Current wage field above will also update.</div>
+      </div>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn-secondary" style="flex:1" onclick="closeModal('addStaffModal')">Cancel</button>
@@ -2057,6 +2073,7 @@ function openAddStaffModal() {
   document.getElementById('sfOpeningBalType').value = 'advance';
   document.getElementById('sfRole').value     = 'employee';
   document.getElementById('sfJoinDate').value = todayStr();
+  document.getElementById('wageHistorySection').style.display = 'none';
   openModal('addStaffModal');
 }
 
@@ -2075,7 +2092,10 @@ async function saveStaff() {
   showLoader(true);
 
   if (editingStaffId) {
-    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate };
+    const users = getData('users', []);
+    const existing = users.find(x => x.id === editingStaffId);
+    const wageHistory = existing?.wageHistory || [];
+    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, wageHistory };
     await saveUserDoc(editingStaffId, data);
     showToast('✅ Staff updated!');
   } else {
@@ -2163,6 +2183,12 @@ function editStaff(userId) {
   document.getElementById('sfUserId').value   = u.userId;
   document.getElementById('sfPass').value     = u.password;
   document.getElementById('sfJoinDate').value = u.joinDate||'';
+
+  // Show wage history section when editing
+  document.getElementById('wageHistorySection').style.display = 'block';
+  document.getElementById('sfWageHistFrom').value = todayStr();
+  renderWageHistoryList(u);
+
   closeModal('staffDetailModal');
   openModal('addStaffModal');
 }
@@ -2633,12 +2659,13 @@ function renderLedger() {
   // ── Build all entries sorted by date ──
   const allEntries = [];
 
-  // Attendance entries (earned)
+  // Attendance entries (earned) — use wage applicable on that date
   Object.entries(att).forEach(([dateKey, val]) => {
     if (dateKey.includes('_')) return; // skip remark keys
     const v = Number(val);
     if (isNaN(v) || v === 0) return; // skip absent / zero
-    allEntries.push({ date: dateKey, type: 'earned', amount: v * wage, days: v, note: ATT_LABELS[String(v)] || String(v) });
+    const dayWage = getWageForDate(u, dateKey);
+    allEntries.push({ date: dateKey, type: 'earned', amount: v * dayWage, days: v, note: `${ATT_LABELS[String(v)] || String(v)} @ ${fmtMoney(dayWage)}/day` });
   });
 
   // Advance / deduction / settlement entries
@@ -2773,6 +2800,11 @@ async function recordSettlement() {
   renderLedger();
 }
 
+// Safe money string for PDF (jsPDF default font has no ₹ glyph)
+function pdfMoney(n) {
+  return 'Rs.' + Number(n || 0).toLocaleString('en-IN');
+}
+
 async function exportLedgerPDF() {
   const userId  = ledgerUserId;
   const fromVal = document.getElementById('ledgerFrom').value;
@@ -2806,7 +2838,8 @@ async function exportLedgerPDF() {
     if (dateKey.includes('_')) return;
     const v = Number(val);
     if (isNaN(v) || v === 0) return;
-    allEntries.push({ date: dateKey, type: 'earned', amount: v * wage, note: ATT_LABELS[String(v)] || String(v) });
+    const dayWage = getWageForDate(u, dateKey);
+    allEntries.push({ date: dateKey, type: 'earned', amount: v * dayWage, note: `${ATT_LABELS[String(v)] || String(v)} @ ${fmtMoney(dayWage)}/day` });
   });
   advances.forEach(a => {
     allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
@@ -2852,14 +2885,14 @@ async function exportLedgerPDF() {
   doc.text(u.name, margin, y); y += 6;
   doc.setFontSize(10); doc.setFont('helvetica', 'normal');
   doc.setTextColor(107, 114, 128);
-  doc.text(`Daily Wage: ${fmtMoney(wage)}  |  Period: ${fmtDate(fromVal)} to ${fmtDate(toVal)}`, margin, y); y += 10;
+  doc.text(`Daily Wage: ${pdfMoney(wage)}  |  Period: ${fmtDate(fromVal)} to ${fmtDate(toVal)}`, margin, y); y += 10;
 
   // Opening balance box
   doc.setFillColor(openingBalance >= 0 ? 220 : 254, openingBalance >= 0 ? 252 : 226, openingBalance >= 0 ? 231 : 226);
   doc.roundedRect(margin, y, 180, 12, 3, 3, 'F');
   doc.setTextColor(30, 30, 46); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
   doc.text(`Opening Balance (before ${fmtDate(fromVal)}):`, margin + 3, y + 8);
-  const obStr = `${openingBalance >= 0 ? '+' : '-'}${fmtMoney(Math.abs(openingBalance))}  (${openingBalance >= 0 ? 'You owe him' : 'He owes you'})`;
+  const obStr = `${openingBalance >= 0 ? '+' : '-'}${pdfMoney(Math.abs(openingBalance))}  (${openingBalance >= 0 ? 'You owe him' : 'He owes you'})`;
   doc.text(obStr, 210 - margin - 3, y + 8, { align: 'right' });
   y += 18;
 
@@ -2881,14 +2914,14 @@ async function exportLedgerPDF() {
     if (bg) { doc.setFillColor(248, 250, 255); doc.rect(margin, y - 2, 180, 8, 'F'); }
     doc.setTextColor(30, 30, 46);
     doc.text(fmtDate(e.date), margin + 2, y + 4);
-    const desc = (e.type === 'earned' ? '💼 ' : e.type === 'advance' ? '💸 ' : e.type === 'settlement' ? '💵 ' : '✂️ ') + (e.note || '');
+    const desc = (e.note || e.type).replace(/[^\x20-\x7E]/g, '').trim();
     doc.text(doc.splitTextToSize(desc.replace(/[^ -]/g, ''), 95)[0], margin + 28, y + 4);
     if (e.type === 'earned' || e.type === 'deduction') {
       doc.setTextColor(22, 163, 74);
-      doc.text(fmtMoney(e.amount).replace('₹','Rs.'), margin + 130, y + 4);
+      doc.text(pdfMoney(e.amount), margin + 130, y + 4);
     } else {
       doc.setTextColor(220, 38, 38);
-      doc.text(fmtMoney(e.amount).replace('₹','Rs.'), margin + 158, y + 4);
+      doc.text(pdfMoney(e.amount), margin + 158, y + 4);
     }
     doc.setTextColor(30,30,46);
     y += 8;
@@ -2902,11 +2935,11 @@ async function exportLedgerPDF() {
   doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,30,46);
   doc.text(`Total Earned:`, margin + 3, y + 8);
   doc.setTextColor(22, 163, 74);
-  doc.text(fmtMoney(totalEarned).replace('₹','Rs.'), margin + 177, y + 8, { align: 'right' });
+  doc.text(pdfMoney(totalEarned), margin + 177, y + 8, { align: 'right' });
   doc.setTextColor(30,30,46);
   doc.text(`Total Advances:`, margin + 3, y + 16);
   doc.setTextColor(220, 38, 38);
-  doc.text(fmtMoney(totalAdvances).replace('₹','Rs.'), margin + 177, y + 16, { align: 'right' });
+  doc.text(pdfMoney(totalAdvances), margin + 177, y + 16, { align: 'right' });
   y += 28;
 
   // Closing balance
@@ -2915,12 +2948,100 @@ async function exportLedgerPDF() {
   doc.roundedRect(margin, y, 180, 18, 4, 4, 'F');
   doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
   doc.text('Closing Balance:', margin + 3, y + 12);
-  const cbStr = `${closingBalance >= 0 ? '+' : '-'}${fmtMoney(Math.abs(closingBalance)).replace('₹','Rs.')}  (${closingBalance >= 0 ? 'You owe him' : 'He owes you'})`;
+  const cbStr = `${closingBalance >= 0 ? '+' : '-'}${pdfMoney(Math.abs(closingBalance))}  (${closingBalance >= 0 ? 'You owe him' : 'He owes you'})`;
   doc.text(cbStr, margin + 177, y + 12, { align: 'right' });
 
   const filename = `${u.name.replace(/\s+/g,'_')}_Ledger_${fromVal}_to_${toVal}.pdf`;
   doc.save(filename);
   showToast('✅ PDF downloaded!');
+}
+
+
+// ══════════════════════════════════════════
+// WAGE HISTORY
+// ══════════════════════════════════════════
+
+// Get applicable wage for a specific date for a user
+function getWageForDate(user, dateStr) {
+  const history = user.wageHistory;
+  if (!history || history.length === 0) {
+    // No history — use current wage for all dates
+    return Number(user.wage || 0);
+  }
+  // Sort descending by from date
+  const sorted = [...history].sort((a, b) => b.from.localeCompare(a.from));
+  // Find the first entry whose from date is <= dateStr
+  const applicable = sorted.find(h => h.from <= dateStr);
+  if (applicable) return Number(applicable.wage);
+  // Date is before all history entries — use earliest entry
+  const earliest = history.reduce((a, b) => a.from < b.from ? a : b);
+  return Number(earliest.wage);
+}
+
+// Render existing wage history in the edit form
+function renderWageHistoryList(user) {
+  const list = document.getElementById('wageHistoryList');
+  if (!list) return;
+  const history = user.wageHistory || [];
+  if (history.length === 0) {
+    // Show current wage as the base entry
+    list.innerHTML = `<div style="font-size:12px;color:var(--text2);padding:6px 0">
+      Current wage ${fmtMoney(user.wage)}/day applies to all dates (no history set yet)
+    </div>`;
+    return;
+  }
+  const sorted = [...history].sort((a, b) => b.from.localeCompare(a.from));
+  list.innerHTML = sorted.map(h => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#fff;border-radius:8px;margin-bottom:5px;border:1.5px solid var(--border)">
+      <div>
+        <span style="font-weight:700;color:var(--purple)">${fmtMoney(h.wage)}/day</span>
+        <span style="font-size:11px;color:var(--text2);margin-left:8px">from ${fmtDate(h.from)}</span>
+      </div>
+      <button onclick="removeWageHistoryEntry('${h.from}')"
+        style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;font-weight:800;padding:0 4px">✕</button>
+    </div>
+  `).join('');
+}
+
+// Add new wage history entry (called from UI button)
+function addWageHistoryEntry() {
+  const amt  = Number(document.getElementById('sfWageHistAmt').value);
+  const from = document.getElementById('sfWageHistFrom').value;
+  if (!amt || amt <= 0) { showToast('Please enter a valid wage amount'); return; }
+  if (!from)            { showToast('Please select a from date'); return; }
+
+  const users = getData('users', []);
+  const u = users.find(x => x.id === editingStaffId);
+  if (!u) return;
+
+  if (!u.wageHistory) u.wageHistory = [];
+  // Remove existing entry for same from date if any
+  u.wageHistory = u.wageHistory.filter(h => h.from !== from);
+  u.wageHistory.push({ from, wage: amt });
+
+  // Also update current wage field if this is the latest entry
+  const latest = u.wageHistory.reduce((a, b) => a.from > b.from ? a : b);
+  if (latest.from === from || from >= todayStr()) {
+    document.getElementById('sfWage').value = amt;
+    u.wage = amt;
+  }
+
+  setCache('users', users);
+  renderWageHistoryList(u);
+  document.getElementById('sfWageHistAmt').value = '';
+  showToast('✅ Wage period added — save staff to confirm');
+}
+
+// Remove a wage history entry
+function removeWageHistoryEntry(fromDate) {
+  if (!confirm(`Remove wage entry from ${fmtDate(fromDate)}?`)) return;
+  const users = getData('users', []);
+  const u = users.find(x => x.id === editingStaffId);
+  if (!u || !u.wageHistory) return;
+  u.wageHistory = u.wageHistory.filter(h => h.from !== fromDate);
+  setCache('users', users);
+  renderWageHistoryList(u);
+  showToast('Entry removed — save staff to confirm');
 }
 
 // Expose functions to global scope (required for type="module")
@@ -2940,6 +3061,8 @@ window.handleRequest = handleRequest;
 window.openAddStaffModal = openAddStaffModal;
 window.openStaffDetail = openStaffDetail;
 window.openLedger = openLedger;
+window.addWageHistoryEntry = addWageHistoryEntry;
+window.removeWageHistoryEntry = removeWageHistoryEntry;
 window.renderLedger = renderLedger;
 window.recordSettlement = recordSettlement;
 window.exportLedgerPDF = exportLedgerPDF;
@@ -3181,6 +3304,20 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         🟢 <strong>Closing balance</strong> — Instantly shows who owes whom and how much<br>
         💵 <strong>Record Settlement</strong> — Log final payments directly from ledger<br>
         📄 <strong>PDF export</strong> — Download clean ledger statement for any date range
+      </div>
+    </div>
+
+        <!-- v1.0.13 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.13</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Feature Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        💰 <strong>Wage History</strong> — Track different wage rates for different periods per employee<br>
+        📅 Each wage period has a From date — ledger uses the correct wage for each day automatically<br>
+        ✏️ Add or remove wage periods from Edit Staff screen<br>
+        📒 Ledger and PDF now show per-day wage rate used in each entry
       </div>
     </div>
 
