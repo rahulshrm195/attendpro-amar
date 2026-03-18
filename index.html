@@ -303,6 +303,12 @@
   .daily-adv-inputs input:focus { border-color:var(--purple); background:#fff; }
   .daily-adv-amount { width:90px; flex-shrink:0; }
   .daily-adv-note { flex:1; }
+
+  /* ── REMARKS ── */
+  .daily-remark-row { margin-top:8px; }
+  .daily-remark-row input { width:100%; background:#f8faff; border:1.5px solid var(--border); border-radius:8px; padding:7px 10px; font-size:12px; font-family:'Nunito',sans-serif; color:var(--text); outline:none; }
+  .daily-remark-row input:focus { border-color:var(--yellow); background:#fff; }
+  .daily-remark-row input::placeholder { color:#b0b8c9; }
 </style>
 </head>
 <body>
@@ -311,7 +317,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.10</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.11</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -336,7 +342,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.10</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.11</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -757,6 +763,10 @@
         <option value="2">2 — Double</option>
       </select>
     </div>
+    <div class="form-row">
+      <label>Remarks</label>
+      <input type="text" id="editAttRemark" placeholder="e.g. No work, came late, village visit...">
+    </div>
     <div style="display:flex;gap:8px">
       <button class="btn-secondary" style="flex:1" onclick="closeModal('editAttModal')">Cancel</button>
       <button class="btn-primary" style="flex:1" onclick="saveEditedAttendance()">Save</button>
@@ -912,6 +922,23 @@ async function saveAttendance(userId, date, value) {
   // Firestore field key can't have slashes — date is YYYY-MM-DD, fine
   await setDoc(doc(db, 'attendance', userId), { [date]: value }, { merge: true });
 }
+async function saveRemark(userId, date, remark) {
+  const att = getData('attendance', {});
+  if (!att[userId]) att[userId] = {};
+  const key = date + '_remark';
+  if (remark) {
+    att[userId][key] = remark;
+  } else {
+    delete att[userId][key];
+  }
+  setCache('attendance', att);
+  if (remark) {
+    await setDoc(doc(db, 'attendance', userId), { [key]: remark }, { merge: true });
+  } else {
+    try { await updateDoc(doc(db, 'attendance', userId), { [key]: deleteField() }); } catch(e) {}
+  }
+}
+
 async function addAdvance(data) {
   const ref = await addDoc(collection(db, 'advances'), data);
   const advances = getData('advances', []);
@@ -1301,6 +1328,9 @@ function renderDailyAtt() {
         <div class="daily-adv-inputs">
           <input type="number" class="daily-adv-amount" id="adv_amt_${u.id}" placeholder="₹ Advance" min="1">
           <input type="text"   class="daily-adv-note"   id="adv_note_${u.id}" placeholder="Note (optional)">
+        </div>
+        <div class="daily-remark-row">
+          <input type="text" id="remark_${u.id}" placeholder="📝 Remarks (e.g. No work, came late, village visit...)" value="${att[u.id]?.[date + '_remark'] || ''}">
         </div>
       </div>
     </div>`;
@@ -1996,18 +2026,22 @@ function openEditAttModal(userId, date) {
   const u   = getData('users', []).find(x => x.id === userId);
   const att = getData('attendance', {});
   const cur = att[userId]?.[date];
+  const existingRemark = att[userId]?.[date + '_remark'] || '';
   document.getElementById('editAttInfo').innerHTML   = `<div class="fw700">${u?.name||'Unknown'}</div>`;
   document.getElementById('editAttDate').value       = date;
   document.getElementById('editAttValue').value      = cur !== undefined ? String(cur) : '1';
+  document.getElementById('editAttRemark').value     = existingRemark;
   openModal('editAttModal');
 }
 
 async function saveEditedAttendance() {
-  const date = document.getElementById('editAttDate').value;
-  const val  = Number(document.getElementById('editAttValue').value);
+  const date   = document.getElementById('editAttDate').value;
+  const val    = Number(document.getElementById('editAttValue').value);
+  const remark = document.getElementById('editAttRemark').value.trim();
   if (!editAttUserId||!date) return;
   showLoader(true);
   await saveAttendance(editAttUserId, date, val);
+  await saveRemark(editAttUserId, date, remark);
   showLoader(false);
   showToast('✅ Attendance updated!');
   closeModal('editAttModal');
@@ -2429,6 +2463,20 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         💾 <strong>Save All unified</strong> — Saves both attendance and advances in one tap<br>
         🧹 <strong>Cleaner cards</strong> — Removed daily wage from Daily Mark employee rows<br>
         ⚠️ <strong>Confirm before delete</strong> — All clear/delete actions now show a confirmation dialog
+      </div>
+    </div>
+
+        <!-- v1.0.11 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.11</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Feature Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        📝 <strong>Remarks per employee per day</strong> — Add notes like "No work", "came late", "village visit" for each employee<br>
+        💾 <strong>Remarks in Daily Mark</strong> — Fill remarks inline while marking attendance, saved with Save All<br>
+        ✏️ <strong>Remarks in Edit Attendance</strong> — Add or edit remarks from the calendar day tap modal with instant save<br>
+        🔄 <strong>Pre-filled on navigation</strong> — Existing remarks load automatically when switching dates
       </div>
     </div>
 
