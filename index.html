@@ -557,7 +557,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.13</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.14</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -582,7 +582,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.13</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.14</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -1244,6 +1244,7 @@ let empCalMonth = new Date().getMonth();
 let selectedAttValue = null;
 let editingStaffId = null;
 let deductingUserId = null;
+let tempWageHistory = [];
 let dailySelectedDate = todayStr();
 
 const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double' };
@@ -2074,6 +2075,7 @@ function openAddStaffModal() {
   document.getElementById('sfRole').value     = 'employee';
   document.getElementById('sfJoinDate').value = todayStr();
   document.getElementById('wageHistorySection').style.display = 'none';
+  tempWageHistory = [];
   openModal('addStaffModal');
 }
 
@@ -2093,9 +2095,7 @@ async function saveStaff() {
 
   if (editingStaffId) {
     const users = getData('users', []);
-    const existing = users.find(x => x.id === editingStaffId);
-    const wageHistory = existing?.wageHistory || [];
-    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, wageHistory };
+    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, wageHistory: tempWageHistory };
     await saveUserDoc(editingStaffId, data);
     showToast('✅ Staff updated!');
   } else {
@@ -2156,15 +2156,37 @@ function openStaffDetail(userId) {
       <button class="btn-sm" style="flex:1;background:#dcfce7;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="closeModal('staffDetailModal');openDeductModal('${u.id}')">− Deduct</button>
       <button class="btn-sm" style="flex:1;background:#ede9fe;color:var(--purple);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="openLedger('${u.id}')">📒 Ledger</button>
     </div>
+    ${(() => {
+      const ob = advances.find(a => a.note && a.note.includes('Opening Balance'));
+      if (!ob) return '';
+      return `<div style="background:var(--blue-bg);border-radius:12px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Opening Balance</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:700">${ob.note}</div>
+            <div style="font-size:11px;color:var(--text2)">${fmtDate(ob.date)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="font-weight:800;color:${ob.type==='deduction'?'var(--green)':'var(--red)'}">${ob.type==='deduction'?'-':'+'}${fmtMoney(ob.amount)}</div>
+            <button onclick="editOpeningBalance('${ob.id}','${u.id}',${ob.amount},'${ob.type}')"
+              style="background:#ede9fe;color:var(--purple);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Edit</button>
+            <button onclick="deleteOpeningBalance('${ob.id}','${u.id}')"
+              style="background:#fee2e2;color:var(--red);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    })()}
     <div class="section-title mb8">Advance/Expense History</div>
-    ${advances.length===0 ? '<div class="empty-state" style="padding:20px"><p>No records yet</p></div>' :
-      advances.map(a=>`<div class="advance-item">
+    ${advances.filter(a => !(a.note && a.note.includes('Opening Balance'))).length===0
+      ? '<div class="empty-state" style="padding:20px"><p>No records yet</p></div>'
+      : advances.filter(a => !(a.note && a.note.includes('Opening Balance'))).map(a=>`<div class="advance-item">
         <div class="advance-info">
           <div class="adv-date">${fmtDate(a.date)}</div>
           <div class="adv-note">${a.note||'Advance'}</div>
           ${a.type==='deduction'?'<div style="font-size:10px;color:var(--green)">DEDUCTION</div>':''}
+          ${a.type==='settlement'?'<div style="font-size:10px;color:var(--purple)">SETTLEMENT</div>':''}
         </div>
-        <div class="advance-amount" style="${a.type==='deduction'?'color:var(--green)':''}">${a.type==='deduction'?'-':'+'}${fmtMoney(a.amount)}</div>
+        <div class="advance-amount" style="${a.type==='deduction'||a.type==='settlement'?'color:var(--green)':''}">${a.type==='deduction'||a.type==='settlement'?'-':'+'}${fmtMoney(a.amount)}</div>
       </div>`).join('')}`;
   openModal('staffDetailModal');
 }
@@ -2184,10 +2206,12 @@ function editStaff(userId) {
   document.getElementById('sfPass').value     = u.password;
   document.getElementById('sfJoinDate').value = u.joinDate||'';
 
-  // Show wage history section when editing
+  // Init tempWageHistory from existing data
+  tempWageHistory = (u.wageHistory || []).map(h => ({ ...h }));
   document.getElementById('wageHistorySection').style.display = 'block';
-  document.getElementById('sfWageHistFrom').value = todayStr();
-  renderWageHistoryList(u);
+  document.getElementById('sfWageHistFrom').value = '';
+  document.getElementById('sfWageHistAmt').value  = '';
+  renderWageHistoryList({ wageHistory: tempWageHistory, wage: u.wage });
 
   closeModal('staffDetailModal');
   openModal('addStaffModal');
@@ -3011,38 +3035,76 @@ function addWageHistoryEntry() {
   if (!amt || amt <= 0) { showToast('Please enter a valid wage amount'); return; }
   if (!from)            { showToast('Please select a from date'); return; }
 
-  const users = getData('users', []);
-  const u = users.find(x => x.id === editingStaffId);
-  if (!u) return;
+  // Use tempWageHistory — persists across multiple adds in same session
+  tempWageHistory = tempWageHistory.filter(h => h.from !== from);
+  tempWageHistory.push({ from, wage: amt });
 
-  if (!u.wageHistory) u.wageHistory = [];
-  // Remove existing entry for same from date if any
-  u.wageHistory = u.wageHistory.filter(h => h.from !== from);
-  u.wageHistory.push({ from, wage: amt });
+  // Auto-update current wage field to latest entry
+  const latest = tempWageHistory.reduce((a, b) => a.from > b.from ? a : b);
+  document.getElementById('sfWage').value = latest.wage;
 
-  // Also update current wage field if this is the latest entry
-  const latest = u.wageHistory.reduce((a, b) => a.from > b.from ? a : b);
-  if (latest.from === from || from >= todayStr()) {
-    document.getElementById('sfWage').value = amt;
-    u.wage = amt;
-  }
-
-  setCache('users', users);
-  renderWageHistoryList(u);
-  document.getElementById('sfWageHistAmt').value = '';
-  showToast('✅ Wage period added — save staff to confirm');
+  renderWageHistoryList({ wageHistory: tempWageHistory, wage: latest.wage });
+  document.getElementById('sfWageHistAmt').value  = '';
+  document.getElementById('sfWageHistFrom').value = '';
+  showToast(`✅ Added: ${fmtMoney(amt)}/day from ${fmtDate(from)}`);
 }
 
 // Remove a wage history entry
 function removeWageHistoryEntry(fromDate) {
-  if (!confirm(`Remove wage entry from ${fmtDate(fromDate)}?`)) return;
-  const users = getData('users', []);
-  const u = users.find(x => x.id === editingStaffId);
-  if (!u || !u.wageHistory) return;
-  u.wageHistory = u.wageHistory.filter(h => h.from !== fromDate);
-  setCache('users', users);
-  renderWageHistoryList(u);
+  if (!confirm(`Remove wage entry from ${fmtDate(fromDate)}?\nThis cannot be undone after saving.`)) return;
+  tempWageHistory = tempWageHistory.filter(h => h.from !== fromDate);
+  const latest = tempWageHistory.length > 0
+    ? tempWageHistory.reduce((a, b) => a.from > b.from ? a : b)
+    : null;
+  if (latest) document.getElementById('sfWage').value = latest.wage;
+  renderWageHistoryList({ wageHistory: tempWageHistory, wage: latest?.wage || 0 });
   showToast('Entry removed — save staff to confirm');
+}
+
+
+// ══════════════════════════════════════════
+// OPENING BALANCE EDIT / DELETE
+// ══════════════════════════════════════════
+let editingObId   = null;
+let editingObUser = null;
+
+function editOpeningBalance(advId, userId, currentAmount, currentType) {
+  editingObId   = advId;
+  editingObUser = userId;
+  document.getElementById('obEditAmount').value = currentAmount;
+  document.getElementById('obEditType').value   = currentType;
+  openModal('editObModal');
+}
+
+async function saveOpeningBalance() {
+  const amount = Number(document.getElementById('obEditAmount').value);
+  const type   = document.getElementById('obEditType').value;
+  if (!amount || amount <= 0) { showToast('Please enter a valid amount'); return; }
+  showLoader(true);
+  try {
+    await updateDoc(doc(db, 'advances', editingObId), { amount, type });
+    const advances = getData('advances', []);
+    const idx = advances.findIndex(a => a.id === editingObId);
+    if (idx >= 0) { advances[idx].amount = amount; advances[idx].type = type; }
+    setCache('advances', advances);
+    showToast('✅ Opening balance updated!');
+    closeModal('editObModal');
+    openStaffDetail(editingObUser);
+  } catch(e) { showToast('⚠️ Could not update'); }
+  showLoader(false);
+}
+
+async function deleteOpeningBalance(advId, userId) {
+  if (!confirm('Delete this opening balance entry?\nThis cannot be undone.')) return;
+  showLoader(true);
+  try {
+    await deleteDoc(doc(db, 'advances', advId));
+    const advances = getData('advances', []).filter(a => a.id !== advId);
+    setCache('advances', advances);
+    showToast('✅ Opening balance deleted');
+    openStaffDetail(userId);
+  } catch(e) { showToast('⚠️ Could not delete'); }
+  showLoader(false);
 }
 
 // Expose functions to global scope (required for type="module")
@@ -3061,6 +3123,9 @@ window.switchReqTab = switchReqTab;
 window.handleRequest = handleRequest;
 window.openAddStaffModal = openAddStaffModal;
 window.openStaffDetail = openStaffDetail;
+window.editOpeningBalance = editOpeningBalance;
+window.saveOpeningBalance = saveOpeningBalance;
+window.deleteOpeningBalance = deleteOpeningBalance;
 window.openLedger = openLedger;
 window.addWageHistoryEntry = addWageHistoryEntry;
 window.removeWageHistoryEntry = removeWageHistoryEntry;
@@ -3330,6 +3395,19 @@ window.populateCalEmpSelect = populateCalEmpSelect;
       </div>
     </div>
 
+        <!-- v1.0.14 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.14</div>
+        <div style="font-size:11px;color:var(--text2)">March 2026 — Improvement</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        💰 <strong>Wage history fixed</strong> — Multiple wage periods now save correctly<br>
+        📅 <strong>Join date editable</strong> — Can be changed when editing staff<br>
+        ✏️ <strong>Opening balance editable</strong> — Edit or delete from Staff detail
+      </div>
+    </div>
+
         <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:10px;font-size:11px;color:var(--text2)">
       More updates coming soon 🚀
     </div>
@@ -3380,6 +3458,29 @@ window.populateCalEmpSelect = populateCalEmpSelect;
     <!-- PDF export -->
     <div style="margin-top:12px">
       <button class="btn-secondary" onclick="exportLedgerPDF()" id="ledgerPdfBtn" style="display:none">📄 Export PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Opening Balance Modal -->
+<div class="modal-overlay" id="editObModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Opening Balance</div>
+    <div class="form-row">
+      <label>Amount (₹)</label>
+      <input type="number" id="obEditAmount" placeholder="e.g. 2000" min="1">
+    </div>
+    <div class="form-row">
+      <label>Type</label>
+      <select id="obEditType">
+        <option value="advance">Advance (employee owes company)</option>
+        <option value="deduction">Pending Salary (company owes employee)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('editObModal')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveOpeningBalance()">Save</button>
     </div>
   </div>
 </div>
