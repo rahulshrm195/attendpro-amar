@@ -557,7 +557,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.14</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.15</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -582,7 +582,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.14</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.15</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -2042,26 +2042,58 @@ function switchReqTab(tab) {
 // STAFF
 // ══════════════════════════════════════════
 function renderStaff() {
-  const users = getData('users', []).filter(u => u.role !== 'admin');
-  const att   = getData('attendance', {});
-  const today = todayStr();
-  const list  = document.getElementById('staffList');
+  const users  = getData('users', []).filter(u => u.role !== 'admin');
+  const att    = getData('attendance', {});
+  const today  = todayStr();
+  const list   = document.getElementById('staffList');
+  const active   = users.filter(u => u.active !== false);
+  const inactive = users.filter(u => u.active === false);
 
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p><small>Tap "+ Add Staff" to add your first employee</small></div>';
     return;
   }
-  list.innerHTML = users.map(u => {
+
+  const staffCard = (u, isInactive=false) => {
     const v = att[u.id]?.[today];
     const chip = v !== undefined
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${ATT_LABELS[String(v)]}</span>`
       : `<span class="chip chip-yellow">—</span>`;
-    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}">${u.name[0].toUpperCase()}</div>
-      <div class="staff-info"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role} · ${u.userId}</div></div>
+    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')" style="${isInactive?'opacity:0.6;':''}">
+      <div class="staff-avatar" style="background:${u.color||'#6c63ff'};${isInactive?'filter:grayscale(1)':''}">${u.name[0].toUpperCase()}</div>
+      <div class="staff-info">
+        <div class="staff-name">${u.name}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
+        <div class="staff-role">${u.role} · ${u.userId}</div>
+      </div>
       <div style="text-align:right"><div class="staff-wage">${fmtMoney(u.wage)}/day</div><div class="mt8">${chip}</div></div>
     </div>`;
-  }).join('');
+  };
+
+  let html = active.map(u => staffCard(u)).join('');
+
+  if (inactive.length > 0) {
+    html += `
+    <div style="margin-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer" onclick="toggleInactiveSection()">
+        <div class="section-title" style="margin:0">Inactive Staff (${inactive.length})</div>
+        <span id="inactiveToggleIcon" style="font-size:18px;color:var(--text2)">▸</span>
+      </div>
+      <div id="inactiveStaffList" style="display:none">
+        ${inactive.map(u => staffCard(u, true)).join('')}
+      </div>
+    </div>`;
+  }
+
+  list.innerHTML = html;
+}
+
+function toggleInactiveSection() {
+  const el   = document.getElementById('inactiveStaffList');
+  const icon = document.getElementById('inactiveToggleIcon');
+  if (!el) return;
+  const isHidden = el.style.display === 'none';
+  el.style.display   = isHidden ? 'block' : 'none';
+  icon.textContent   = isHidden ? '▾' : '▸';
 }
 
 function openAddStaffModal() {
@@ -2147,8 +2179,9 @@ function openStaffDetail(userId) {
         <div style="font-weight:700;color:var(--red)">${fmtMoney(balance)}</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px">
+    <div style="display:flex;gap:8px;margin-bottom:8px">
       <button class="btn-primary" style="flex:1" onclick="editStaff('${u.id}')">✏️ Edit</button>
+      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}('${u.id}')">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
       <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff('${u.id}')">🗑️ Delete</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -3107,6 +3140,48 @@ async function deleteOpeningBalance(advId, userId) {
   showLoader(false);
 }
 
+
+// ══════════════════════════════════════════
+// DEACTIVATE / REACTIVATE STAFF
+// ══════════════════════════════════════════
+async function deactivateStaff(userId) {
+  const users = getData('users', []);
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
+  showLoader(true);
+  try {
+    await updateDoc(doc(db, 'users', userId), { active: false });
+    const idx = users.findIndex(x => x.id === userId);
+    if (idx >= 0) users[idx].active = false;
+    setCache('users', users);
+    showToast(`⏸ ${u.name} deactivated`);
+    closeModal('staffDetailModal');
+    renderStaff();
+    renderHome();
+  } catch(e) { showToast('⚠️ Could not deactivate'); }
+  showLoader(false);
+}
+
+async function reactivateStaff(userId) {
+  const users = getData('users', []);
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Reactivate ${u.name}?\nThey will appear in Daily Mark and active staff list again.`)) return;
+  showLoader(true);
+  try {
+    await updateDoc(doc(db, 'users', userId), { active: true });
+    const idx = users.findIndex(x => x.id === userId);
+    if (idx >= 0) users[idx].active = true;
+    setCache('users', users);
+    showToast(`✅ ${u.name} reactivated`);
+    closeModal('staffDetailModal');
+    renderStaff();
+    renderHome();
+  } catch(e) { showToast('⚠️ Could not reactivate'); }
+  showLoader(false);
+}
+
 // Expose functions to global scope (required for type="module")
 window.doLogin = doLogin;
 window.doLogout = doLogout;
@@ -3134,6 +3209,9 @@ window.recordSettlement = recordSettlement;
 window.exportLedgerPDF = exportLedgerPDF;
 window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
+window.deactivateStaff = deactivateStaff;
+window.reactivateStaff = reactivateStaff;
+window.toggleInactiveSection = toggleInactiveSection;
 window.saveStaff = saveStaff;
 window.openAddAdvanceModal = openAddAdvanceModal;
 window.saveAdvance = saveAdvance;
@@ -3405,6 +3483,20 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         💰 <strong>Wage history fixed</strong> — Multiple wage periods now save correctly<br>
         📅 <strong>Join date editable</strong> — Can be changed when editing staff<br>
         ✏️ <strong>Opening balance editable</strong> — Edit or delete from Staff detail
+      </div>
+    </div>
+
+        <!-- v1.0.15 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.15</div>
+        <div style="font-size:11px;color:var(--text2)">June 2026 — Feature Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        ⏸ <strong>Deactivate Employee</strong> — Hide employees who have left from Daily Mark and active lists<br>
+        ✅ <strong>Reactivate</strong> — Bring them back anytime when they return<br>
+        👥 <strong>Inactive section</strong> — Collapsed section at bottom of Staff tab shows all inactive employees<br>
+        📒 All data, ledger and history remains intact when deactivated
       </div>
     </div>
 
