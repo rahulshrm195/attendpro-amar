@@ -1429,7 +1429,7 @@ function renderHome() {
 }
 
 function renderAdminHome() {
-  const users   = getData('users', []).filter(u => u.role !== 'admin');
+  const users   = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const att     = getData('attendance', {});
   const advances = getData('advances', []);
   const requests = getData('requests', []);
@@ -1555,7 +1555,7 @@ async function confirmAttendance() {
 // DAILY ATTENDANCE (Admin)
 // ══════════════════════════════════════════
 function renderDailyAtt() {
-  const users    = getData('users', []).filter(u => u.role !== 'admin');
+  const users    = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const att      = getData('attendance', {});
   const advances = getData('advances', []);
   const date     = dailySelectedDate;
@@ -1678,7 +1678,7 @@ async function doClearAtt(userId) {
 }
 
 async function saveAllAttendance() {
-  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const date  = dailySelectedDate;
   const vals  = [0, 0.5, 1, 1.5, 2];
   let attSaved = 0;
