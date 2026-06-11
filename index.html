@@ -557,7 +557,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.15</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.14</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -582,7 +582,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.15</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.14</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -741,13 +741,29 @@
         </div>
       </div>
 
-      <!-- Report Tab -->
+      <!-- Report Tab — Employee Hisab -->
       <div id="attTabReport" style="display:none">
-        <div class="form-row">
-          <label>Month</label>
-          <input type="month" id="reportMonth">
+
+        <!-- Summary View -->
+        <div id="reportSummaryView">
+          <div class="form-row" style="margin-bottom:12px">
+            <label>Select Employee</label>
+            <select id="reportEmpSelect" onchange="renderHisabSummary()" style="width:100%;background:var(--blue-bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'Nunito',sans-serif;color:var(--text);outline:none">
+              <option value="">— Select Employee —</option>
+            </select>
+          </div>
+          <div id="reportSummaryContent"></div>
         </div>
-        <div id="reportList"></div>
+
+        <!-- Detail View (hidden by default) -->
+        <div id="reportDetailView" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <button onclick="closeHisabDetail()" style="background:var(--blue-bg);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text)">← Back</button>
+            <div id="reportDetailTitle" style="font-size:16px;font-weight:800"></div>
+          </div>
+          <div id="reportDetailContent"></div>
+        </div>
+
       </div>
     </div>
 
@@ -1776,7 +1792,7 @@ function switchAttTab(tab) {
     renderDailyAtt();
   }
   if (tab==='calendar') populateCalEmpSelect();
-  if (tab==='report')   renderReport();
+  if (tab==='report')   { renderReport(); }
 }
 
 // ══════════════════════════════════════════
@@ -1875,56 +1891,448 @@ function renderEmpMonthSummary() {
 }
 
 // ══════════════════════════════════════════
-// REPORT
 // ══════════════════════════════════════════
+// HISAB REPORT
+// ══════════════════════════════════════════
+let hisabWageOverrides = {};
+
 function renderReport() {
-  const month = document.getElementById('reportMonth').value;
-  if (!month) return;
   const users = getData('users', []).filter(u => u.role !== 'admin');
-  const att   = getData('attendance', {});
-  const list  = document.getElementById('reportList');
-
-  if (users.length === 0) { list.innerHTML = '<div class="empty-state"><div class="emoji">📊</div><p>No staff data</p></div>'; return; }
-
-  list.innerHTML = users.map(u => {
-    const empAtt = att[u.id] || {};
-    let days = 0, earned = 0;
-    Object.entries(empAtt).forEach(([d,v]) => {
-      if (d.startsWith(month)) { days += Number(v); earned += Number(v) * Number(u.wage||0); }
-    });
-    const adv = getAdvanceBalance(u.id);
-    const net = Math.max(0, earned - adv);
-    return `<div class="card mb8">
-      <div class="flex-between mb8">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="staff-avatar" style="background:${u.color};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
-          <div><div class="fw700">${u.name}</div><div class="text-xs">${fmtMoney(u.wage)}/day</div></div>
-        </div>
-        <button class="btn-sm btn-sm-purple" onclick="openDeductModal('${u.id}')">Deduct</button>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
-        <div style="text-align:center;padding:8px;background:var(--blue-bg);border-radius:8px">
-          <div style="font-size:16px;font-weight:800;color:var(--purple)">${days}</div>
-          <div style="font-size:9px;color:var(--text2)">Days</div>
-        </div>
-        <div style="text-align:center;padding:8px;background:#dcfce7;border-radius:8px">
-          <div style="font-size:14px;font-weight:800;color:var(--green)">${fmtMoney(earned)}</div>
-          <div style="font-size:9px;color:var(--text2)">Earned</div>
-        </div>
-        <div style="text-align:center;padding:8px;background:#fee2e2;border-radius:8px">
-          <div style="font-size:14px;font-weight:800;color:var(--red)">${fmtMoney(adv)}</div>
-          <div style="font-size:9px;color:var(--text2)">Advance</div>
-        </div>
-        <div style="text-align:center;padding:8px;background:#ede9fe;border-radius:8px">
-          <div style="font-size:14px;font-weight:800;color:var(--purple)">${fmtMoney(net)}</div>
-          <div style="font-size:9px;color:var(--text2)">Net Pay</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  const sel = document.getElementById('reportEmpSelect');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— Select Employee —</option>' +
+      users.map(u => `<option value="${u.id}">${u.name}${u.active===false?' (Inactive)':''}</option>`).join('');
+    if (cur) sel.value = cur;
+    if (sel.value) renderHisabSummary();
+    else {
+      document.getElementById('reportSummaryContent').innerHTML =
+        '<div class="empty-state" style="padding:40px"><div class="emoji">👆</div><p>Select an employee above</p></div>';
+    }
+  }
 }
 
-document.getElementById('reportMonth').addEventListener('change', renderReport);
+function renderHisabSummary() {
+  const userId = document.getElementById('reportEmpSelect').value;
+  if (!userId) return;
+  const users    = getData('users', []);
+  const u        = users.find(x => x.id === userId);
+  if (!u) return;
+  const att      = getData('attendance', {})[userId] || {};
+  const advances = getData('advances', []).filter(a => a.userId === userId);
+  hisabWageOverrides = {};
+
+  const startDate = u.joinDate || todayStr();
+  const startYM   = startDate.substring(0,7);
+  const todayYM   = todayStr().substring(0,7);
+  const months = [];
+  let [sy,sm] = startYM.split('-').map(Number);
+  const [ty,tm] = todayYM.split('-').map(Number);
+  while (sy<ty||(sy===ty&&sm<=tm)) {
+    months.push(`${sy}-${String(sm).padStart(2,'0')}`);
+    sm++; if(sm>12){sm=1;sy++;}
+  }
+
+  // Opening balance from advance records tagged Opening Balance
+  let openingBalance = 0;
+  advances.filter(a => a.note && a.note.includes('Opening Balance')).forEach(a => {
+    if (a.type === 'advance')   openingBalance -= Number(a.amount);
+    if (a.type === 'deduction') openingBalance += Number(a.amount);
+  });
+
+  let totalDays=0, totalEarned=0, totalAdvances=0, totalSettlements=0;
+  const monthRows = months.map(ym => {
+    let days = 0;
+    Object.entries(att).forEach(([d,v]) => { if(d.startsWith(ym)&&!d.includes('_')) days+=Number(v)||0; });
+    const wage = hisabWageOverrides[ym]!==undefined ? hisabWageOverrides[ym] : getWageForDate(u, ym+'-15');
+    const earned = days * wage;
+    let monthAdv=0, monthSettle=0;
+    advances.forEach(a => {
+      if(!a.date||!a.date.startsWith(ym)) return;
+      if(a.note&&a.note.includes('Opening Balance')) return;
+      if(a.type==='advance')    monthAdv    += Number(a.amount);
+      if(a.type==='settlement') monthSettle += Number(a.amount);
+    });
+    totalDays+=days; totalEarned+=earned; totalAdvances+=monthAdv; totalSettlements+=monthSettle;
+    return { ym, days, wage, earned, adv:monthAdv, settle:monthSettle };
+  });
+
+  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const balColor = closingBalance>=0 ? 'var(--green)' : 'var(--red)';
+  const balLabel = closingBalance>=0 ? `You owe ${u.name}` : `${u.name} owes you`;
+
+  let html = '';
+  html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:#fff;border-radius:14px;padding:14px;box-shadow:var(--shadow)">
+    <div class="staff-avatar" style="background:${u.color};width:48px;height:48px;font-size:18px">${u.name[0].toUpperCase()}</div>
+    <div>
+      <div style="font-size:18px;font-weight:800">${u.name}</div>
+      <div style="font-size:12px;color:var(--text2)">Joined ${fmtDate(u.joinDate)} · ${fmtMoney(u.wage)}/day current</div>
+    </div>
+  </div>`;
+
+  if (openingBalance !== 0) {
+    html += `<div style="background:${openingBalance>=0?'#dcfce7':'#fee2e2'};border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:12px;font-weight:700;color:var(--text2)">Opening Balance</div>
+      <div style="font-weight:800;color:${openingBalance>=0?'var(--green)':'var(--red)'}">${openingBalance>=0?'+':''}${fmtMoney(Math.abs(openingBalance))}</div>
+    </div>`;
+  }
+
+  html += `<div style="background:var(--navy);border-radius:12px 12px 0 0;padding:10px 12px;display:grid;grid-template-columns:60px 40px 75px 65px 65px 44px;gap:4px">
+    ${['Month','Days','Wage/day','Earned','Advance',''].map(h=>`<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase">${h}</div>`).join('')}
+  </div>
+  <div style="border-radius:0 0 12px 12px;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)">`;
+
+  monthRows.forEach((row,i) => {
+    const bg = i%2===0?'#fff':'#f8faff';
+    const [my,mm] = row.ym.split('-');
+    const mLabel = new Date(Number(my),Number(mm)-1,1).toLocaleString('en-IN',{month:'short',year:'2-digit'});
+    html += `<div style="display:grid;grid-template-columns:60px 40px 75px 65px 65px 44px;gap:4px;padding:10px 12px;background:${bg};border-bottom:1px solid var(--border);align-items:center">
+      <div style="font-size:12px;font-weight:700">${mLabel}</div>
+      <div style="text-align:center;font-size:13px;font-weight:800;color:var(--purple)">${row.days}</div>
+      <div style="text-align:center">
+        <input type="number" value="${row.wage}" min="0"
+          style="width:68px;text-align:center;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;background:#f8faff;color:var(--text);outline:none"
+          onchange="updateHisabWage('${userId}','${row.ym}',this.value)">
+      </div>
+      <div style="text-align:right;font-size:12px;font-weight:700;color:var(--green)">${fmtMoney(row.earned)}</div>
+      <div style="text-align:right;font-size:12px;font-weight:700;color:var(--red)">${row.adv>0?fmtMoney(row.adv):'—'}</div>
+      <div style="text-align:right">
+        <button onclick="openHisabDetail('${userId}','${row.ym}')"
+          style="background:var(--blue-bg);border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;color:var(--purple)">▶</button>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div style="background:var(--blue-bg);border-radius:12px;padding:12px 14px;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="background:#fff;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Days</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple)">${totalDays}</div>
+      </div>
+      <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Earned</div>
+        <div style="font-size:16px;font-weight:800;color:var(--green)">${fmtMoney(totalEarned)}</div>
+      </div>
+      <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Advance</div>
+        <div style="font-size:16px;font-weight:800;color:var(--red)">${fmtMoney(totalAdvances)}</div>
+      </div>
+    </div>
+  </div>`;
+
+  html += `<div style="background:${closingBalance>=0?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:600;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px">Final Balance</div>
+    <div style="font-size:36px;font-weight:800;font-family:'Poppins',sans-serif;margin:6px 0">${closingBalance>=0?'+':''}${fmtMoney(Math.abs(closingBalance))}</div>
+    <div style="font-size:14px;font-weight:700;opacity:0.9">${balLabel}</div>
+  </div>`;
+
+  html += `<div style="display:flex;gap:8px;margin-bottom:8px">
+    <button class="btn-sm btn-sm-purple" style="flex:1" onclick="saveHisabWages('${userId}')">💾 Save Wages</button>
+    <button class="btn-sm" style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="exportHisabPDF('${userId}')">📄 Summary PDF</button>
+  </div>`;
+
+  document.getElementById('reportSummaryContent').innerHTML = html;
+}
+
+function updateHisabWage(userId, ym, val) {
+  hisabWageOverrides[ym] = Number(val)||0;
+  renderHisabSummary();
+}
+
+async function saveHisabWages(userId) {
+  if (Object.keys(hisabWageOverrides).length===0) { showToast('No wage changes to save'); return; }
+  const users = getData('users',[]);
+  const u = users.find(x=>x.id===userId);
+  if(!u) return;
+  if(!confirm(`Save wage changes for ${u.name}?`)) return;
+  showLoader(true);
+  if(!u.wageHistory) u.wageHistory=[];
+  Object.entries(hisabWageOverrides).forEach(([ym,wage])=>{
+    const from = ym+'-01';
+    u.wageHistory = u.wageHistory.filter(h=>h.from!==from);
+    u.wageHistory.push({from,wage});
+  });
+  if(u.wageHistory.length>0){
+    const latest = u.wageHistory.reduce((a,b)=>a.from>b.from?a:b);
+    u.wage = latest.wage;
+  }
+  await saveUserDoc(userId,{wageHistory:u.wageHistory,wage:u.wage});
+  const idx=users.findIndex(x=>x.id===userId);
+  if(idx>=0){users[idx].wageHistory=u.wageHistory;users[idx].wage=u.wage;}
+  setCache('users',users);
+  hisabWageOverrides={};
+  showToast('✅ Wages saved!');
+  showLoader(false);
+  renderHisabSummary();
+}
+
+function openHisabDetail(userId, ym) {
+  const users = getData('users',[]);
+  const u = users.find(x=>x.id===userId);
+  if(!u) return;
+  const [y,m] = ym.split('-').map(Number);
+  const monthLabel = new Date(y,m-1,1).toLocaleString('en-IN',{month:'long',year:'numeric'});
+  document.getElementById('reportDetailTitle').textContent = `${u.name} — ${monthLabel}`;
+
+  const att      = getData('attendance',{})[userId]||{};
+  const advances = getData('advances',[]).filter(a=>a.userId===userId);
+
+  const daysInMonth = new Date(y,m,0).getDate();
+  const firstDay    = (new Date(y,m-1,1).getDay()+6)%7;
+  const dayNames    = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+  let calHtml = `<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px">Attendance Calendar</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+    ${dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('')}`;
+  for(let i=0;i<firstDay;i++) calHtml+='<div class="cal-day empty"></div>';
+
+  let fullD=0,otD=0,halfD=0,absentD=0,unmarked=0,totalEarned=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${ym}-${String(d).padStart(2,'0')}`;
+    const v=att[ds];
+    const dayWage=getWageForDate(u,ds);
+    let cls='cal-day', lbl=String(d);
+    if(v===0){cls+=' att-0';absentD++;}
+    else if(v===0.5){cls+=' att-half';halfD++;lbl=`${d}`;}
+    else if(v===1){cls+=' att-1';fullD++;totalEarned+=dayWage;}
+    else if(v===1.5){cls+=' att-ot';otD++;totalEarned+=1.5*dayWage;}
+    else if(v===2){cls+=' att-double';otD++;totalEarned+=2*dayWage;}
+    else unmarked++;
+    const remark=att[ds+'_remark']||'';
+    calHtml+=`<div class="${cls}" title="${remark}" style="position:relative">
+      ${lbl}
+      ${remark?'<span style="position:absolute;bottom:2px;right:2px;width:4px;height:4px;background:currentColor;border-radius:50%;opacity:0.6"></span>':''}
+    </div>`;
+  }
+  calHtml+=`</div>`;
+
+  const totalDays=fullD+(otD*1)+halfD*0.5;
+  calHtml+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+    <span style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">Full: ${fullD}</span>
+    <span style="background:#ede9fe;color:#7c3aed;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">OT: ${otD}</span>
+    <span style="background:#ffedd5;color:#ea580c;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">Half: ${halfD}</span>
+    <span style="background:#fee2e2;color:#dc2626;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">Absent: ${absentD}</span>
+    <span style="background:var(--blue-bg);color:var(--text2);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">Unmarked: ${unmarked}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+    <div style="background:var(--blue-bg);border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Days</div>
+      <div style="font-size:22px;font-weight:800;color:var(--purple)">${totalDays}</div>
+    </div>
+    <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Earned</div>
+      <div style="font-size:18px;font-weight:800;color:var(--green)">${fmtMoney(totalEarned)}</div>
+    </div>
+  </div></div>`;
+
+  const monthEntries=advances.filter(a=>a.date&&a.date.startsWith(ym)&&!(a.note&&a.note.includes('Opening Balance')));
+  let ledgerHtml=`<div style="background:#fff;border-radius:14px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px">Ledger Entries</div>`;
+  if(monthEntries.length===0){
+    ledgerHtml+=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">No entries for this month</div>`;
+  } else {
+    monthEntries.forEach(a=>{
+      const isCredit=a.type==='deduction'||a.type==='settlement';
+      const icon=a.type==='advance'?'💸':a.type==='settlement'?'💵':'✂️';
+      ledgerHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-weight:700;font-size:13px">${icon} ${a.note||a.type}</div>
+        <div style="font-size:11px;color:var(--text2)">${fmtDate(a.date)}</div></div>
+        <div style="font-weight:800;font-size:14px;color:${isCredit?'var(--green)':'var(--red)'}">${isCredit?'+':'-'}${fmtMoney(a.amount)}</div>
+      </div>`;
+    });
+  }
+  const monthAdv=monthEntries.filter(a=>a.type==='advance').reduce((s,a)=>s+Number(a.amount),0);
+  const monthNet=totalEarned-monthAdv;
+  ledgerHtml+=`<div style="display:flex;justify-content:space-between;padding:12px 0 0;margin-top:4px">
+    <div style="font-weight:800;color:var(--text2)">Month Net</div>
+    <div style="font-weight:800;font-size:16px;color:${monthNet>=0?'var(--green)':'var(--red)'}">${monthNet>=0?'+':''}${fmtMoney(monthNet)}</div>
+  </div></div>`;
+
+  // Build remarks list
+  let remarksHtml = '';
+  const remarkDays = [];
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${ym}-${String(d).padStart(2,'0')}`;
+    const remark=att[ds+'_remark']||'';
+    if(remark) remarkDays.push({date:ds,remark});
+  }
+  if(remarkDays.length>0){
+    remarksHtml = `<div style="background:#fff;border-radius:14px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px">📝 Remarks</div>
+      ${remarkDays.map(r=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text2);flex-shrink:0;width:55px">${fmtDate(r.date)}</div>
+        <div style="font-size:13px;color:var(--text)">${r.remark}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  document.getElementById('reportDetailContent').innerHTML = calHtml + remarksHtml + ledgerHtml +
+    `<button class="btn-primary" onclick="exportDetailPDF('${userId}','${ym}')">📄 Export Month PDF</button>`;
+
+  document.getElementById('reportSummaryView').style.display='none';
+  document.getElementById('reportDetailView').style.display='block';
+}
+
+function closeHisabDetail() {
+  document.getElementById('reportDetailView').style.display='none';
+  document.getElementById('reportSummaryView').style.display='block';
+}
+
+async function exportHisabPDF(userId) {
+  showToast('📄 Preparing PDF...');
+  const users=getData('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u) return;
+  if(!window.jspdf){
+    await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  }
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const margin=15; let y=margin;
+  doc.setFillColor(26,26,46);doc.rect(0,0,210,30,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('AttendPro - Amar Furniture',margin,13);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text(`${u.name} - Hisab Summary`,margin,21);
+  doc.text(`Generated: ${fmtDate(todayStr())}`,210-margin,21,{align:'right'});
+  y=38;
+  doc.setTextColor(30,30,46);doc.setFontSize(12);doc.setFont('helvetica','bold');
+  doc.text(u.name,margin,y);y+=6;
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+  doc.text(`Joined: ${fmtDate(u.joinDate)}  Current Wage: ${pdfMoney(u.wage)}/day`,margin,y);y+=10;
+
+  doc.setFillColor(26,26,46);doc.rect(margin,y,180,7,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text('Month',margin+2,y+5);doc.text('Days',margin+38,y+5);doc.text('Wage',margin+55,y+5);
+  doc.text('Earned',margin+85,y+5);doc.text('Advance',margin+120,y+5);doc.text('Net',margin+158,y+5);
+  y+=9;
+
+  const att=getData('attendance',{})[userId]||{};
+  const advances=getData('advances',[]).filter(a=>a.userId===userId);
+  const startYM=(u.joinDate||todayStr()).substring(0,7);
+  const todayYM=todayStr().substring(0,7);
+  const months=[];
+  let [sy,sm]=startYM.split('-').map(Number);
+  const [ty,tm]=todayYM.split('-').map(Number);
+  while(sy<ty||(sy===ty&&sm<=tm)){months.push(`${sy}-${String(sm).padStart(2,'0')}`);sm++;if(sm>12){sm=1;sy++;}}
+
+  let tD=0,tE=0,tA=0;
+  months.forEach((ym,i)=>{
+    if(y>270){doc.addPage();y=20;}
+    const [my,mm]=ym.split('-').map(Number);
+    const mLabel=new Date(my,mm-1,1).toLocaleString('en-IN',{month:'short',year:'2-digit'});
+    let days=0;
+    Object.entries(att).forEach(([d,v])=>{if(d.startsWith(ym)&&!d.includes('_'))days+=Number(v)||0;});
+    const wage=hisabWageOverrides[ym]!==undefined?hisabWageOverrides[ym]:getWageForDate(u,ym+'-15');
+    const earned=days*wage;
+    let adv=0;
+    advances.forEach(a=>{if(a.date&&a.date.startsWith(ym)&&a.type==='advance'&&!(a.note&&a.note.includes('Opening Balance')))adv+=Number(a.amount);});
+    const net=earned-adv;
+    tD+=days;tE+=earned;tA+=adv;
+    if(i%2===0){doc.setFillColor(248,250,255);doc.rect(margin,y-2,180,7,'F');}
+    doc.setTextColor(30,30,46);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    doc.text(mLabel,margin+2,y+3.5);doc.text(String(days),margin+38,y+3.5);doc.text(pdfMoney(wage),margin+55,y+3.5);
+    doc.setTextColor(22,163,74);doc.text(pdfMoney(earned),margin+85,y+3.5);
+    doc.setTextColor(220,38,38);doc.text(adv>0?pdfMoney(adv):'-',margin+120,y+3.5);
+    doc.setTextColor(net>=0?22:220,net>=0?163:38,net>=0?74:38);doc.text(pdfMoney(Math.abs(net)),margin+158,y+3.5);
+    y+=7;
+  });
+  y+=4;
+  doc.setFillColor(238,242,255);doc.roundedRect(margin,y,180,12,3,3,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(30,30,46);
+  doc.text(`Total: ${tD} days`,margin+2,y+8);
+  doc.setTextColor(22,163,74);doc.text(pdfMoney(tE),margin+85,y+8);
+  doc.setTextColor(220,38,38);doc.text(pdfMoney(tA),margin+120,y+8);
+  y+=18;
+  const closing=tE-tA;
+  doc.setFillColor(...(closing>=0?[22,163,74]:[220,38,38]));
+  doc.roundedRect(margin,y,180,14,4,4,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text('Final Balance:',margin+3,y+9);
+  doc.text(`${closing>=0?'+':''}${pdfMoney(Math.abs(closing))}  (${closing>=0?'You owe him':'He owes you'})`,margin+177,y+9,{align:'right'});
+  doc.save(`${u.name.replace(/\s+/g,'_')}_Hisab_${todayStr()}.pdf`);
+  showToast('PDF downloaded!');
+}
+
+async function exportDetailPDF(userId, ym) {
+  showToast('Preparing month PDF...');
+  const users=getData('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u) return;
+  if(!window.jspdf){
+    await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  }
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const margin=15;let y=margin;
+  const [yr,mo]=ym.split('-').map(Number);
+  const monthLabel=new Date(yr,mo-1,1).toLocaleString('en-IN',{month:'long',year:'numeric'});
+  const att=getData('attendance',{})[userId]||{};
+  const advances=getData('advances',[]).filter(a=>a.userId===userId);
+
+  doc.setFillColor(26,26,46);doc.rect(0,0,210,30,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('AttendPro - Amar Furniture',margin,13);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text(`${u.name} - ${monthLabel}`,margin,21);
+  doc.text(`Generated: ${fmtDate(todayStr())}`,210-margin,21,{align:'right'});
+  y=38;
+
+  doc.setTextColor(30,30,46);doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text('Attendance',margin,y);y+=6;
+  doc.setFillColor(26,26,46);doc.rect(margin,y,180,7,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(7.5);
+  doc.text('Date',margin+2,y+5);doc.text('Day',margin+25,y+5);doc.text('Status',margin+48,y+5);
+  doc.text('Earned',margin+95,y+5);doc.text('Remarks',margin+125,y+5);y+=9;
+
+  const daysInMonth=new Date(yr,mo,0).getDate();
+  let tDays=0,tEarned=0;
+  for(let d=1;d<=daysInMonth;d++){
+    if(y>270){doc.addPage();y=20;}
+    const ds=`${ym}-${String(d).padStart(2,'0')}`;
+    const v=att[ds];
+    const remark=att[ds+'_remark']||'';
+    const dayWage=getWageForDate(u,ds);
+    const earned=v!==undefined?Number(v)*dayWage:0;
+    const status=v===undefined?'Not marked':ATT_LABELS[String(v)]||String(v);
+    const dayName=new Date(yr,mo-1,d).toLocaleString('en-IN',{weekday:'short'});
+    if(v!==undefined){tDays+=Number(v);tEarned+=earned;}
+    if(d%2===0){doc.setFillColor(248,250,255);doc.rect(margin,y-2,180,7,'F');}
+    doc.setTextColor(30,30,46);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    doc.text(`${String(d).padStart(2,'0')} ${new Date(yr,mo-1,1).toLocaleString('en-IN',{month:'short'})}`,margin+2,y+3.5);
+    doc.text(dayName,margin+25,y+3.5);doc.text(status,margin+48,y+3.5);
+    if(earned>0){doc.setTextColor(22,163,74);doc.text(pdfMoney(earned),margin+95,y+3.5);}
+    doc.setTextColor(107,114,128);
+    if(remark)doc.text(doc.splitTextToSize(remark,60)[0],margin+125,y+3.5);
+    doc.setTextColor(30,30,46);y+=7;
+  }
+  y+=4;
+  doc.setFillColor(238,242,255);doc.roundedRect(margin,y,180,10,3,3,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(30,30,46);
+  doc.text(`Total: ${tDays} days`,margin+2,y+7);
+  doc.setTextColor(22,163,74);doc.text(pdfMoney(tEarned),margin+95,y+7);y+=16;
+
+  const monthEntries=advances.filter(a=>a.date&&a.date.startsWith(ym)&&!(a.note&&a.note.includes('Opening Balance')));
+  if(monthEntries.length>0){
+    doc.setTextColor(30,30,46);doc.setFontSize(10);doc.setFont('helvetica','bold');
+    doc.text('Advances & Settlements',margin,y);y+=7;
+    monthEntries.forEach(a=>{
+      if(y>270){doc.addPage();y=20;}
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(30,30,46);
+      doc.text(fmtDate(a.date),margin+2,y);
+      doc.text((a.note||a.type).substring(0,35),margin+25,y);
+      doc.setTextColor(a.type==='advance'?220:22,a.type==='advance'?38:163,a.type==='advance'?38:74);
+      doc.text(pdfMoney(a.amount),margin+175,y,{align:'right'});
+      doc.setTextColor(30,30,46);y+=7;
+    });
+  }
+
+  doc.save(`${u.name.replace(/\s+/g,'_')}_${ym}_Detail.pdf`);
+  showToast('Month PDF downloaded!');
+}
+
 
 // ══════════════════════════════════════════
 // REQUESTS
@@ -2042,58 +2450,26 @@ function switchReqTab(tab) {
 // STAFF
 // ══════════════════════════════════════════
 function renderStaff() {
-  const users  = getData('users', []).filter(u => u.role !== 'admin');
-  const att    = getData('attendance', {});
-  const today  = todayStr();
-  const list   = document.getElementById('staffList');
-  const active   = users.filter(u => u.active !== false);
-  const inactive = users.filter(u => u.active === false);
+  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const att   = getData('attendance', {});
+  const today = todayStr();
+  const list  = document.getElementById('staffList');
 
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p><small>Tap "+ Add Staff" to add your first employee</small></div>';
     return;
   }
-
-  const staffCard = (u, isInactive=false) => {
+  list.innerHTML = users.map(u => {
     const v = att[u.id]?.[today];
     const chip = v !== undefined
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${ATT_LABELS[String(v)]}</span>`
       : `<span class="chip chip-yellow">—</span>`;
-    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')" style="${isInactive?'opacity:0.6;':''}">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'};${isInactive?'filter:grayscale(1)':''}">${u.name[0].toUpperCase()}</div>
-      <div class="staff-info">
-        <div class="staff-name">${u.name}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
-        <div class="staff-role">${u.role} · ${u.userId}</div>
-      </div>
+    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')">
+      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}">${u.name[0].toUpperCase()}</div>
+      <div class="staff-info"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role} · ${u.userId}</div></div>
       <div style="text-align:right"><div class="staff-wage">${fmtMoney(u.wage)}/day</div><div class="mt8">${chip}</div></div>
     </div>`;
-  };
-
-  let html = active.map(u => staffCard(u)).join('');
-
-  if (inactive.length > 0) {
-    html += `
-    <div style="margin-top:20px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer" onclick="toggleInactiveSection()">
-        <div class="section-title" style="margin:0">Inactive Staff (${inactive.length})</div>
-        <span id="inactiveToggleIcon" style="font-size:18px;color:var(--text2)">▸</span>
-      </div>
-      <div id="inactiveStaffList" style="display:none">
-        ${inactive.map(u => staffCard(u, true)).join('')}
-      </div>
-    </div>`;
-  }
-
-  list.innerHTML = html;
-}
-
-function toggleInactiveSection() {
-  const el   = document.getElementById('inactiveStaffList');
-  const icon = document.getElementById('inactiveToggleIcon');
-  if (!el) return;
-  const isHidden = el.style.display === 'none';
-  el.style.display   = isHidden ? 'block' : 'none';
-  icon.textContent   = isHidden ? '▾' : '▸';
+  }).join('');
 }
 
 function openAddStaffModal() {
@@ -2179,9 +2555,8 @@ function openStaffDetail(userId) {
         <div style="font-weight:700;color:var(--red)">${fmtMoney(balance)}</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:8px">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
       <button class="btn-primary" style="flex:1" onclick="editStaff('${u.id}')">✏️ Edit</button>
-      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}('${u.id}')">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
       <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff('${u.id}')">🗑️ Delete</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -3140,48 +3515,6 @@ async function deleteOpeningBalance(advId, userId) {
   showLoader(false);
 }
 
-
-// ══════════════════════════════════════════
-// DEACTIVATE / REACTIVATE STAFF
-// ══════════════════════════════════════════
-async function deactivateStaff(userId) {
-  const users = getData('users', []);
-  const u = users.find(x => x.id === userId);
-  if (!u) return;
-  if (!confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
-  showLoader(true);
-  try {
-    await updateDoc(doc(db, 'users', userId), { active: false });
-    const idx = users.findIndex(x => x.id === userId);
-    if (idx >= 0) users[idx].active = false;
-    setCache('users', users);
-    showToast(`⏸ ${u.name} deactivated`);
-    closeModal('staffDetailModal');
-    renderStaff();
-    renderHome();
-  } catch(e) { showToast('⚠️ Could not deactivate'); }
-  showLoader(false);
-}
-
-async function reactivateStaff(userId) {
-  const users = getData('users', []);
-  const u = users.find(x => x.id === userId);
-  if (!u) return;
-  if (!confirm(`Reactivate ${u.name}?\nThey will appear in Daily Mark and active staff list again.`)) return;
-  showLoader(true);
-  try {
-    await updateDoc(doc(db, 'users', userId), { active: true });
-    const idx = users.findIndex(x => x.id === userId);
-    if (idx >= 0) users[idx].active = true;
-    setCache('users', users);
-    showToast(`✅ ${u.name} reactivated`);
-    closeModal('staffDetailModal');
-    renderStaff();
-    renderHome();
-  } catch(e) { showToast('⚠️ Could not reactivate'); }
-  showLoader(false);
-}
-
 // Expose functions to global scope (required for type="module")
 window.doLogin = doLogin;
 window.doLogout = doLogout;
@@ -3209,9 +3542,13 @@ window.recordSettlement = recordSettlement;
 window.exportLedgerPDF = exportLedgerPDF;
 window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
-window.deactivateStaff = deactivateStaff;
-window.reactivateStaff = reactivateStaff;
-window.toggleInactiveSection = toggleInactiveSection;
+window.renderHisabSummary = renderHisabSummary;
+window.updateHisabWage = updateHisabWage;
+window.saveHisabWages = saveHisabWages;
+window.openHisabDetail = openHisabDetail;
+window.closeHisabDetail = closeHisabDetail;
+window.exportHisabPDF = exportHisabPDF;
+window.exportDetailPDF = exportDetailPDF;
 window.saveStaff = saveStaff;
 window.openAddAdvanceModal = openAddAdvanceModal;
 window.saveAdvance = saveAdvance;
@@ -3486,17 +3823,30 @@ window.populateCalEmpSelect = populateCalEmpSelect;
       </div>
     </div>
 
-        <!-- v1.0.15 -->
+        <!-- v1.0.16 -->
     <div style="margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.15</div>
-        <div style="font-size:11px;color:var(--text2)">June 2026 — Feature Update</div>
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.16</div>
+        <div style="font-size:11px;color:var(--text2)">June 2026 — Major Feature</div>
       </div>
       <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
-        ⏸ <strong>Deactivate Employee</strong> — Hide employees who have left from Daily Mark and active lists<br>
-        ✅ <strong>Reactivate</strong> — Bring them back anytime when they return<br>
-        👥 <strong>Inactive section</strong> — Collapsed section at bottom of Staff tab shows all inactive employees<br>
-        📒 All data, ledger and history remains intact when deactivated
+        📊 <strong>New Hisab Report</strong> — Full employee hisab with month-by-month breakdown<br>
+        ✏️ <strong>Inline wage editing</strong> — Change wage per month directly in the report<br>
+        📅 <strong>Month detail view</strong> — Calendar + ledger entries for any month<br>
+        📄 <strong>PDF export</strong> — Summary PDF and detailed month PDF
+      </div>
+    </div>
+
+        <!-- v1.0.16 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.0.16</div>
+        <div style="font-size:11px;color:var(--text2)">June 2026 — Improvement</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        📝 <strong>Remarks in detail view</strong> — Days with remarks show a dot indicator on calendar + full remarks section below<br>
+        💸 <strong>Advances for inactive staff</strong> — Record advances from the Inactive section in Staff tab<br>
+        🔧 Fixed ledger entry credit/debit signs in detail view
       </div>
     </div>
 
