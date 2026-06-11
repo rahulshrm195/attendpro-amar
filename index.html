@@ -1368,7 +1368,8 @@ function startApp() {
   document.getElementById('sfJoinDate').value = t;
 
   const now = new Date();
-  document.getElementById('reportMonth').value = monthStr(now.getFullYear(), now.getMonth());
+  const reportMonthEl = document.getElementById('reportMonth');
+  if (reportMonthEl) reportMonthEl.value = monthStr(now.getFullYear(), now.getMonth());
 
   switchPage('home');
   scheduleNotifications();
