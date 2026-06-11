@@ -1978,7 +1978,7 @@ function renderHisabSummary() {
     </div>`;
   }
 
-  html += `<div style="background:var(--navy);border-radius:12px 12px 0 0;padding:10px 12px;display:grid;grid-template-columns:60px 40px 75px 65px 65px 44px;gap:4px">
+  html += `<div style="background:var(--navy);border-radius:12px 12px 0 0;padding:10px 12px;display:grid;grid-template-columns:55px 36px 72px 1fr 1fr 36px;gap:3px">
     ${['Month','Days','Wage/day','Earned','Advance',''].map(h=>`<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase">${h}</div>`).join('')}
   </div>
   <div style="border-radius:0 0 12px 12px;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)">`;
@@ -1987,15 +1987,15 @@ function renderHisabSummary() {
     const bg = i%2===0?'#fff':'#f8faff';
     const [my,mm] = row.ym.split('-');
     const mLabel = new Date(Number(my),Number(mm)-1,1).toLocaleString('en-IN',{month:'short',year:'2-digit'});
-    html += `<div style="display:grid;grid-template-columns:60px 40px 75px 65px 65px 44px;gap:4px;padding:10px 12px;background:${bg};border-bottom:1px solid var(--border);align-items:center">
+    html += `<div style="display:grid;grid-template-columns:55px 36px 72px 1fr 1fr 36px;gap:3px;padding:10px 12px;background:${bg};border-bottom:1px solid var(--border);align-items:center">
       <div style="font-size:12px;font-weight:700">${mLabel}</div>
-      <div style="text-align:center;font-size:13px;font-weight:800;color:var(--purple)">${row.days}</div>
+      <div id="days_${row.ym}" style="text-align:center;font-size:13px;font-weight:800;color:var(--purple)">${row.days}</div>
       <div style="text-align:center">
         <input type="number" value="${row.wage}" min="0"
-          style="width:68px;text-align:center;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;background:#f8faff;color:var(--text);outline:none"
+          style="width:65px;text-align:center;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;background:#f8faff;color:var(--text);outline:none"
           onchange="updateHisabWage('${userId}','${row.ym}',this.value)">
       </div>
-      <div style="text-align:right;font-size:12px;font-weight:700;color:var(--green)">${fmtMoney(row.earned)}</div>
+      <div id="earned_${row.ym}" style="text-align:right;font-size:12px;font-weight:700;color:var(--green)">${fmtMoney(row.earned)}</div>
       <div style="text-align:right;font-size:12px;font-weight:700;color:var(--red)">${row.adv>0?fmtMoney(row.adv):'—'}</div>
       <div style="text-align:right">
         <button onclick="openHisabDetail('${userId}','${row.ym}')"
@@ -2013,7 +2013,7 @@ function renderHisabSummary() {
       </div>
       <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
         <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Earned</div>
-        <div style="font-size:16px;font-weight:800;color:var(--green)">${fmtMoney(totalEarned)}</div>
+        <div id="hisabTotalEarned" style="font-size:16px;font-weight:800;color:var(--green)">${fmtMoney(totalEarned)}</div>
       </div>
       <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
         <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase">Total Advance</div>
@@ -2022,10 +2022,10 @@ function renderHisabSummary() {
     </div>
   </div>`;
 
-  html += `<div style="background:${closingBalance>=0?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:12px">
+  html += `<div id="hisabBalanceCard" style="background:${closingBalance>=0?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:12px">
     <div style="font-size:12px;font-weight:600;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px">Final Balance</div>
-    <div style="font-size:36px;font-weight:800;font-family:'Poppins',sans-serif;margin:6px 0">${closingBalance>=0?'+':''}${fmtMoney(Math.abs(closingBalance))}</div>
-    <div style="font-size:14px;font-weight:700;opacity:0.9">${balLabel}</div>
+    <div id="hisabFinalBalance" style="font-size:36px;font-weight:800;font-family:'Poppins',sans-serif;margin:6px 0">${closingBalance>=0?'+':''}${fmtMoney(Math.abs(closingBalance))}</div>
+    <div id="hisabFinalLabel" style="font-size:14px;font-weight:700;opacity:0.9">${balLabel}</div>
   </div>`;
 
   html += `<div style="display:flex;gap:8px;margin-bottom:8px">
@@ -2037,8 +2037,71 @@ function renderHisabSummary() {
 }
 
 function updateHisabWage(userId, ym, val) {
+  // Store override without re-rendering — prevents input reset on blur
   hisabWageOverrides[ym] = Number(val)||0;
-  renderHisabSummary();
+  // Recalculate just the earned cell for this row without full re-render
+  const earnedEl = document.getElementById(`earned_${ym}`);
+  const daysEl   = document.getElementById(`days_${ym}`);
+  if (earnedEl && daysEl) {
+    const days   = Number(daysEl.textContent)||0;
+    const earned = days * (Number(val)||0);
+    earnedEl.textContent = fmtMoney(earned);
+    earnedEl.style.color = 'var(--green)';
+  }
+  // Recalculate totals and final balance
+  recalcHisabTotals(userId);
+}
+
+function recalcHisabTotals(userId) {
+  const users = getData('users', []);
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  const att      = getData('attendance', {})[userId] || {};
+  const advances = getData('advances', []).filter(a => a.userId === userId);
+
+  const startYM = (u.joinDate || todayStr()).substring(0,7);
+  const todayYM = todayStr().substring(0,7);
+  const months  = [];
+  let [sy,sm] = startYM.split('-').map(Number);
+  const [ty,tm] = todayYM.split('-').map(Number);
+  while(sy<ty||(sy===ty&&sm<=tm)){
+    months.push(`${sy}-${String(sm).padStart(2,'0')}`);
+    sm++; if(sm>12){sm=1;sy++;}
+  }
+
+  let totalEarned=0, totalAdvances=0, totalSettlements=0;
+  let openingBalance = 0;
+  advances.filter(a=>a.note&&a.note.includes('Opening Balance')).forEach(a=>{
+    if(a.type==='advance')   openingBalance -= Number(a.amount);
+    if(a.type==='deduction') openingBalance += Number(a.amount);
+  });
+
+  months.forEach(ym => {
+    let days=0;
+    Object.entries(att).forEach(([d,v])=>{ if(d.startsWith(ym)&&!d.includes('_')) days+=Number(v)||0; });
+    const wage = hisabWageOverrides[ym]!==undefined ? hisabWageOverrides[ym] : getWageForDate(u, ym+'-15');
+    totalEarned += days * wage;
+    advances.forEach(a=>{
+      if(!a.date||!a.date.startsWith(ym)) return;
+      if(a.note&&a.note.includes('Opening Balance')) return;
+      if(a.type==='advance')    totalAdvances    += Number(a.amount);
+      if(a.type==='settlement') totalSettlements += Number(a.amount);
+    });
+  });
+
+  const closing = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const balEl = document.getElementById('hisabFinalBalance');
+  const balLabelEl = document.getElementById('hisabFinalLabel');
+  if (balEl) balEl.textContent = `${closing>=0?'+':''}${fmtMoney(Math.abs(closing))}`;
+  if (balLabelEl) balLabelEl.textContent = closing>=0 ? `You owe ${u.name}` : `${u.name} owes you`;
+  const balCard = document.getElementById('hisabBalanceCard');
+  if (balCard) {
+    balCard.style.background = closing>=0
+      ? 'linear-gradient(135deg,#16a34a,#15803d)'
+      : 'linear-gradient(135deg,#dc2626,#b91c1c)';
+  }
+  const totalEarnedEl = document.getElementById('hisabTotalEarned');
+  if (totalEarnedEl) totalEarnedEl.textContent = fmtMoney(totalEarned);
 }
 
 async function saveHisabWages(userId) {
@@ -3545,6 +3608,7 @@ window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
 window.renderHisabSummary = renderHisabSummary;
 window.updateHisabWage = updateHisabWage;
+window.recalcHisabTotals = recalcHisabTotals;
 window.saveHisabWages = saveHisabWages;
 window.openHisabDetail = openHisabDetail;
 window.closeHisabDetail = closeHisabDetail;
