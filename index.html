@@ -2514,26 +2514,58 @@ function switchReqTab(tab) {
 // STAFF
 // ══════════════════════════════════════════
 function renderStaff() {
-  const users = getData('users', []).filter(u => u.role !== 'admin');
-  const att   = getData('attendance', {});
-  const today = todayStr();
-  const list  = document.getElementById('staffList');
+  const users    = getData('users', []).filter(u => u.role !== 'admin');
+  const att      = getData('attendance', {});
+  const today    = todayStr();
+  const list     = document.getElementById('staffList');
+  const active   = users.filter(u => u.active !== false);
+  const inactive = users.filter(u => u.active === false);
 
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p><small>Tap "+ Add Staff" to add your first employee</small></div>';
     return;
   }
-  list.innerHTML = users.map(u => {
+
+  const staffCard = (u, isInactive=false) => {
     const v = att[u.id]?.[today];
     const chip = v !== undefined
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${ATT_LABELS[String(v)]}</span>`
       : `<span class="chip chip-yellow">—</span>`;
-    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}">${u.name[0].toUpperCase()}</div>
-      <div class="staff-info"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role} · ${u.userId}</div></div>
+    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')" style="${isInactive?'opacity:0.6;':''}">
+      <div class="staff-avatar" style="background:${u.color||'#6c63ff'};${isInactive?'filter:grayscale(1)':''}">${u.name[0].toUpperCase()}</div>
+      <div class="staff-info">
+        <div class="staff-name">${u.name}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
+        <div class="staff-role">${u.role} · ${u.userId}</div>
+      </div>
       <div style="text-align:right"><div class="staff-wage">${fmtMoney(u.wage)}/day</div><div class="mt8">${chip}</div></div>
     </div>`;
-  }).join('');
+  };
+
+  let html = active.map(u => staffCard(u)).join('');
+
+  if (inactive.length > 0) {
+    html += `
+    <div style="margin-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer" onclick="toggleInactiveSection()">
+        <div class="section-title" style="margin:0">Inactive Staff (${inactive.length})</div>
+        <span id="inactiveToggleIcon" style="font-size:18px;color:var(--text2)">▸</span>
+      </div>
+      <div id="inactiveStaffList" style="display:none">
+        ${inactive.map(u => staffCard(u, true)).join('')}
+      </div>
+    </div>`;
+  }
+
+  list.innerHTML = html;
+}
+
+function toggleInactiveSection() {
+  const el   = document.getElementById('inactiveStaffList');
+  const icon = document.getElementById('inactiveToggleIcon');
+  if (!el) return;
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? 'block' : 'none';
+  icon.textContent = isHidden ? '▾' : '▸';
 }
 
 function openAddStaffModal() {
@@ -2609,7 +2641,7 @@ function openStaffDetail(userId) {
         <div style="font-size:12px;color:var(--purple);font-weight:700">${fmtMoney(u.wage)}/day</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div style="background:var(--blue-bg);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:12px;color:var(--text2)">Phone</div>
         <div style="font-weight:700">${u.phone||'—'}</div>
@@ -2619,9 +2651,10 @@ function openStaffDetail(userId) {
         <div style="font-weight:700;color:var(--red)">${fmtMoney(balance)}</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <button class="btn-primary" style="flex:1" onclick="editStaff('${u.id}')">✏️ Edit</button>
-      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff('${u.id}')">🗑️ Delete</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn-primary" style="flex:1" onclick="editStaff(\'${u.id}\')">✏️ Edit</button>
+      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}(\'${u.id}\')">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
+      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff(\'${u.id}\')">🗑️ Delete</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor('${u.id}')">+ Advance</button>
@@ -3579,6 +3612,48 @@ async function deleteOpeningBalance(advId, userId) {
   showLoader(false);
 }
 
+
+// ══════════════════════════════════════════
+// DEACTIVATE / REACTIVATE STAFF
+// ══════════════════════════════════════════
+async function deactivateStaff(userId) {
+  const users = getData('users', []);
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
+  showLoader(true);
+  try {
+    await updateDoc(doc(db, 'users', userId), { active: false });
+    const idx = users.findIndex(x => x.id === userId);
+    if (idx >= 0) users[idx].active = false;
+    setCache('users', users);
+    showToast(`⏸ ${u.name} deactivated`);
+    closeModal('staffDetailModal');
+    renderStaff();
+    renderHome();
+  } catch(e) { showToast('⚠️ Could not deactivate'); }
+  showLoader(false);
+}
+
+async function reactivateStaff(userId) {
+  const users = getData('users', []);
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Reactivate ${u.name}?\nThey will appear in Daily Mark and active staff list again.`)) return;
+  showLoader(true);
+  try {
+    await updateDoc(doc(db, 'users', userId), { active: true });
+    const idx = users.findIndex(x => x.id === userId);
+    if (idx >= 0) users[idx].active = true;
+    setCache('users', users);
+    showToast(`✅ ${u.name} reactivated`);
+    closeModal('staffDetailModal');
+    renderStaff();
+    renderHome();
+  } catch(e) { showToast('⚠️ Could not reactivate'); }
+  showLoader(false);
+}
+
 // Expose functions to global scope (required for type="module")
 window.doLogin = doLogin;
 window.doLogout = doLogout;
@@ -3606,6 +3681,9 @@ window.recordSettlement = recordSettlement;
 window.exportLedgerPDF = exportLedgerPDF;
 window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
+window.deactivateStaff = deactivateStaff;
+window.reactivateStaff = reactivateStaff;
+window.toggleInactiveSection = toggleInactiveSection;
 window.renderHisabSummary = renderHisabSummary;
 window.updateHisabWage = updateHisabWage;
 window.recalcHisabTotals = recalcHisabTotals;
