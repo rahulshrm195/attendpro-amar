@@ -167,12 +167,12 @@ svg.i{flex:0 0 auto}
 .crumb b{color:var(--ink);font-weight:700}
 .cmd-brand{display:none}
 .search{position:relative;flex:0 1 340px;margin-left:auto}
-.search svg.i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none}
+.search>svg.i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none}
 .search input{width:100%;height:40px;padding:0 54px 0 40px;border-radius:999px;border:1px solid var(--field-border);background:var(--field-bg);box-shadow:var(--field-inset);color:var(--ink);font-size:13.5px;outline:none}
 .search input:focus{border-color:var(--clay-fill);background:rgba(255,255,255,.85)}
-.search kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10.5px;color:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:1px 6px;background:var(--surface)}
-.search-res{position:absolute;left:0;right:0;top:calc(100% + 6px);display:none;border-radius:18px;padding:6px;max-height:60vh;overflow:auto;z-index:200;
-  background:var(--glass-bg-modal);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);box-shadow:var(--glass-highlight),0 20px 50px rgba(0,0,0,.18)}
+.search>kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10.5px;color:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:1px 6px;background:var(--surface)}
+.search-res{position:absolute;left:0;right:0;top:calc(100% + 6px);display:none;border-radius:18px;padding:6px;max-height:70vh;overflow:auto;z-index:200;
+  background:var(--surface);border:1px solid var(--border);box-shadow:var(--glass-highlight),0 20px 50px rgba(0,0,0,.18)}
 .search-res.open{display:block}
 .sr-it{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;cursor:pointer;font-size:13.5px}
 .sr-it.on,.sr-it:hover{background:var(--clay-soft)}
@@ -348,7 +348,27 @@ select.inp,.form-row select{appearance:none;background-image:url("data:image/svg
 .dm-head{min-height:38px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid rgba(26,24,18,.07)}
 .admin-att-row{padding-top:12px;padding-bottom:12px;border-bottom:1px solid rgba(26,24,18,.06)}
 .admin-att-row:last-child{border-bottom:0}
-.admin-att-row:focus-within{background:var(--row-hover)}
+.admin-att-row:focus-within{background:var(--clay-soft);box-shadow:inset 4px 0 0 var(--clay-fill)}
+.admin-att-row.match{background:var(--amber-soft);box-shadow:inset 4px 0 0 var(--amber)}
+.bulk-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid rgba(26,24,18,.07)}
+.bulk-lbl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-right:4px}
+.bulk-btn b{font-family:var(--mono);font-weight:800;margin-right:2px}
+.dm-find{position:relative}
+.dm-find svg.i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none}
+.dm-find input{width:190px;height:40px;padding:0 34px 0 36px;border-radius:999px;border:1px solid var(--field-border);background:var(--field-bg);box-shadow:var(--field-inset);color:var(--ink);font-size:13px;outline:none}
+.dm-find input:focus{border-color:var(--clay-fill)}
+.dm-find kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+kbd{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink2);border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;padding:0 5px;background:var(--surface);white-space:nowrap}
+.sc-grid .kv{align-items:center}
+.sc-grid .kv>span:last-child{text-align:right}
+.sc-keys{display:flex;flex-wrap:wrap;gap:4px 6px;justify-content:flex-end;font-size:12px;max-width:300px}
+:is(button,.admin-att-btn,[tabindex]):focus-visible{outline:2px solid var(--clay-fill);outline-offset:2px}
+#toast.has-undo{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 18px}
+.toast-undo{border:0;border-radius:999px;padding:6px 14px;font-weight:800;font-size:12.5px;background:rgba(255,255,255,.18);color:inherit;cursor:pointer}
+.toast-undo:hover{background:rgba(255,255,255,.3)}
+#toast kbd{background:transparent;color:inherit;border-color:rgba(255,255,255,.35);opacity:.8}
+.sr-it kbd{margin-left:auto}
+.sr-foot{display:flex;gap:12px;flex-wrap:wrap;padding:8px 10px 4px;border-top:1px solid rgba(26,24,18,.07);margin-top:4px;font-size:11px;color:var(--ink3)}
 .admin-att-options{display:flex;gap:5px;align-items:center}
 .admin-att-btn{flex:1;min-width:0;height:44px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;
   background:var(--glass-bg);border:1px solid var(--glass-border);box-shadow:var(--glass-highlight);transition:transform .35s var(--spring),background .15s}
@@ -569,8 +589,8 @@ table.reg{border-collapse:separate;border-spacing:0;font-size:11px;min-width:100
   .search{flex:0 0 auto;margin-left:auto;width:40px}
   .search input{padding:0;width:40px;cursor:pointer;color:transparent}
   .search input::placeholder{color:transparent}
-  .search svg.i{left:12px}
-  .search kbd{display:none}
+  .search>svg.i{left:12px}
+  .search>kbd{display:none}
   body.search-open .search{position:fixed;left:10px;right:10px;top:10px;width:auto;z-index:300}
   body.search-open .search input{padding:0 16px 0 40px;width:100%;color:var(--ink);cursor:text;background:var(--surface)}
   body.search-open .search input::placeholder{color:var(--ink3)}
@@ -691,7 +711,10 @@ body:not(.role-emp) .emp-only{display:none!important}
 [data-theme="dark"] .bal-hero.bad{background:linear-gradient(135deg,#8E2A1F,#6E2017)}
 [data-theme="dark"] .brand-tile .burger{background:#F2ECE1;color:#16130F}
 [data-theme="dark"] .modal-handle{background:rgba(255,255,255,.18)}
-[data-theme="dark"] .search kbd,[data-theme="dark"] .dm-foot kbd{background:rgba(255,255,255,.06)}
+[data-theme="dark"] .search kbd,[data-theme="dark"] .dm-foot kbd,[data-theme="dark"] kbd{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+[data-theme="dark"] .bulk-bar,[data-theme="dark"] .sr-foot{border-color:rgba(255,255,255,.07)}
+[data-theme="dark"] .toast-undo{background:rgba(0,0,0,.12)}
+[data-theme="dark"] #toast kbd{border-color:rgba(0,0,0,.25)}
 [data-theme="dark"] body.search-open .search input{background:#26211A}
 [data-theme="dark"] .shop-bar{background:rgba(255,255,255,.08)}
 [data-theme="dark"] #appLoader{background:rgba(0,0,0,.6)}
@@ -721,7 +744,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.1</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.2</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -747,7 +770,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.1</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.2</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -896,16 +919,33 @@ button.set-row:hover{background:var(--row-hover)}
           <div class="ph">
             <div><h1>Daily Mark</h1><p>Tap a value for each person — it saves straight away. Add advances or remarks, then Save all.</p></div>
             <div class="acts dm-bar">
-              <button class="month-nav-btn" onclick="dailyPrevDay()" title="Previous day" aria-label="Previous day"><i data-i="chevL" data-s="16"></i></button>
+              <div class="dm-find only-desk"><i data-i="search" data-s="15"></i><input type="text" id="dmFind" placeholder="Find person" autocomplete="off" oninput="dmFindInput()" onkeydown="dmFindKey(event)"><kbd>/</kbd></div>
+              <button class="month-nav-btn" onclick="dailyPrevDay()" title="Previous day  [" aria-label="Previous day"><i data-i="chevL" data-s="16"></i></button>
               <input type="date" id="dailyDatePicker" onchange="onDailyDateChange(this.value)">
-              <button class="month-nav-btn" id="dailyNextBtn" onclick="dailyNextDay()" title="Next day" aria-label="Next day"><i data-i="chevR" data-s="16"></i></button>
-              <button class="btn-primary" onclick="saveAllAttendance()"><i data-i="save" data-s="16"></i>Save all</button>
+              <button class="month-nav-btn" id="dailyNextBtn" onclick="dailyNextDay()" title="Next day  ]" aria-label="Next day"><i data-i="chevR" data-s="16"></i></button>
+              <button class="icon-btn only-desk" onclick="openModal('shortcutsModal')" title="Keyboard shortcuts  ?" aria-label="Keyboard shortcuts"><i data-i="keyboard" data-s="18"></i></button>
+              <button class="btn-primary" id="saveAllBtn" onclick="saveAllAttendance()"><i data-i="save" data-s="16"></i>Save all</button>
             </div>
           </div>
           <div class="card">
+            <div class="bulk-bar" id="bulkBar">
+              <span class="bulk-lbl">Mark everyone not marked yet</span>
+              <button class="pill sm bulk-btn" onclick="bulkMark(1)"><b>1</b>Full</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(0.5)"><b>½</b>Half</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(1.5)"><b>1.5</b>OT</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(0)"><b>0</b>Absent</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(2)"><b>2</b>Double</button>
+              <div class="sp"></div>
+              <span class="text-xs" id="bulkCount"></span>
+              <button class="pill sm" style="color:var(--red)" onclick="clearAllDay()">Clear all</button>
+            </div>
             <div class="dm-head"><span>Staff</span><span>Attendance</span><span>Advance (₹ · note)</span><span>Remark</span></div>
             <div id="dailyAttList"></div>
-            <div class="dm-foot only-desk"><span><kbd>←</kbd> <kbd>→</kbd> move</span><span><kbd>Enter</kbd> select</span><span><kbd>Tab</kbd> next field</span><span><kbd>⌘S</kbd> / <kbd>Ctrl S</kbd> save all</span></div>
+            <div class="dm-foot only-desk">
+              <span><kbd>Tab</kbd> next field</span><span><kbd>Space</kbd> / <kbd>Enter</kbd> choose</span><span><kbd>⇧ Tab</kbd> back</span>
+              <span><kbd>[</kbd> <kbd>]</kbd> day · <kbd>T</kbd> today</span><span><kbd>/</kbd> find</span><span><kbd>⌘Z</kbd> undo</span><span><kbd>⌘S</kbd> save all</span>
+              <button class="link-btn" onclick="openModal('shortcutsModal')">All shortcuts <kbd>?</kbd></button>
+            </div>
           </div>
         </div>
 
@@ -1171,16 +1211,17 @@ button.set-row:hover{background:var(--row-hover)}
 </div>
 
 <!-- Add advance (admin) -->
-<div class="modal-overlay" id="addAdvanceModal">
+<div class="modal-overlay" id="addAdvanceModal" data-enter="saveAdvance">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-head"><div class="modal-title">Add advance / expense</div><button class="x-btn" onclick="closeModal('addAdvanceModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="form-row"><label>Employee</label><select id="advEmpSelect"></select></div>
     <div class="grid-f2">
       <div class="form-row"><label>Amount (₹)</label><input type="number" id="advAmount" placeholder="e.g. 500"></div>
-      <div class="form-row"><label>Date</label><input type="date" id="advDate"></div>
+      <div class="form-row"><label>Note</label><input type="text" id="advNote" placeholder="e.g. Food, festival advance…"></div>
     </div>
-    <div class="form-row"><label>Note</label><input type="text" id="advNote" placeholder="e.g. Food expense, festival advance…"></div>
+    <div class="form-row"><label>Date</label><input type="date" id="advDate"></div>
+    <div class="hint" style="margin:-6px 0 12px">Type the name · <kbd>Tab</kbd> amount · <kbd>Tab</kbd> note · <kbd>Enter</kbd> saves</div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('addAdvanceModal')">Cancel</button>
       <button class="btn-primary" onclick="saveAdvance()">Save advance</button>
@@ -1189,7 +1230,7 @@ button.set-row:hover{background:var(--row-hover)}
 </div>
 
 <!-- Deduct advance -->
-<div class="modal-overlay" id="deductModal">
+<div class="modal-overlay" id="deductModal" data-enter="saveDeduction">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-head"><div class="modal-title">Deduct advance</div><button class="x-btn" onclick="closeModal('deductModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
@@ -1236,7 +1277,7 @@ button.set-row:hover{background:var(--row-hover)}
 </div>
 
 <!-- Edit attendance -->
-<div class="modal-overlay" id="editAttModal">
+<div class="modal-overlay" id="editAttModal" data-enter="saveEditedAttendance">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-head"><div class="modal-title">Edit attendance</div><button class="x-btn" onclick="closeModal('editAttModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
@@ -1271,7 +1312,7 @@ button.set-row:hover{background:var(--row-hover)}
 </div>
 
 <!-- Change password -->
-<div class="modal-overlay" id="changePassModal">
+<div class="modal-overlay" id="changePassModal" data-enter="saveNewPassword">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-head"><div class="modal-title">Change password</div><button class="x-btn" onclick="closeModal('changePassModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
@@ -1285,6 +1326,39 @@ button.set-row:hover{background:var(--row-hover)}
   </div>
 </div>
 
+<!-- Keyboard shortcuts -->
+<div class="modal-overlay" id="shortcutsModal">
+  <div class="modal-sheet wide">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><div class="modal-title">Keyboard shortcuts</div><button class="x-btn" onclick="closeModal('shortcutsModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
+    <div class="grid-f2 sc-grid">
+      <div>
+        <div class="sec-h" style="margin-top:0">Anywhere</div>
+        <div class="kv"><span>Search staff or go to a page</span><span><kbd>⌘K</kbd> <kbd>Ctrl K</kbd></span></div>
+        <div class="kv"><span>…then a letter + Enter</span><span class="sc-keys"><kbd>T</kbd>Today <kbd>D</kbd>Daily Mark <kbd>R</kbd>Register <kbd>C</kbd>Calendar <kbd>H</kbd>Hisab <kbd>Q</kbd>Requests <kbd>S</kbd>Staff <kbd>A</kbd>Add advance <kbd>G</kbd>Settings</span></div>
+        <div class="kv"><span>…on a person</span><span><kbd>Enter</kbd> details · <kbd>⇧ Enter</kbd> add advance</span></div>
+        <div class="kv"><span>Undo the last attendance change</span><span><kbd>⌘Z</kbd> <kbd>Ctrl Z</kbd></span></div>
+        <div class="kv"><span>This help</span><span><kbd>?</kbd></span></div>
+        <div class="kv"><span>Close a dialog / menu</span><span><kbd>Esc</kbd></span></div>
+        <div class="sec-h">Dialogs</div>
+        <div class="kv"><span>Add advance · Edit attendance · Deduct · Password</span><span><kbd>Enter</kbd> saves</span></div>
+      </div>
+      <div>
+        <div class="sec-h" style="margin-top:0">Daily Mark</div>
+        <div class="kv"><span>Opens on the first person not marked yet</span><span></span></div>
+        <div class="kv"><span>Next field: 0 → ½ → 1 → 1.5 → 2 → Advance ₹ → Note → Remark → next person</span><span><kbd>Tab</kbd></span></div>
+        <div class="kv"><span>Back one field</span><span><kbd>⇧ Tab</kbd></span></div>
+        <div class="kv"><span>Choose the value you're on</span><span><kbd>Space</kbd> <kbd>Enter</kbd></span></div>
+        <div class="kv"><span>"Mark everyone" bar (from the first person)</span><span><kbd>⇧ Tab</kbd></span></div>
+        <div class="kv"><span>After the last person</span><span><kbd>Tab</kbd> → Save all</span></div>
+        <div class="kv"><span>Previous / next day · today</span><span><kbd>[</kbd> <kbd>]</kbd> · <kbd>T</kbd></span></div>
+        <div class="kv"><span>Find a person</span><span><kbd>/</kbd> then <kbd>Enter</kbd></span></div>
+        <div class="kv"><span>Save all advances &amp; remarks</span><span><kbd>⌘S</kbd> <kbd>Ctrl S</kbd></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -1293,7 +1367,7 @@ button.set-row:hover{background:var(--row-hover)}
 // VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
 // The self-update below compares this with the live index.html.
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.2.1';
+const APP_VERSION = 'v1.2.2';
 document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
 
 // ══════════════════════════════════════════
@@ -1334,6 +1408,7 @@ const IC = {
   phone:   '<path d="M5 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 5.1 5.1l1.4-2.3L19 14.5V18a2 2 0 0 1-2 2A13 13 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
   minus:   '<path d="M5 12h14"/>',
   wallet:  '<rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M3.5 10h17M16 14.5h1.5"/>',
+  keyboard:'<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M6.5 13.5h.01M17.5 13.5h.01M9.5 13.5h5"/>',
 };
 function svgi(name, size, sw) {
   return `<svg class="i" viewBox="0 0 24 24" width="${size || 18}" height="${size || 18}" fill="none" stroke="currentColor" stroke-width="${sw || 1.8}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[name] || ''}</svg>`;
@@ -1382,11 +1457,14 @@ tickClock(); setInterval(tickClock, 20000);
 // unsaved Daily Mark entries or Hisab wages); it waits until they're done. Tries once per version per
 // session so a slow CDN can't cause reload loops.
 // ══════════════════════════════════════════
-let _updVer = null, _updTimer = null, _updating = false;
+let _updVer = null, _updTimer = null, _updating = false, _lastInput = Date.now();
+['keydown', 'pointerdown'].forEach(ev => document.addEventListener(ev, () => { _lastInput = Date.now(); }, true));
 function userBusy() {
   if (document.querySelector('.modal-overlay.open')) return true;
   const a = document.activeElement;
   if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+  // Marking in Daily Mark with the keyboard (an idle PC left on the page still updates after 2 min)
+  if (a && a.closest && a.closest('#dailyAttList, #bulkBar') && Date.now() - _lastInput < 120000) return true;
   try { return !!(window.apIsBusy && window.apIsBusy()); } catch (e) { return false; }
 }
 async function checkForUpdate() {
@@ -1451,7 +1529,7 @@ setInterval(checkForUpdate, 5 * 60 * 1000);
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, collection,
-  getDocs, addDoc, updateDoc, deleteDoc, deleteField, query, where, onSnapshot
+  getDocs, addDoc, updateDoc, deleteDoc, deleteField, query, where, onSnapshot, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, initializeAuth, inMemoryPersistence, onAuthStateChanged,
@@ -2120,35 +2198,52 @@ function closeSearchSoon() {
     document.body.classList.remove('search-open');
   }, 160);
 }
+const PAGE_KEYS = { home:['Today','T'], daily:['Daily Mark','D'], register:['Register','R'], calendar:['Calendar','C'], report:['Hisab','H'],
+                    requests:['Requests','Q'], staff:['Staff','S'], advance:['Add advance','A'], profile:['Settings','G'] };
 function onSearch() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const res = document.getElementById('searchRes');
   const staff = getData('users', []).filter(u => u.role !== 'admin')
     .filter(u => !q || (u.name || '').toLowerCase().includes(q) || (u.userId || '').toLowerCase().includes(q) || (u.phone || '').includes(q))
-    .slice(0, 8);
-  const pages = Object.entries({ home:'Today', daily:'Daily Mark', register:'Register', calendar:'Calendar', report:'Hisab', requests:'Requests', staff:'Staff', profile:'Settings', advance:'Add advance' })
-    .filter(([k, t]) => !q || t.toLowerCase().includes(q)).slice(0, q ? 5 : 4);
-  searchItems = [...staff.map(u => ({ kind:'staff', id:u.id })), ...pages.map(([k]) => ({ kind:'page', id:k }))];
+    .sort((a, b) => (a.active === false) - (b.active === false))
+    .slice(0, q ? 8 : 5);
+  let pages = Object.entries(PAGE_KEYS).filter(([k, [t, key]]) => !q || t.toLowerCase().includes(q) || key.toLowerCase() === q);
+  // A single letter: the page with that key comes first
+  if (q.length === 1) pages.sort((a, b) => (b[1][1].toLowerCase() === q) - (a[1][1].toLowerCase() === q));
+  const pagesFirst = !q || q.length === 1;
+  const items = pagesFirst ? [...pages.map(p => ({ kind:'page', p })), ...staff.map(u => ({ kind:'staff', u }))]
+                           : [...staff.map(u => ({ kind:'staff', u })), ...pages.map(p => ({ kind:'page', p }))];
+  searchItems = items.map(it => it.kind === 'staff' ? { kind:'staff', id:it.u.id } : { kind:'page', id:it.p[0] });
   searchSel = Math.min(searchSel, Math.max(0, searchItems.length - 1));
-  let i = 0, html = '';
-  if (staff.length) html += '<div class="sr-h">Staff</div>' + staff.map(u => `<div class="sr-it ${i === searchSel ? 'on' : ''}" data-ix="${i++}" onmousedown="pickSearch(${i - 1})">
-      <span class="av sm" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</span>${esc(u.name)}${u.active === false ? '<span class="inactive-tag">Inactive</span>' : ''}<small>${esc(u.userId || '')}</small></div>`).join('');
-  if (pages.length) html += '<div class="sr-h">Go to</div>' + pages.map(([k, t]) => `<div class="sr-it ${i === searchSel ? 'on' : ''}" data-ix="${i++}" onmousedown="pickSearch(${i - 1})">${svgi(k === 'advance' ? 'rupee' : 'chevR', 15)}${esc(t)}</div>`).join('');
-  res.innerHTML = html || '<div class="sr-empty">No matches</div>';
+  let html = '', lastKind = '';
+  items.forEach((it, i) => {
+    if (it.kind !== lastKind) { html += `<div class="sr-h">${it.kind === 'staff' ? 'Staff' : 'Go to'}</div>`; lastKind = it.kind; }
+    if (it.kind === 'staff') {
+      const u = it.u;
+      html += `<div class="sr-it ${i === searchSel ? 'on' : ''}" onmousedown="pickSearch(${i}, event.shiftKey)">
+        <span class="av sm" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</span>${esc(u.name)}${u.active === false ? '<span class="inactive-tag">Inactive</span>' : ''}<small>${esc(u.userId || '')}</small></div>`;
+    } else {
+      const [k, [t, key]] = it.p;
+      html += `<div class="sr-it ${i === searchSel ? 'on' : ''}" onmousedown="pickSearch(${i})">${svgi(k === 'advance' ? 'rupee' : 'chevR', 15)}${esc(t)}<kbd>${key}</kbd></div>`;
+    }
+  });
+  res.innerHTML = (html || '<div class="sr-empty">No matches</div>') +
+    '<div class="sr-foot"><span><kbd>↵</kbd> open</span><span><kbd>⇧ ↵</kbd> add advance for a person</span><span>letter + <kbd>↵</kbd> go to a page</span><span><kbd>Esc</kbd> close</span></div>';
   res.classList.add('open');
 }
-function pickSearch(ix) {
+function pickSearch(ix, withShift) {
   const it = searchItems[ix]; if (!it) return;
   const inp = document.getElementById('searchInput');
   inp.value = ''; inp.blur();
   document.getElementById('searchRes').classList.remove('open');
   document.body.classList.remove('search-open');
-  if (it.kind === 'staff') openStaffDetail(it.id); else navTo(it.id);
+  if (it.kind === 'staff') { if (withShift) openAddAdvanceModalFor(it.id); else openStaffDetail(it.id); }
+  else navTo(it.id);
 }
 function searchKey(e) {
   if (e.key === 'ArrowDown') { e.preventDefault(); searchSel = Math.min(searchSel + 1, searchItems.length - 1); onSearch(); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); searchSel = Math.max(searchSel - 1, 0); onSearch(); }
-  else if (e.key === 'Enter') { e.preventDefault(); pickSearch(searchSel); }
+  else if (e.key === 'Enter') { e.preventDefault(); pickSearch(searchSel, e.shiftKey); }
   else if (e.key === 'Escape') { e.target.value = ''; e.target.blur(); }
   else searchSel = 0;
 }
@@ -2376,12 +2471,15 @@ function renderDailyAtt() {
   const vals     = [0, 0.5, 1, 1.5, 2];
   const btnClass = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
   const names    = ['Absent','Half','Full','OT','Double'];
+  // A redraw (e.g. a change from another device) keeps the keyboard where it was
+  const ae = document.activeElement;
+  const keepFocus = ae && ae.id && ae.closest && ae.closest('#dailyAttList') ? ae.id : null;
   list.innerHTML = users.map(u => {
     const cur    = att[u.id]?.[date];
     const remark = att[u.id]?.[date + '_remark'] || '';
     // Existing advances for this user on this date
     const chipsHtml = advances.filter(a => a.userId === u.id && a.date === date && a.type === 'advance').map(a =>
-      `<div class="daily-adv-chip">₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + esc(a.note) : ''}<button onclick="deleteAdvanceChip(${jsArg(a.id)})" title="Delete this advance">✕</button></div>`
+      `<div class="daily-adv-chip">₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + esc(a.note) : ''}<button tabindex="-1" onclick="deleteAdvanceChip(${jsArg(a.id)})" title="Delete this advance">✕</button></div>`
     ).join('');
 
     return `<div class="admin-att-row" id="attrow_${u.id}">
@@ -2394,7 +2492,7 @@ function renderDailyAtt() {
           onkeydown="attBtnKeydown(event,${jsArg(u.id)},${v},${i})">
           <span>${v===0.5?'½':v}</span><small>${names[i]}</small>
         </div>`).join('')}
-        ${cur !== undefined ? `<button class="att-clear-btn" title="Clear" onclick="confirmClearAtt(${jsArg(u.id)})">✕</button>` : ''}
+        ${cur !== undefined ? `<button class="att-clear-btn" tabindex="-1" title="Clear" onclick="confirmClearAtt(${jsArg(u.id)})">✕</button>` : ''}
       </div>
       <div class="daily-adv-inputs">
         <input type="number" class="daily-adv-amount" id="adv_amt_${u.id}" placeholder="₹ Advance" min="1">
@@ -2409,33 +2507,44 @@ function renderDailyAtt() {
       ${chipsHtml ? `<div class="daily-adv-chips">${chipsHtml}</div>` : ''}
     </div>`;
   }).join('');
+  if (keepFocus) document.getElementById(keepFocus)?.focus({ preventScroll: true });
+  updateBulkCount();
 }
 
 async function setDailyAtt(userId, val) {
   dailyTouched.add(userId);
-  await saveAttendance(userId, dailySelectedDate, val);
-  // Update ONLY this employee's button UI — no full re-render so typed fields are preserved
+  const date = dailySelectedDate;
+  const prev = getData('attendance', {})[userId]?.[date];
+  await saveAttendance(userId, date, val);
+  if (prev !== val) {
+    const name = getData('users', []).find(x => x.id === userId)?.name || 'Staff';
+    pushUndo(`${name} → ${ATT_LABELS[String(val)]}`, [{ userId, date, prev }]);
+  }
+  updateBulkCount();
+  // Update ONLY this employee's buttons — no full re-render so typed fields are preserved
+  syncDailyRow(userId);
+}
+
+// Show a person's current value in their Daily Mark row without redrawing it (typed boxes stay)
+function syncDailyRow(userId) {
   const row = document.getElementById('attrow_' + userId);
   if (!row) return;
-
-  // Highlight the selected button
+  const v = getData('attendance', {})[userId]?.[dailySelectedDate];
+  const vals = [0,0.5,1,1.5,2], classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
   row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
-  const classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
-  const vals    = [0,0.5,1,1.5,2];
-  const idx = vals.indexOf(val);
-  if (idx >= 0) document.getElementById(`attbtn_${userId}_${val}`)?.classList.add(classes[idx]);
-
-  // Show Clear button surgically if not already there
+  const idx = vals.indexOf(v);
+  if (idx >= 0) document.getElementById(`attbtn_${userId}_${v}`)?.classList.add(classes[idx]);
   const attOpts = row.querySelector('.admin-att-options');
-  if (attOpts && !attOpts.querySelector('.att-clear-btn')) {
-    const users = getData('users', []);
-    const u = users.find(x => x.id === userId);
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'att-clear-btn';
-    clearBtn.title = 'Clear';
-    clearBtn.textContent = '✕';
-    clearBtn.onclick = () => confirmClearAtt(userId);
-    attOpts.appendChild(clearBtn);
+  const clearBtn = attOpts?.querySelector('.att-clear-btn');
+  if (v === undefined) { clearBtn?.remove(); return; }
+  if (attOpts && !clearBtn) {
+    const b = document.createElement('button');
+    b.className = 'att-clear-btn';
+    b.title = 'Clear';
+    b.tabIndex = -1;        // keyboard path: values → Advance, never the ✕
+    b.textContent = '✕';
+    b.onclick = () => confirmClearAtt(userId);
+    attOpts.appendChild(b);
   }
 }
 
@@ -2450,6 +2559,7 @@ function clearDailyAtt(userId) { confirmClearAtt(userId, todayStr()); }
 
 async function doClearAtt(userId, date = dailySelectedDate) {
   const att = getData('attendance', {});
+  const prev = att[userId]?.[date];
   if (att[userId] && att[userId][date] !== undefined) {
     delete att[userId][date];
     setCache('attendance', att);
@@ -2459,7 +2569,11 @@ async function doClearAtt(userId, date = dailySelectedDate) {
       console.log('Clear att error:', e);
     }
   }
-  showToast('✅ Attendance cleared!');
+  if (prev !== undefined) {
+    const name = getData('users', []).find(x => x.id === userId)?.name || 'Staff';
+    pushUndo(`Cleared ${name} (${fmtDate(date)})`, [{ userId, date, prev }]);
+  } else showToast('✅ Attendance cleared!');
+  updateBulkCount();
 
   // Surgically reset only this employee's row buttons — preserve other rows' typed fields
   const row = date === dailySelectedDate ? document.getElementById('attrow_' + userId) : null;
@@ -2544,6 +2658,145 @@ async function saveAllAttendance() {
   renderHome();
 }
 
+// ══════════════════════════════════════════
+// DAILY MARK — keyboard flow, mark everyone, undo, find
+// ══════════════════════════════════════════
+// On a computer the page opens on the first person not marked yet (Tab / Space / Enter from there)
+function focusFirstUnmarked() {
+  if (!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  const att = getData('attendance', {});
+  const users = dailyMarkUsers();
+  const u = users.find(x => att[x.id]?.[dailySelectedDate] === undefined) || users[0];
+  const el = u && document.getElementById(`attbtn_${u.id}_0`);
+  if (!el) return;
+  el.focus({ preventScroll: true });
+  el.closest('.admin-att-row')?.scrollIntoView({ block: 'center' });
+}
+function updateBulkCount() {
+  const el = document.getElementById('bulkCount');
+  if (!el) return;
+  const att = getData('attendance', {});
+  const users = dailyMarkUsers();
+  const left = users.filter(u => att[u.id]?.[dailySelectedDate] === undefined).length;
+  el.textContent = left ? `${left} of ${users.length} not marked` : `Everyone marked for ${fmtDate(dailySelectedDate)}`;
+}
+
+// Undo: each entry is a list of { userId, date, prev } (prev undefined = was not marked)
+const undoStack = [];
+function pushUndo(label, changes) {
+  if (!changes.length) return;
+  undoStack.push({ label, changes });
+  if (undoStack.length > 30) undoStack.shift();
+  showToast(label, { undo: true });
+}
+// Write several attendance values in one go (one network round trip)
+async function writeAttendance(changes, valueOf) {
+  const att = getData('attendance', {});
+  const batch = writeBatch(db);
+  changes.forEach(c => {
+    const v = valueOf(c);
+    if (!att[c.userId]) att[c.userId] = {};
+    if (v === undefined) delete att[c.userId][c.date]; else att[c.userId][c.date] = v;
+    batch.set(doc(db, 'attendance', c.userId), { [c.date]: v === undefined ? deleteField() : v }, { merge: true });
+  });
+  setCache('attendance', att);
+  await batch.commit();
+}
+function redrawAttendanceViews(changes) {
+  if (currentPage === 'attendance' && currentAttTab === 'daily') {
+    // Changes for the day on screen: update those rows in place so typed advances / remarks stay
+    if (changes && changes.every(c => c.date === dailySelectedDate)) { changes.forEach(c => syncDailyRow(c.userId)); updateBulkCount(); }
+    else renderDailyAtt();
+  }
+  if (currentPage === 'attendance' && currentAttTab === 'register') renderRegister();
+  if (currentPage === 'attendance' && currentAttTab === 'calendar' && document.getElementById('calEmpSelect').value) renderCalendar();
+  renderHome();
+}
+async function undoLast() {
+  const u = undoStack.pop();
+  if (!u) { showToast('Nothing to undo'); return; }
+  try {
+    await writeAttendance(u.changes, c => c.prev);
+    showToast(`↩ Undone: ${u.label}`);
+  } catch (e) {
+    console.error('Undo failed', e);
+    undoStack.push(u);
+    showToast('⚠️ Could not undo — check internet and try again');
+  }
+  redrawAttendanceViews(u.changes);
+}
+
+// "Mark everyone not marked yet" — then fix the few exceptions
+async function bulkMark(val) {
+  const date  = dailySelectedDate;
+  const users = dailyMarkUsers();
+  const att   = getData('attendance', {});
+  if (!users.length) return;
+  let targets = users.filter(u => att[u.id]?.[date] === undefined);
+  if (!targets.length) {
+    if (!confirm(`Everyone already has attendance for ${fmtDate(date)}.\nChange everyone to ${ATT_LABELS[String(val)]}?\n(You can undo this.)`)) return;
+    targets = users;
+  }
+  const changes = targets.map(u => ({ userId: u.id, date, prev: att[u.id]?.[date] })).filter(c => c.prev !== val);
+  if (!changes.length) { showToast('Nothing to change'); return; }
+  showLoader(true);
+  try {
+    await writeAttendance(changes, () => val);
+  } catch (e) {
+    console.error('Bulk mark failed', e);
+    await writeAttendance(changes, c => c.prev).catch(() => {});
+    showLoader(false);
+    showToast('⚠️ Could not save — check internet and try again');
+    redrawAttendanceViews(changes);
+    return;
+  }
+  showLoader(false);
+  redrawAttendanceViews(changes);
+  changes.forEach(c => dailyTouched.add(c.userId));
+  pushUndo(`Marked ${changes.length} ${changes.length === 1 ? 'person' : 'people'} ${ATT_LABELS[String(val)]}`, changes);
+  // Straight on to fixing exceptions: first person in the list
+  const first = users[0] && document.getElementById(`attbtn_${users[0].id}_0`);
+  if (first && matchMedia('(hover:hover) and (pointer:fine)').matches) first.focus({ preventScroll: true });
+}
+async function clearAllDay() {
+  const date = dailySelectedDate;
+  const att  = getData('attendance', {});
+  const changes = dailyMarkUsers().filter(u => att[u.id]?.[date] !== undefined).map(u => ({ userId: u.id, date, prev: att[u.id][date] }));
+  if (!changes.length) { showToast('Nobody is marked for this day'); return; }
+  if (!confirm(`Clear attendance for all ${changes.length} people on ${fmtDate(date)}?\nRemarks and advances stay. You can undo this.`)) return;
+  showLoader(true);
+  try { await writeAttendance(changes, () => undefined); }
+  catch (e) { console.error(e); showLoader(false); showToast('⚠️ Could not clear — check internet and try again'); return; }
+  showLoader(false);
+  redrawAttendanceViews(changes);
+  pushUndo(`Cleared ${changes.length} ${changes.length === 1 ? 'person' : 'people'} (${fmtDate(date)})`, changes);
+}
+
+// Find a person: "/" then type, Enter jumps to their first value
+function dmFindMatch() {
+  const q = document.getElementById('dmFind').value.trim().toLowerCase();
+  if (!q) return null;
+  return dailyMarkUsers().find(u => (u.name || '').toLowerCase().includes(q)) || null;
+}
+function dmFindInput() {
+  document.querySelectorAll('#dailyAttList .admin-att-row.match').forEach(r => r.classList.remove('match'));
+  const u = dmFindMatch();
+  const row = u && document.getElementById('attrow_' + u.id);
+  if (row) { row.classList.add('match'); row.scrollIntoView({ block: 'center' }); }
+}
+function dmFindKey(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const u = dmFindMatch();
+    const box = document.getElementById('dmFind');
+    if (!u) { showToast('No one with that name'); return; }
+    box.value = ''; dmFindInput();
+    document.getElementById(`attbtn_${u.id}_0`)?.focus();
+  } else if (e.key === 'Escape') {
+    e.target.value = ''; dmFindInput(); e.target.blur(); focusFirstUnmarked();
+  }
+}
+
 // Delete advance chip from Daily Mark
 async function deleteAdvanceChip(advId) {
   const adv = getData('advances', []).find(a => a.id === advId);
@@ -2578,6 +2831,14 @@ function dailyPrevDay() {
   const picker = document.getElementById('dailyDatePicker');
   if (picker) picker.value = dailySelectedDate;
   renderDailyAtt();
+  focusFirstUnmarked();
+}
+function dailyToday() {
+  dailySelectedDate = todayStr();
+  const picker = document.getElementById('dailyDatePicker');
+  if (picker) picker.value = dailySelectedDate;
+  renderDailyAtt();
+  focusFirstUnmarked();
 }
 
 function dailyNextDay() {
@@ -2588,6 +2849,7 @@ function dailyNextDay() {
   const picker = document.getElementById('dailyDatePicker');
   if (picker) picker.value = dailySelectedDate;
   renderDailyAtt();
+  focusFirstUnmarked();
 }
 
 function onDailyDateChange(val) {
@@ -2597,6 +2859,7 @@ function onDailyDateChange(val) {
   if (val > today) val = today;
   dailySelectedDate = val;
   renderDailyAtt();
+  focusFirstUnmarked();
 }
 
 let currentAttTab = 'daily';
@@ -2614,6 +2877,7 @@ function switchAttTab(tab) {
     const picker = document.getElementById('dailyDatePicker');
     if (picker) { picker.value = dailySelectedDate; picker.max = dailySelectedDate; }
     renderDailyAtt();
+    focusFirstUnmarked();
   }
   if (tab==='register') renderRegister();
   if (tab==='calendar') populateCalEmpSelect();
@@ -3656,8 +3920,9 @@ async function doDeleteStaff(userId) {
 // ADVANCES
 // ══════════════════════════════════════════
 function populateAdvEmpSelect() {
-  const users = getData('users', []).filter(u => u.role !== 'admin');
-  document.getElementById('advEmpSelect').innerHTML = users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
+  const users = getData('users', []).filter(u => u.role !== 'admin').sort((a, b) => (a.active === false) - (b.active === false));
+  document.getElementById('advEmpSelect').innerHTML = '<option value="">Choose employee… (type a name)</option>' +
+    users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}${u.active === false ? ' (inactive)' : ''}</option>`).join('');
 }
 
 function openAddAdvanceModalFor(userId) {
@@ -3667,6 +3932,7 @@ function openAddAdvanceModalFor(userId) {
   document.getElementById('advNote').value   = '';
   document.getElementById('advDate').value   = todayStr();
   openModal('addAdvanceModal');
+  setTimeout(() => document.getElementById('advAmount').focus(), 50);
 }
 
 function openAddAdvanceModal() {
@@ -3675,6 +3941,8 @@ function openAddAdvanceModal() {
   document.getElementById('advNote').value   = '';
   document.getElementById('advDate').value   = todayStr();
   openModal('addAdvanceModal');
+  // Keyboard: type a name → Tab → amount → Tab → note → Enter saves
+  setTimeout(() => document.getElementById('advEmpSelect').focus(), 50);
 }
 
 async function saveAdvance() {
@@ -3682,12 +3950,14 @@ async function saveAdvance() {
   const amount = document.getElementById('advAmount').value;
   const note   = document.getElementById('advNote').value;
   const date   = document.getElementById('advDate').value;
-  if (!userId||!amount||!date) { showToast('Please fill all fields'); return; }
+  if (!userId) { showToast('Choose the employee'); document.getElementById('advEmpSelect').focus(); return; }
+  if (!amount || Number(amount) <= 0) { showToast('Enter the amount'); document.getElementById('advAmount').focus(); return; }
+  if (!date) { showToast('Choose the date'); return; }
   showLoader(true);
   await addAdvance({ userId, amount: Number(amount), note, date, month: date.substring(0,7), type:'advance' });
   await addNotifDoc({ for: userId, title:'💰 Advance Added', body:`${fmtMoney(amount)} has been added to your account.`, time: new Date().toISOString(), read: false });
   showLoader(false);
-  showToast('✅ Advance saved!');
+  showToast(`✅ ${fmtMoney(amount)} advance saved for ${getData('users', []).find(x => x.id === userId)?.name || 'employee'}`);
   closeModal('addAdvanceModal');
   renderRequests();
 }
@@ -3780,11 +4050,15 @@ async function saveEditedAttendance() {
   const val    = Number(document.getElementById('editAttValue').value);
   const remark = document.getElementById('editAttRemark').value.trim();
   if (!editAttUserId||!date) return;
+  const prevVal = getData('attendance', {})[editAttUserId]?.[date];
   showLoader(true);
   await saveAttendance(editAttUserId, date, val);
   await saveRemark(editAttUserId, date, remark);
   showLoader(false);
-  showToast('✅ Attendance updated!');
+  if (prevVal !== val) {
+    const name = getData('users', []).find(x => x.id === editAttUserId)?.name || 'Staff';
+    pushUndo(`${name} → ${ATT_LABELS[String(val)]} (${fmtDate(date)})`, [{ userId: editAttUserId, date, prev: prevVal }]);
+  } else showToast('✅ Attendance updated!');
   closeModal('editAttModal');
   renderHome();
   renderDailyAtt();
@@ -3951,12 +4225,14 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 // TOAST
 // ══════════════════════════════════════════
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, opts) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  const undo = !!(opts && opts.undo);
+  t.innerHTML = esc(msg) + (undo ? ' <button class="toast-undo" onclick="undoLast()">Undo</button><kbd>⌘Z</kbd>' : '');
+  t.classList.toggle('has-undo', undo);
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), undo ? 6000 : 2500);
 }
 
 // ══════════════════════════════════════════
@@ -3971,42 +4247,32 @@ initData();
 // Called on keydown inside any attendance button
 function attBtnKeydown(e, userId, val, idx) {
   const vals = [0, 0.5, 1, 1.5, 2];
-
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault();
     setDailyAtt(userId, val);
     return;
   }
-
-  // Arrow left/right — move between att buttons in same row
+  // Arrow left/right — move between values in the same row (optional)
   if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
     e.preventDefault();
-    const newIdx = e.key === 'ArrowRight'
-      ? Math.min(idx + 1, vals.length - 1)
-      : Math.max(idx - 1, 0);
-    const newVal = vals[newIdx];
-    document.getElementById(`attbtn_${userId}_${newVal}`)?.focus();
+    const newIdx = e.key === 'ArrowRight' ? Math.min(idx + 1, vals.length - 1) : Math.max(idx - 1, 0);
+    document.getElementById(`attbtn_${userId}_${vals[newIdx]}`)?.focus();
     return;
   }
-
-  // Tab from last att button → move to advance amount input
+  // Tab from the last value → Advance ₹ (never the ✕ clear button)
   if (e.key === 'Tab' && !e.shiftKey && idx === vals.length - 1) {
     e.preventDefault();
     document.getElementById(`adv_amt_${userId}`)?.focus();
     return;
   }
-
-  // Shift+Tab from first att button → move to previous employee's remarks field
+  // ⇧Tab from the first value → previous person's Remark (first person: on to the "Mark everyone" bar)
   if (e.key === 'Tab' && e.shiftKey && idx === 0) {
-    e.preventDefault();
-    // Find previous employee
     const users = dailyMarkUsers();
     const curIdx = users.findIndex(u => u.id === userId);
     if (curIdx > 0) {
-      const prevUser = users[curIdx - 1];
-      document.getElementById(`remark_${prevUser.id}`)?.focus();
+      e.preventDefault();
+      document.getElementById(`remark_${users[curIdx - 1].id}`)?.focus();
     }
-    return;
   }
 }
 
@@ -4016,28 +4282,46 @@ function remarkKeydown(e, userId) {
   if (e.key === 'Tab' && !e.shiftKey) {
     const users = dailyMarkUsers();
     const curIdx = users.findIndex(u => u.id === userId);
-    if (curIdx < users.length - 1) {
-      e.preventDefault();
-      const nextUser = users[curIdx + 1];
-      // Focus first att button of next employee
-      document.getElementById(`attbtn_${nextUser.id}_0`)?.focus();
-    }
-    // else: natural tab to next focusable element (Save All)
+    e.preventDefault();
+    if (curIdx < users.length - 1) document.getElementById(`attbtn_${users[curIdx + 1].id}_0`)?.focus();
+    else document.getElementById('saveAllBtn')?.focus();    // after the last person: Save all
   }
 }
 
 // Cmd+S / Ctrl+S → Save All from anywhere on Daily Mark screen
+function isTypingTarget(el) {
+  if (!el) return false;
+  if (el.isContentEditable) return true;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
+  return el.tagName === 'INPUT' && !['button','checkbox','radio','submit'].includes(el.type);
+}
 function initKeyboardShortcuts() {
   document.addEventListener('keydown', e => {
-    const isAttPage  = document.getElementById('pageAttendance')?.classList.contains('active');
-    const isDailyTab = document.getElementById('attTabDaily')?.style.display !== 'none';
-    if (!isAttPage || !isDailyTab) return;
+    if (!currentUser) return;
+    const typing  = isTypingTarget(e.target);
+    const inDaily = currentPage === 'attendance' && currentAttTab === 'daily';
+    const mod     = e.metaKey || e.ctrlKey;
+    const openDlg = document.querySelector('.modal-overlay.open');
 
-    // Cmd+S (Mac) or Ctrl+S (Windows)
-    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+    // Enter saves in simple dialogs (Add advance, Edit attendance, Deduct, Password)
+    if (e.key === 'Enter' && openDlg && openDlg.dataset.enter && e.target.tagName === 'INPUT' && openDlg.contains(e.target)) {
       e.preventDefault();
-      saveAllAttendance();
+      window[openDlg.dataset.enter]?.();
+      return;
     }
+    // ⌘S / Ctrl+S → Save all (Daily Mark)
+    if (mod && e.key.toLowerCase() === 's' && inDaily) { e.preventDefault(); saveAllAttendance(); return; }
+    // ⌘Z / Ctrl+Z → undo the last attendance change (text boxes keep their own undo)
+    if (mod && !e.shiftKey && e.key.toLowerCase() === 'z' && !typing && isStaffRole(currentUser) && undoStack.length) {
+      e.preventDefault(); undoLast(); return;
+    }
+    if (typing || mod || e.altKey || openDlg) return;
+    if (e.key === '?') { e.preventDefault(); openModal('shortcutsModal'); return; }
+    if (!inDaily) return;
+    if (e.key === '[')                    { e.preventDefault(); dailyPrevDay(); }
+    else if (e.key === ']')               { e.preventDefault(); dailyNextDay(); }
+    else if (e.key.toLowerCase() === 't') { e.preventDefault(); dailyToday(); }
+    else if (e.key === '/')               { e.preventDefault(); document.getElementById('dmFind')?.focus(); }
   });
 }
 
@@ -4596,6 +4880,12 @@ async function migrateAllAccounts() {
 window.migrateAllAccounts = migrateAllAccounts;
 window.doLogin = doLogin;
 window.navTo = navTo;
+window.bulkMark = bulkMark;
+window.clearAllDay = clearAllDay;
+window.undoLast = undoLast;
+window.dmFindInput = dmFindInput;
+window.dmFindKey = dmFindKey;
+window.dailyToday = dailyToday;
 window.onSearch = onSearch;
 window.openSearch = openSearch;
 window.closeSearchSoon = closeSearchSoon;
@@ -4694,6 +4984,17 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.2</span><span class="wn-date">November 2026 — Fast keyboard marking</span></div>
+      <ul>
+        <li>⌨️ <b>Daily Mark with Tab / Space / Enter</b> — opens on the first person not marked yet; Tab goes 0 → ½ → 1 → 1.5 → 2 → Advance → Note → Remark → next person, and after the last person to Save all</li>
+        <li>⚡ <b>Mark everyone not marked yet</b> — Full, Half, OT, Absent or Double in one go, then fix the few exceptions. <b>Clear all</b> for the day too</li>
+        <li>↩️ <b>Undo</b> — every mark, clear and "mark everyone" can be undone from the message or with ⌘Z / Ctrl Z</li>
+        <li>📅 <b>[ ] and T</b> — previous / next day and today · <b>/</b> find a person · <b>?</b> all shortcuts</li>
+        <li>🔎 <b>⌘K + a letter</b> — D Daily Mark, R Register, H Hisab, A Add advance… On a person: Enter = details, ⇧Enter = add advance</li>
+        <li>💰 <b>Faster advances</b> — type the name, Tab, amount, Tab, note, Enter saves</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.1</span><span class="wn-date">November 2026 — Updates &amp; icon</span></div>
       <ul>
         <li>🔄 <b>Automatic updates</b> — when a new version is published you'll see "New version is ready"; it updates by itself in a few seconds, or tap <b>Update now</b>. It waits if you're in the middle of something</li>
