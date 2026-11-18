@@ -4,8 +4,8 @@
   "description": "HR & Attendance Management for Amar Furniture",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "background_color": "#F4F0EA",
+  "theme_color": "#F4F0EA",
   "orientation": "portrait",
   "categories": [
     "business",

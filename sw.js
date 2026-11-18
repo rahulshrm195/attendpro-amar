@@ -1,9 +1,9 @@
 // ══════════════════════════════════════════
 // AttendPro Service Worker
-// Version: 1.1.0
+// Version: 1.2.0
 // ══════════════════════════════════════════
 
-const CACHE_NAME = 'attendpro-v1.1.0';   // bump on each release so old caches are cleared
+const CACHE_NAME = 'attendpro-v1.2.0';   // bump on each release so old caches are cleared
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
