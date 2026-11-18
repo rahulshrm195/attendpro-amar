@@ -8,6 +8,10 @@
   Devices on v1.2.0 pick this one up the normal way (next time the app is opened online); from v1.2.1 on, updates arrive by themselves.
 - **v1.2.2** — fast keyboard marking (Tab / Space / Enter path through every field, opens on the first unmarked person),
   "Mark everyone not marked yet" + Clear all, Undo (toast + ⌘Z), [ ] T / ? keys, ⌘K letters per page, ⇧Enter = advance, Enter saves dialogs.
+- **v1.2.3** — in-app **Help & guide** (searchable, per role, printable; ⌘K finds topics) and one-key Daily Mark:
+  1/P · H/. · O · D/2 · 0/A mark and jump to the next person, Backspace clears, ⇧ + key marks everyone not marked yet,
+  ⇧Backspace clears the day; the five values are one Tab stop (← → inside, ↑ ↓ between people), Tab → ✕ → Advance → Note → Remark.
+  Night mode fix: the focused Advance / Remark box no longer hides typed text.
 
 ## Planned features
 

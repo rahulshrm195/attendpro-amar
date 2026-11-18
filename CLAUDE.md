@@ -15,6 +15,12 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   is busy (`userBusy()` / `window.apIsBusy`). Once per version per session (`sessionStorage
   ap-updated-to`). `sw.js` fetches our own files with `cache: 'no-store'` (GitHub Pages caches for
   10 min) and precaches with `cache: 'reload'`. Forgetting to bump APP_VERSION means no update prompt.
+- **Help & guide (v1.2.3):** the in-app documentation lives in the `HELP` array (its own `<script>` just
+  before the app module). Every feature change updates the matching article in the same release
+  (and the quick list in `#shortcutsModal` for shortcuts). Articles have `roles` ('all' | 'staff' | 'emp'),
+  role-specific parts use `data-roles="staff|emp|admin"`; `.staff-only` / `.emp-only` spans also work.
+  Links between articles: `<a data-help="id">`. Write it product-neutral ("your team"), it's meant to
+  serve future customers too.
 - `firestore.rules` is a copy of the live rules, which the owner pastes into the Firebase console by
   hand. If you change it, tell the owner to publish it and keep the file in step with what is live.
 
@@ -45,11 +51,17 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 - **Roles:** `.staff-only` (admin + manager) and `.emp-only` are switched by `body.role-emp`.
 - Shown sections use `style.display = ''` (not `'block'`) so their CSS grid/flex layout applies.
 
-## Keyboard (v1.2.2 — the owner marks with Tab / Space / Enter only)
-- Daily Mark Tab path per person: values `0 ½ 1 1.5 2` → Advance ₹ → Note → Remark → next person
-  (`attBtnKeydown`, `remarkKeydown`); the ✕ clear and chip buttons are `tabindex="-1"`. After the last
-  person Tab goes to `#saveAllBtn`; ⇧Tab from the first person reaches the "Mark everyone" bar.
-  Don't add single-key value shortcuts or Enter-moves-down — the owner wants every field visited.
+## Keyboard (v1.2.3 — the owner asked for one-key marking on top of the Tab path)
+- Daily Mark value keys on a person's value buttons / ✕ (`dmQuickKey`, `dmKeyValue`): `1`/`P` full, `H`/`.` half,
+  `O` 1.5, `D`/`2` double, `0`/`A` absent → marks and moves to the next person; `Backspace` clears (stays).
+  Digits are read from `e.code`, so ⇧ + the same key = `bulkMark(v)` and ⇧Backspace = `clearAllDay()`
+  (in `initKeyboardShortcuts`). Never active while typing in a box.
+- The five value buttons are one Tab stop (roving tabindex: `dmSetStop` / `dmStop` / `dmFocusPerson`): Tab lands
+  on the person's value (else 0), ← → move between values, Space/Enter chooses (cursor stays), ↑ ↓ previous /
+  next person. Tab path: values → ✕ (only when marked) → Advance ₹ → Note → Remark → next person
+  (`remarkKeydown`); chip ✕ buttons are `tabindex="-1"`. After the last person → `#saveAllBtn`.
+- `setDailyAtt` updates the row before the network write finishes (fast typing never waits) and rolls back
+  with a toast if the write fails.
 - Opens on the first unmarked person (`focusFirstUnmarked`, computer only); redraws keep focus.
 - `bulkMark(v)` marks everyone not marked yet (all, after a confirm, if everyone is marked);
   `clearAllDay()`; both write one `writeBatch` (`writeAttendance`) and are undoable.
