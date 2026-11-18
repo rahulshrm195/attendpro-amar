@@ -4,6 +4,8 @@
 - **v1.1.0** (18 Nov 2026) — secure login + security rules: released (Email/Password on, logins secured, rules published).
 - **v1.2.0** — computer-first redesign in the orders-app style (Concept A + liquid glass, night mode). Code-only release: no Firebase steps.
   After it's live: spot-check 2–3 employees' Hisab / Ledger balances if not done yet.
+- **v1.2.1** — automatic updates (banner + auto-reload, like the Orders app), clay app icon, staff colours in the warm palette.
+  Devices on v1.2.0 pick this one up the normal way (next time the app is opened online); from v1.2.1 on, updates arrive by themselves.
 
 ## Planned features
 

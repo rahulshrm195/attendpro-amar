@@ -6,9 +6,15 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 ## Workflow
 - The owner wants changes live without manual steps: after committing and pushing to the working
   branch, open the pull request and merge it into `main` yourself. `main` is what the site serves.
-- Every release bumps the version in: the two `brand-ver` badges in `index.html` (login + sidebar),
-  a new entry at the top of the What's New dialog (`#whatsNewModal`, newest first), and `CACHE_NAME`
-  in `sw.js`.
+- Every release bumps the version in: `const APP_VERSION` in `index.html` (the plain script; it fills
+  the `brand-ver` badges — update their fallback text too), a new entry at the top of the What's New
+  dialog (`#whatsNewModal`, newest first, move the `new` class to it), and `CACHE_NAME` in `sw.js`.
+- Self-update (v1.2.1, same approach as the orders app): `checkForUpdate()` fetches the live
+  `index.html` (no-store) 4 s after load, on return to the app and every 5 min; if its `APP_VERSION`
+  differs it shows the "New version · Update now" bar and reloads after 10 s, waiting while the user
+  is busy (`userBusy()` / `window.apIsBusy`). Once per version per session (`sessionStorage
+  ap-updated-to`). `sw.js` fetches our own files with `cache: 'no-store'` (GitHub Pages caches for
+  10 min) and precaches with `cache: 'reload'`. Forgetting to bump APP_VERSION means no update prompt.
 - `firestore.rules` is a copy of the live rules, which the owner pastes into the Firebase console by
   hand. If you change it, tell the owner to publish it and keep the file in step with what is live.
 
@@ -16,7 +22,8 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 - `index.html` — the whole app: CSS, markup, a plain `<script>` (icons `IC` / `svgi()`, theme,
   drawer, clock) and the module script (Firebase, live data, every screen).
 - `firestore.rules` — role-based access (admin / manager / employee via `uidMap/{authUid}`).
-- `sw.js` — network-first service worker. `manifest.json` + icons — PWA install files.
+- `sw.js` — network-first service worker. `manifest.json` + icons — PWA install files. The icon is
+  the ivory calendar-tick mark on a full clay square (`#C1602F`), mark ≈ half the tile so every crop works.
 - `ROADMAP.md` — release notes and the owner's backlog.
 
 ## UI rules (v1.2.0)
@@ -34,6 +41,7 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   (`toggleDrawer`) and `.bottom-nav` appears; list rows (`.lrow`) fold into cards.
 - **Navigation:** `navTo(key)` for every menu item; attendance sub-pages are tabs of `#pageAttendance`
   (`switchAttTab`). `syncNav()` keeps the sidebar, bottom bar and titles in step.
+- **Staff colours:** always `staffColor(u)` (maps the pre-v1.2 bright palette onto `NEW_COLORS`).
 - **Roles:** `.staff-only` (admin + manager) and `.emp-only` are switched by `body.role-emp`.
 - Shown sections use `style.display = ''` (not `'block'`) so their CSS grid/flex layout applies.
 
