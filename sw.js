@@ -1,9 +1,9 @@
 // ══════════════════════════════════════════
 // AttendPro Service Worker
-// Version: 1.0.0
+// Version: 1.1.0
 // ══════════════════════════════════════════
 
-const CACHE_NAME = 'attendpro-v1.0.0';
+const CACHE_NAME = 'attendpro-v1.1.0';   // bump on each release so old caches are cleared
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
@@ -12,7 +12,9 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
   '/offline.html',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/icon-maskable-192x192.png',
+  '/icon-maskable-512x512.png'
 ];
 
 // Install — cache core assets
@@ -89,6 +91,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow(event.data?.url || '/')
+    clients.openWindow(event.notification.data?.url || '/')
   );
 });

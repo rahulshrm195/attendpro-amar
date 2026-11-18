@@ -1,0 +1,113 @@
+rules_version = '2';
+
+// AttendPro — Firestore security rules
+//
+// Identity: every Firebase Auth user has a doc at uidMap/{authUid}
+//   { userDocId: "<id of their doc in users/>", role: "admin" | "manager" | "employee", active: bool }
+// Roles are read from uidMap (which only admin/manager can write), never from users/.
+//
+// Publish these ONLY AFTER the admin has run "🔐 Secure all staff logins" in the app.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────
+    function signedIn()   { return request.auth != null; }
+    function profilePath() { return /databases/$(database)/documents/uidMap/$(request.auth.uid); }
+    // A deactivated account (uidMap.active == false) has no access at all
+    function hasProfile() { return signedIn() && exists(profilePath()) && get(profilePath()).data.get('active', true) != false; }
+    function me()         { return get(profilePath()).data; }
+    function role()       { return hasProfile() ? me().role : ''; }
+    function isAdmin()    { return role() == 'admin'; }
+    function isStaff()    { return role() in ['admin', 'manager']; }   // admin or manager
+    function isEmployee() { return role() == 'employee'; }
+    function myId()       { return me().userDocId; }
+    function isMe(docId)  { return hasProfile() && myId() == docId; }
+
+    // Data before / after this write (empty map when the doc doesn't exist yet)
+    function before() { return resource == null ? {} : resource.data; }
+    function changedKeys() { return request.resource.data.diff(before()).affectedKeys(); }
+
+    // Current date / hour in India (UTC+5:30)
+    function istNow() { return request.time + duration.value(330, 'm'); }
+    function pad(n)   { return n < 10 ? '0' + string(n) : string(n); }
+    function istToday() {
+      let t = istNow();
+      return string(t.year()) + '-' + pad(t.month()) + '-' + pad(t.day());
+    }
+
+    // Managers may never create or touch admin-level records
+    function managerSafe() {
+      return request.resource.data.role != 'admin'
+          && (resource == null || resource.data.role != 'admin');
+    }
+
+    // ── Login mapping ─────────────────────────────────────
+    match /uidMap/{uid} {
+      // own mapping stays readable so the app can say "your account is deactivated"
+      allow read:   if signedIn() && (request.auth.uid == uid || isStaff());
+      allow create, update: if isAdmin()
+        || (isStaff() && request.resource.data.role in ['employee', 'manager'] && managerSafe());
+      allow delete: if isAdmin() || (isStaff() && resource.data.role != 'admin');
+    }
+
+    // ── Staff passwords: admin only (managers may only set the first one for new staff) ──
+    match /credentials/{docId} {
+      allow read: if isAdmin() || isMe(docId);
+      allow create: if isAdmin()
+        || (isStaff() && request.resource.data.role in ['employee', 'manager']);
+      allow update: if isAdmin()
+        || (isMe(docId) && changedKeys().hasOnly(['password']));
+      allow delete: if isAdmin();
+    }
+
+    // ── Staff records ─────────────────────────────────────
+    match /users/{docId} {
+      allow read: if isStaff() || isMe(docId);
+      // Passwords must never be stored here again
+      allow create, update: if !('password' in request.resource.data)
+        && (isAdmin() || (isStaff() && managerSafe()));
+      allow delete: if isAdmin() || (isStaff() && resource.data.role != 'admin');
+    }
+
+    // ── Attendance: doc per staff member, field per date ──
+    match /attendance/{docId} {
+      allow read: if isStaff() || isMe(docId);
+      allow write: if isStaff();
+      // Employees: mark ONLY today, ONLY once, before 11 PM IST, allowed values only
+      allow create, update: if isEmployee() && isMe(docId)
+        && istNow().hours() < 23
+        && changedKeys().hasOnly([istToday()])
+        && !(istToday() in before())
+        && request.resource.data[istToday()] in [0, 0.5, 1, 1.5];
+    }
+
+    // ── Advances / deductions / settlements ───────────────
+    match /advances/{id} {
+      allow read:  if isStaff() || (hasProfile() && resource.data.userId == myId());
+      allow write: if isStaff();
+    }
+
+    // ── Leave & advance requests ──────────────────────────
+    match /requests/{id} {
+      allow read:   if isStaff() || (hasProfile() && resource.data.userId == myId());
+      allow create: if isStaff() || (hasProfile()
+        && request.resource.data.userId == myId()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.type in ['advance', 'leave']);
+      allow update, delete: if isStaff();
+    }
+
+    // ── In-app notifications ──────────────────────────────
+    match /notifications/{id} {
+      allow read:   if isStaff() || (hasProfile() && resource.data['for'] == myId());
+      allow create: if isStaff() || (hasProfile() && request.resource.data['for'] == 'admin');
+      allow update: if isStaff() || (hasProfile()
+        && resource.data['for'] == myId()
+        && changedKeys().hasOnly(['read']));
+      allow delete: if isAdmin();
+    }
+
+    // Everything else: denied
+  }
+}

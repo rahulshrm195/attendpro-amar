@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#1a1a2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -254,6 +254,52 @@
   .admin-att-btn span { font-size:12px; font-weight:700; display:block; }
   .admin-att-btn small { font-size:9px; color:var(--text2); display:block; }
 
+  /* ── MONTHLY REGISTER ── */
+  .reg-legend { display:flex; flex-wrap:wrap; gap:6px 12px; margin-bottom:10px; font-size:11px; color:var(--text2); font-weight:600; }
+  .reg-legend span { display:inline-flex; align-items:center; gap:5px; }
+  .reg-legend i { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:5px; font-style:normal; font-size:9px; font-weight:800; }
+  .reg-wrap { overflow-x:auto; background:#fff; border-radius:16px; box-shadow:var(--shadow); -webkit-overflow-scrolling:touch; }
+  table.reg { border-collapse:separate; border-spacing:0; font-size:11px; min-width:100%; }
+  .reg th, .reg td { padding:3px 1px; text-align:center; white-space:nowrap; }
+  .reg thead th { position:sticky; top:0; background:#f8faff; z-index:1; padding:8px 1px 6px; border-bottom:1px solid var(--border); }
+  .reg .rd-dow { display:block; font-size:9px; font-weight:700; color:var(--text2); }
+  .reg .rd-num { display:block; font-size:12px; font-weight:800; color:var(--text); }
+  .reg th.rd-sun .rd-dow, .reg th.rd-sun .rd-num { color:var(--orange); }
+  .reg th.rd-today .rd-num { color:#fff; background:var(--purple); border-radius:6px; padding:0 3px; }
+  .reg tbody tr + tr td { border-top:1px solid #f1f3f9; }
+  .reg .reg-name { position:sticky; left:0; z-index:2; background:#fff; text-align:left; padding:6px 8px 6px 10px; min-width:128px; max-width:150px; border-right:1px solid var(--border); }
+  .reg thead .reg-name { z-index:3; background:#f8faff; font-size:10px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.4px; vertical-align:bottom; }
+  .reg-person { display:flex; align-items:center; gap:7px; }
+  .reg-person .staff-avatar { width:28px; height:28px; font-size:11px; }
+  .reg-person b { display:block; font-size:12px; font-weight:800; overflow:hidden; text-overflow:ellipsis; max-width:104px; }
+  .reg-person small { display:block; font-size:10px; color:var(--text2); font-weight:600; }
+  .reg .reg-tot { position:sticky; right:0; z-index:2; background:#fff; padding:4px 10px 4px 8px; border-left:1px solid var(--border); text-align:right; min-width:74px; }
+  .reg thead .reg-tot { z-index:3; background:#f8faff; font-size:10px; font-weight:800; color:var(--text2); text-transform:uppercase; vertical-align:bottom; }
+  .reg-tot b { display:block; font-size:13px; font-weight:800; color:var(--purple); }
+  .reg-tot small { display:block; font-size:10px; font-weight:700; }
+  .rt { position:relative; display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:7px; font-size:10px; font-weight:800; background:#f1f3f9; color:#94a3b8; cursor:pointer; user-select:none; }
+  .rt:hover { box-shadow:0 0 0 2px var(--purple-light); }
+  .rt.rt-future { background:transparent; cursor:default; box-shadow:none; }
+  .rt.rt-0      { background:#fee2e2; color:#dc2626; }
+  .rt.rt-half   { background:#ffedd5; color:#ea580c; }
+  .rt.rt-1      { background:#dcfce7; color:#16a34a; }
+  .rt.rt-ot     { background:#ede9fe; color:#7c3aed; }
+  .rt.rt-double { background:#fce7f3; color:#be185d; }
+  .rt.rt-today  { box-shadow:0 0 0 2px var(--purple); }
+  .rt .rt-dot   { position:absolute; top:2px; right:2px; width:5px; height:5px; border-radius:50%; background:var(--yellow); }
+  .reg tfoot td { background:#f8faff; border-top:1px solid var(--border); font-size:11px; font-weight:800; color:var(--green); padding:6px 1px; }
+  .reg tfoot .reg-name, .reg tfoot .reg-tot { background:#f8faff; color:var(--text2); font-size:10px; text-transform:uppercase; }
+  .reg tr.reg-inactive .reg-person { opacity:0.55; }
+  .rt:not([class*="rt-"]), .reg-legend i.rt-empty { box-shadow:inset 0 0 0 1px #e2e8f0; }
+  @media (max-width: 480px) {
+    .reg .reg-name { min-width:96px; max-width:104px; padding:6px 6px 6px 8px; }
+    .reg-person .staff-avatar { display:none; }
+    .reg-person b { max-width:92px; font-size:11px; }
+    .reg .reg-tot { min-width:56px; padding:4px 8px 4px 6px; }
+    .reg-tot b { font-size:12px; }
+    .rt { width:24px; height:24px; }
+  }
+
   /* ── PROFILE ── */
   .profile-header { background:linear-gradient(135deg,var(--navy),var(--navy2)); border-radius:20px; padding:24px; text-align:center; color:#fff; margin-bottom:16px; }
   .profile-avatar-big { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:#fff; margin:0 auto 12px; border:3px solid rgba(255,255,255,0.3); }
@@ -274,6 +320,7 @@
   .text-red { color:var(--red); }
   .text-green { color:var(--green); }
   .text-purple { color:var(--purple); }
+  .text-yellow { color:var(--yellow); }
   .text-sm { font-size:12px; }
   .text-xs { font-size:11px; color:var(--text2); }
   .fw700 { font-weight:700; }
@@ -557,7 +604,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.16</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.1.0</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -582,7 +629,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.16</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.1.0</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -697,6 +744,7 @@
     <div class="page" id="pageAttendance">
       <div class="tabs" id="attTabs">
         <div class="tab active" onclick="switchAttTab('daily')">Daily Mark</div>
+        <div class="tab" onclick="switchAttTab('register')">Register</div>
         <div class="tab" onclick="switchAttTab('calendar')">Calendar</div>
         <div class="tab" onclick="switchAttTab('report')">Report</div>
       </div>
@@ -714,6 +762,26 @@
           <button class="btn-sm btn-sm-purple" onclick="saveAllAttendance()">Save All</button>
         </div>
         <div id="dailyAttList"></div>
+      </div>
+
+      <!-- Register Tab — whole month, all staff -->
+      <div id="attTabRegister" style="display:none">
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="changeRegMonth(-1)" title="Previous month">‹</button>
+          <h3 id="regMonthLabel"></h3>
+          <button class="month-nav-btn" id="regNextBtn" onclick="changeRegMonth(1)" title="Next month">›</button>
+        </div>
+        <div class="reg-legend">
+          <span><i class="rt-1" style="background:#dcfce7;color:#16a34a">P</i>Full day</span>
+          <span><i style="background:#ffedd5;color:#ea580c">½</i>Half day</span>
+          <span><i style="background:#ede9fe;color:#7c3aed">OT</i>Overtime 1.5</span>
+          <span><i style="background:#fce7f3;color:#be185d">D</i>Double</span>
+          <span><i style="background:#fee2e2;color:#dc2626">A</i>Absent</span>
+          <span><i class="rt-empty" style="background:#f1f3f9"></i>Not marked</span>
+          <span><i class="rt-empty" style="background:#f1f3f9;position:relative"><b style="position:absolute;top:2px;right:2px;width:5px;height:5px;border-radius:50%;background:var(--yellow)"></b></i>Remark</span>
+        </div>
+        <div class="reg-wrap" id="registerGrid"></div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;text-align:center">Tap a day to mark or fix attendance · scroll sideways for more days</div>
       </div>
 
       <!-- Calendar Tab -->
@@ -863,6 +931,7 @@
       <div id="adminSalarySection" style="display:none"></div>
 
       <div class="card mt8">
+        <button class="btn-primary mb8" id="migrateBtn" style="display:none" onclick="migrateAllAccounts()">🔐 Secure all staff logins</button>
         <button class="btn-secondary mb8" onclick="openModal('whatsNewModal')">🆕 What's New</button>
         <button class="btn-secondary mb8" id="changePassBtn" onclick="openChangePassModal()">🔑 Change Password</button>
         <button class="btn-secondary" style="color:var(--red)" onclick="doLogout()">🚪 Logout</button>
@@ -952,6 +1021,14 @@
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div id="staffDetailContent"></div>
+  </div>
+</div>
+
+<!-- Delete Staff Modal -->
+<div class="modal-overlay" id="deleteStaffModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="deleteStaffContent"></div>
   </div>
 </div>
 
@@ -1080,8 +1157,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, collection,
-  getDocs, addDoc, updateDoc, deleteDoc, deleteField
+  getDocs, addDoc, updateDoc, deleteDoc, deleteField, query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, initializeAuth, inMemoryPersistence, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  updatePassword, reauthenticateWithCredential, EmailAuthProvider, deleteUser
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCa40BIBRC8SQQENHmyI9EnlGcOsOfPskU",
@@ -1094,6 +1176,48 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
+// Secondary app instance: lets admin create / update staff logins
+// without signing the admin out of the main app.
+const staffAdminApp = initializeApp(firebaseConfig, 'staffAdmin');
+const staffAuth = initializeAuth(staffAdminApp, { persistence: inMemoryPersistence });
+
+// ══════════════════════════════════════════
+// LOGIN IDENTITY HELPERS
+// Staff keep logging in with "User ID + password"; behind the scenes each
+// User ID maps to a Firebase Auth email account.
+// ══════════════════════════════════════════
+const LOGIN_DOMAIN = 'users.attendpro.amarfurniture.in';
+function loginEmail(userId) {
+  const local = String(userId || '').trim().toLowerCase()
+    .replace(/[^a-z0-9._-]/g, c => '-' + c.charCodeAt(0).toString(16));
+  return `${local}@${LOGIN_DOMAIN}`;
+}
+// Firebase requires >= 6 chars; a fixed prefix keeps existing short passwords working.
+function authPassword(p) { return 'attendpro:' + String(p || ''); }
+
+// Create the Auth account, or sign in to it if it already exists (re-runs).
+async function createOrSignIn(a, userId, pass) {
+  try {
+    return await createUserWithEmailAndPassword(a, loginEmail(userId), authPassword(pass));
+  } catch (e) {
+    if (e.code === 'auth/email-already-in-use') {
+      return await signInWithEmailAndPassword(a, loginEmail(userId), authPassword(pass));
+    }
+    throw e;
+  }
+}
+
+// Link an Auth account to a staff record and move the password out of `users`.
+async function linkAccount(docId, data, uid, pass) {
+  const role = data.role || 'employee';
+  await setDoc(doc(db, 'uidMap', uid), { userDocId: docId, role, active: data.active !== false });
+  await setDoc(doc(db, 'credentials', docId), { password: pass, role, uid, userId: data.userId });
+  await updateDoc(doc(db, 'users', docId), { authUid: uid, password: deleteField() });
+  const creds = getData('credentials', {});
+  creds[docId] = { password: pass, role, uid, userId: data.userId };
+  setCache('credentials', creds);
+}
 
 // ══════════════════════════════════════════
 // LOCAL CACHE — keeps UI fast
@@ -1120,55 +1244,151 @@ function showLoader(on) {
 // ══════════════════════════════════════════
 // LOAD ALL DATA FROM FIRESTORE
 // ══════════════════════════════════════════
-async function loadAllData() {
-  showLoader(true);
-  try {
-    // Users
-    const usersSnap = await getDocs(collection(db, 'users'));
-    const users = [];
-    usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
-    if (users.length === 0) {
-      // First-ever run — seed admin account
-      await setDoc(doc(db, 'users', 'admin'), {
-        name: 'Rahul', role: 'admin', userId: 'admin',
-        password: 'admin123', phone: '', wage: 0,
-        joinDate: todayStr(), color: '#6c63ff'
-      });
-      users.push({ id: 'admin', name: 'Rahul', role: 'admin', userId: 'admin', password: 'admin123', phone: '', wage: 0, joinDate: todayStr(), color: '#6c63ff' });
-    }
-    setCache('users', users);
-
-    // Attendance  { docId = userId, fields = { 'YYYY-MM-DD': value } }
-    const attSnap = await getDocs(collection(db, 'attendance'));
-    const att = {};
-    attSnap.forEach(d => { att[d.id] = d.data(); });
-    setCache('attendance', att);
-
-    // Advances
-    const advSnap = await getDocs(collection(db, 'advances'));
-    const advances = [];
-    advSnap.forEach(d => advances.push({ id: d.id, ...d.data() }));
-    setCache('advances', advances);
-
-    // Requests
-    const reqSnap = await getDocs(collection(db, 'requests'));
-    const requests = [];
-    reqSnap.forEach(d => requests.push({ id: d.id, ...d.data() }));
-    setCache('requests', requests);
-
-    // Notifications
-    const notifSnap = await getDocs(collection(db, 'notifications'));
-    const notifs = [];
-    notifSnap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
-    notifs.sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
-    setCache('notifications', notifs);
-
-  } catch(e) {
-    console.error('Firebase load error:', e);
-    showToast('⚠️ Database connection failed. Check your config.');
-  }
-  showLoader(false);
+// ══════════════════════════════════════════
+// LIVE DATA — every open device stays in sync via Firestore listeners.
+// Queries are scoped to what the role may read (must match firestore.rules).
+// Listeners update the cache IN PLACE so references held elsewhere stay valid.
+// ══════════════════════════════════════════
+let liveUnsubs = [];
+function stopLiveData() {
+  liveUnsubs.forEach(u => { try { u(); } catch (e) {} });
+  liveUnsubs = [];
 }
+
+function applySnapshot(key, snap) {
+  const isQuery = typeof snap.forEach === 'function';
+  if (key === 'attendance') {
+    const att = getData('attendance', null) || {};
+    Object.keys(att).forEach(k => delete att[k]);
+    if (isQuery) snap.forEach(d => { att[d.id] = d.data(); });
+    else if (snap.exists()) att[snap.id] = snap.data();
+    setCache('attendance', att);
+    return;
+  }
+  const docs = [];
+  if (isQuery) snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+  else if (snap.exists()) docs.push({ id: snap.id, ...snap.data() });
+  if (key === 'notifications') docs.sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
+  const arr = getData(key, null) || [];
+  arr.splice(0, arr.length, ...docs);
+  setCache(key, arr);
+  // Keep the signed-in user's own details fresh (e.g. wage changed by admin)
+  if (key === 'users' && currentUser) {
+    const me = arr.find(x => x.id === currentUser.id);
+    if (me) Object.assign(currentUser, me, { role: currentUser.role });
+  }
+}
+
+async function forceLogout(msg) {
+  await doLogout();
+  showLoginError(msg);
+}
+
+function startLiveData(profile) {
+  stopLiveData();
+  const staffRole = isStaffRole(profile);
+  const mine = profile.userDocId;
+  const sources = staffRole ? [
+    ['users',         collection(db, 'users')],
+    ['attendance',    collection(db, 'attendance')],
+    ['advances',      collection(db, 'advances')],
+    ['requests',      collection(db, 'requests')],
+    ['notifications', collection(db, 'notifications')]
+  ] : [
+    ['users',         doc(db, 'users', mine)],
+    ['attendance',    doc(db, 'attendance', mine)],
+    ['advances',      query(collection(db, 'advances'),      where('userId', '==', mine))],
+    ['requests',      query(collection(db, 'requests'),      where('userId', '==', mine))],
+    ['notifications', query(collection(db, 'notifications'), where('for', '==', mine))]
+  ];
+  const firstLoads = sources.map(([key, ref]) => new Promise((resolve, reject) => {
+    let first = true;
+    liveUnsubs.push(onSnapshot(ref, snap => {
+      applySnapshot(key, snap);
+      if (first) { first = false; resolve(); }
+      else scheduleRefresh();
+    }, err => {
+      console.error('Live listener error', key, err);
+      if (first) { first = false; reject(err); }
+      else if (err.code === 'permission-denied') forceLogout('Your session has ended. Please log in again.');
+    }));
+  }));
+
+  // Watch our own login record: deactivated / role changed on another device → sign out
+  const uid = auth.currentUser?.uid;
+  if (uid) {
+    liveUnsubs.push(onSnapshot(doc(db, 'uidMap', uid), snap => {
+      const p = snap.data();
+      if (!snap.exists()) forceLogout('This login has been removed. Please contact admin.');
+      else if (p.active === false) forceLogout('Your account has been deactivated. Please contact admin.');
+      else if (p.role !== profile.role) forceLogout('Your role was changed — please log in again.');
+    }, () => {}));
+  }
+  return Promise.all(firstLoads);
+}
+
+async function loadAllData(profile) {
+  await startLiveData(profile);
+  // Saved staff passwords: admin only, loaded once (only admin changes them)
+  const creds = {};
+  if (profile.role === 'admin') {
+    try { (await getDocs(collection(db, 'credentials'))).forEach(d => { creds[d.id] = d.data(); }); }
+    catch (e) { console.warn('credentials not readable', e); }
+  }
+  setCache('credentials', creds);
+}
+
+// ── Redraw the visible screen after a change from another device ──
+let currentPage = 'home';
+let hisabDetailOpen = null;     // { userId, ym } while the month detail is shown
+let pendingRefresh = false;
+let refreshTimer = null;
+
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refreshCurrentPage, 250);
+}
+
+// True while redrawing would destroy something the user is in the middle of
+function isUserBusy() {
+  if (document.querySelector('.modal-overlay.open')) return true;
+  const a = document.activeElement;
+  if (a && a.closest && a.closest('#appScreen') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+  const dailyList = document.getElementById('dailyAttList');
+  if (currentPage === 'attendance' && document.getElementById('attTabDaily').style.display !== 'none' && dailyList) {
+    for (const el of dailyList.querySelectorAll('input')) {
+      if (el.id.startsWith('remark_') ? el.value !== (el.dataset.orig || '') : el.value !== '') return true;
+    }
+  }
+  if (Object.keys(hisabWageOverrides).length) return true;
+  return false;
+}
+
+function refreshCurrentPage() {
+  if (!currentUser) return;
+  updateNotifBadge();
+  if (isUserBusy()) { pendingRefresh = true; return; }
+  pendingRefresh = false;
+  switch (currentPage) {
+    case 'home':     renderHome(); break;
+    case 'requests': renderRequests(); break;
+    case 'staff':    renderStaff(); break;
+    case 'profile':  renderProfile(); break;
+    case 'calendar': renderEmpCalendar(); break;
+    case 'attendance':
+      if (document.getElementById('attTabDaily').style.display !== 'none') renderDailyAtt();
+      else if (document.getElementById('attTabRegister').style.display !== 'none') renderRegister();
+      else if (document.getElementById('attTabCalendar').style.display !== 'none') {
+        if (document.getElementById('calEmpSelect').value) renderCalendar();
+      } else if (hisabDetailOpen) openHisabDetail(hisabDetailOpen.userId, hisabDetailOpen.ym);
+      else renderReport();
+      break;
+  }
+}
+// Catch up on a deferred redraw as soon as the user finishes
+function refreshIfPending() { if (pendingRefresh) setTimeout(refreshCurrentPage, 50); }
+document.addEventListener('focusout', refreshIfPending);
+document.addEventListener('input', () => { if (pendingRefresh) scheduleRefresh(); });
 
 // ══════════════════════════════════════════
 // FIRESTORE WRITE HELPERS
@@ -1214,13 +1434,13 @@ async function saveRemark(userId, date, remark) {
 async function addAdvance(data) {
   const ref = await addDoc(collection(db, 'advances'), data);
   const advances = getData('advances', []);
-  advances.push({ id: ref.id, ...data });
+  if (!advances.some(a => a.id === ref.id)) advances.push({ id: ref.id, ...data });
   setCache('advances', advances);
 }
 async function addRequestDoc(data) {
   const ref = await addDoc(collection(db, 'requests'), data);
   const requests = getData('requests', []);
-  requests.push({ id: ref.id, ...data });
+  if (!requests.some(r => r.id === ref.id)) requests.push({ id: ref.id, ...data });
   setCache('requests', requests);
 }
 async function updateRequestDoc(reqId, data) {
@@ -1233,13 +1453,13 @@ async function updateRequestDoc(reqId, data) {
 async function addNotifDoc(data) {
   const ref = await addDoc(collection(db, 'notifications'), data);
   const notifs = getData('notifications', []);
-  notifs.unshift({ id: ref.id, ...data });
+  if (!notifs.some(n => n.id === ref.id)) notifs.unshift({ id: ref.id, ...data });
   setCache('notifications', notifs);
 }
-async function markNotifsRead(userId, isAdmin) {
+async function markNotifsRead() {
   const notifs = getData('notifications', []);
   for (const n of notifs) {
-    if (!n.read && (isAdmin ? n.for === 'admin' : n.for === userId)) {
+    if (!n.read && isMyNotif(n)) {
       n.read = true;
       try { await updateDoc(doc(db, 'notifications', n.id), { read: true }); } catch(e) {}
     }
@@ -1271,43 +1491,137 @@ function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+// Attendance docs mix day values ('2026-11-18': 1) with remarks ('2026-11-18_remark': 'text')
+function isStaffRole(u) { return !!u && (u.role === 'admin' || u.role === 'manager'); }
+// Notifications meant for the signed-in user: admin & managers share the "admin" inbox
+function isMyNotif(n) { return n.for === currentUser.id || (isStaffRole(currentUser) && n.for === 'admin'); }
+function isDayKey(k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }
 function monthStr(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
 function fmtDate(str) {
   if (!str) return '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(str))) return esc(str); // never trust stored strings
   const [y,m,d] = str.split('-');
   return `${d}/${m}/${y}`;
 }
+// Escape user-entered text before putting it into HTML
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+// Safely pass a value as an argument inside an inline handler: onclick="fn(${jsArg(x)})"
+function jsArg(v) { return esc(JSON.stringify(v ?? '')); }
 function fmtMoney(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
 
 // ══════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════
-function doLogin() {
-  const id = document.getElementById('loginId').value.trim();
+let authBusy = false; // true while doLogin is driving the sign-in itself
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+function setLoginBusy(busy) {
+  const btn = document.getElementById('loginBtn');
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.style.opacity = busy ? '0.6' : '1';
+  btn.textContent = busy ? 'Signing in…' : 'Sign In';
+}
+function showLoginScreen() {
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('appScreen').classList.remove('active');
+}
+
+// One-time upgrade path for accounts created before Firebase Auth.
+// Only works while the old open rules are still deployed; once the new
+// rules are live this query is denied and we simply return null.
+async function legacyLogin(id, pass) {
+  let snap;
+  try { snap = await getDocs(query(collection(db, 'users'), where('userId', '==', id))); }
+  catch (e) { return null; }
+  const d = snap.docs.find(x => x.data().password !== undefined && x.data().password === pass);
+  if (!d) return null;
+  const cred = await createOrSignIn(auth, id, pass);
+  await linkAccount(d.id, d.data(), cred.user.uid, pass);
+  return cred;
+}
+
+async function doLogin() {
+  const id   = document.getElementById('loginId').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
-  const users = getData('users', []);
-  if (users.length === 0) {
-    document.getElementById('loginError').textContent = 'Still connecting to database, please wait...';
-    document.getElementById('loginError').style.display = 'block';
-    return;
+  if (!id || !pass) { showLoginError('Please enter your user ID and password'); return; }
+  showLoginError('');
+  setLoginBusy(true);
+  authBusy = true;
+  try {
+    let cred;
+    try {
+      cred = await signInWithEmailAndPassword(auth, loginEmail(id), authPassword(pass));
+    } catch (e) {
+      if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password', 'auth/invalid-email'].includes(e.code)) throw e;
+      cred = await legacyLogin(id, pass);
+      if (!cred) { showLoginError('Invalid user ID or password'); return; }
+    }
+    await enterApp(cred.user);
+  } catch (e) {
+    console.error('Login error:', e);
+    showLoginError(
+      e.code === 'auth/too-many-requests'        ? 'Too many attempts. Please wait a few minutes and try again.' :
+      e.code === 'auth/network-request-failed'   ? 'No internet connection. Please check and try again.' :
+      e.code === 'auth/operation-not-allowed'    ? 'Login is not enabled yet. Admin: enable Email/Password in Firebase Authentication.' :
+      'Login failed. Please try again.');
+  } finally {
+    authBusy = false;
+    setLoginBusy(false);
   }
-  const user = users.find(u => u.userId === id && u.password === pass);
-  if (!user) {
-    document.getElementById('loginError').textContent = 'Invalid user ID or password';
-    document.getElementById('loginError').style.display = 'block';
+}
+
+// Load the signed-in user's staff profile + data, then show the app.
+async function enterApp(fbUser) {
+  showLoader(true);
+  try {
+    const profSnap = await getDoc(doc(db, 'uidMap', fbUser.uid));
+    if (!profSnap.exists()) {
+      await signOut(auth);
+      showLoginError('This login is not linked to a staff record. Please contact admin.');
+      return;
+    }
+    const profile = profSnap.data();
+    if (profile.active === false) {
+      await signOut(auth);
+      showLoginError('Your account has been deactivated. Please contact admin.');
+      return;
+    }
+    await loadAllData(profile);
+    const u = getData('users', []).find(x => x.id === profile.userDocId);
+    if (!u) {
+      await signOut(auth);
+      showLoginError('Staff record not found. Please contact admin.');
+      return;
+    }
+    // Role comes from uidMap (protected by rules), not the editable users doc.
+    currentUser = { ...u, role: profile.role };
+  } catch (e) {
+    console.error('Load error:', e);
+    await signOut(auth).catch(() => {});
+    showLoginError('Could not load data. Check your internet and try again.');
     return;
+  } finally {
+    showLoader(false);
   }
-  currentUser = user;
-  localStorage.setItem('af_session', user.id);
-  document.getElementById('loginError').style.display = 'none';
+  showLoginError('');
   startApp();
 }
 
-function doLogout() {
+async function doLogout() {
+  stopLiveData();
   currentUser = null;
-  localStorage.removeItem('af_session');
-  document.getElementById('loginScreen').classList.add('active');
-  document.getElementById('appScreen').classList.remove('active');
+  pendingRefresh = false; hisabDetailOpen = null; hisabWageOverrides = {};
+  Object.keys(_cache).forEach(k => delete _cache[k]);
+  await signOut(auth).catch(() => {});
+  document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  showLoginScreen();
   document.getElementById('loginId').value = '';
   document.getElementById('loginPass').value = '';
 }
@@ -1324,7 +1638,8 @@ function checkNightSummary() {
   if (localStorage.getItem(todayKey)) return; // Already shown today
   localStorage.setItem(todayKey, '1');
   // Build summary
-  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
+  if (users.length === 0) return;
   const att   = getData('attendance', {});
   const today = todayStr();
   const present  = users.filter(u => att[u.id]?.[today] > 0);
@@ -1373,6 +1688,7 @@ function startApp() {
 
   switchPage('home');
   scheduleNotifications();
+  checkNightSummary();
 }
 
 function setupNav() {
@@ -1397,6 +1713,7 @@ function switchPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
   if (currentUser.role === 'employee' && page === 'attendance') page = 'calendar';
+  currentPage = page;
 
   const pageMap = { home:'pageHome', attendance:'pageAttendance', requests:'pageRequests', staff:'pageStaff', profile:'pageProfile', calendar:'pageCalendar' };
   const navMap  = { home:'nav-home', attendance:'nav-attendance', requests:'nav-requests', staff:'nav-staff', calendar:'nav-attendance' };
@@ -1460,11 +1777,11 @@ function renderAdminHome() {
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${label}</span>`
       : `<span class="chip chip-yellow">Not Marked</span>`;
     return `<div class="staff-item">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}" onclick="openEditAttModal('${u.id}','${today}')">${u.name[0].toUpperCase()}</div>
-      <div class="staff-info" onclick="openEditAttModal('${u.id}','${today}')"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role}</div></div>
+      <div class="staff-avatar" style="background:${esc(u.color||'#6c63ff')}" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})">${esc(u.name[0].toUpperCase())}</div>
+      <div class="staff-info" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})"><div class="staff-name">${esc(u.name)}</div><div class="staff-role">${esc(u.role)}</div></div>
       <div style="display:flex;align-items:center;gap:6px">
         ${chip}
-        ${v !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt('${u.id}')">✕</button>` : ''}
+        ${v !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt(${jsArg(u.id)})">✕</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1497,25 +1814,24 @@ function renderEmpHome() {
   const empAtt = att[currentUser.id] || {};
   let totalDays = 0, earned = 0;
   Object.entries(empAtt).forEach(([d, v]) => {
-    if (d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * Number(currentUser.wage || 0); }
+    if (isDayKey(d) && d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
   });
 
   const advBalance = getAdvanceBalance(currentUser.id);
   const net = Math.max(0, earned - advBalance);
 
   document.getElementById('empStatDays').textContent    = totalDays;
-  document.getElementById('empStatEarned').textContent  = fmtMoney(earned);
   document.getElementById('empStatAdvance').textContent = fmtMoney(advBalance);
-  document.getElementById('empStatNet').textContent     = fmtMoney(net);
 }
 
 function getAdvanceBalance(userId) {
   const advances = getData('advances', []);
   let balance = 0;
+  // Outstanding advance = advances given − advances recovered from salary (deductions).
+  // Settlements (salary paid out) and "Opening Balance (Pending Salary)" don't repay advances.
   advances.filter(a => a.userId === userId).forEach(a => {
-    if (a.type === 'advance')    balance += Number(a.amount);
-    if (a.type === 'deduction')  balance -= Number(a.amount);
-    if (a.type === 'settlement') balance -= Number(a.amount);
+    if (a.type === 'advance')                       balance += Number(a.amount) || 0;
+    if (a.type === 'deduction' && !isOpeningBal(a)) balance -= Number(a.amount) || 0;
   });
   return Math.max(0, balance);
 }
@@ -1541,10 +1857,25 @@ function selectAtt(val, el) {
 async function confirmAttendance() {
   if (selectedAttValue === null) { showToast('Please select an attendance value'); return; }
   showLoader(true);
-  await saveAttendance(currentUser.id, todayStr(), selectedAttValue);
+  const today = todayStr();
+  try {
+    await saveAttendance(currentUser.id, today, selectedAttValue);
+  } catch (e) {
+    // Not saved (e.g. after the 11 PM cutoff, already marked, or offline) — undo the local copy
+    const att = getData('attendance', {});
+    if (att[currentUser.id]) delete att[currentUser.id][today];
+    showLoader(false);
+    showToast(e.code === 'permission-denied'
+      ? '⚠️ Attendance window is closed (11 PM) — contact admin'
+      : '⚠️ Could not save — check internet and try again');
+    renderHome();
+    return;
+  }
   // Notify admin
   const attLabel = {0:'Absent',0.5:'Half Day',1:'Full Day',1.5:'Overtime'}[selectedAttValue] || String(selectedAttValue);
-  await addNotifDoc({ for:'admin', title:`📋 Attendance Marked`, body:`${currentUser.name} marked attendance: ${attLabel}`, time: new Date().toISOString(), read: false });
+  try {
+    await addNotifDoc({ for:'admin', title:`📋 Attendance Marked`, body:`${currentUser.name} marked attendance: ${attLabel}`, time: new Date().toISOString(), read: false });
+  } catch (e) { console.warn('notify admin failed', e); }
   showLoader(false);
   showToast('✅ Attendance marked!');
   selectedAttValue = null;
@@ -1554,8 +1885,15 @@ async function confirmAttendance() {
 // ══════════════════════════════════════════
 // DAILY ATTENDANCE (Admin)
 // ══════════════════════════════════════════
+// Rows the user tapped in Daily Mark since it was last drawn (Save All only writes these)
+let dailyTouched = new Set();
+
+// Staff shown in Daily Mark (keyboard navigation must use the same list)
+function dailyMarkUsers() { return getData('users', []).filter(u => u.role !== 'admin' && u.active !== false); }
+
 function renderDailyAtt() {
-  const users    = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
+  dailyTouched = new Set();
+  const users    = dailyMarkUsers();
   const att      = getData('attendance', {});
   const advances = getData('advances', []);
   const date     = dailySelectedDate;
@@ -1581,26 +1919,26 @@ function renderDailyAtt() {
     const existingAdv = advances.filter(a => a.userId === u.id && a.date === date && a.type === 'advance');
     const chipsHtml = existingAdv.map(a =>
       `<div class="daily-adv-chip">
-        ₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + a.note : ''}
-        <button onclick="deleteAdvanceChip('${a.id}','${u.name}',${a.amount})">✕</button>
+        ₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + esc(a.note) : ''}
+        <button onclick="deleteAdvanceChip(${jsArg(a.id)})">✕</button>
       </div>`
     ).join('');
 
     return `<div class="admin-att-row" id="attrow_${u.id}">
       <div class="admin-att-top">
-        <div class="staff-avatar" style="background:${u.color||'#6c63ff'};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
-        <div style="flex:1"><div class="staff-name">${u.name}</div></div>
+        <div class="staff-avatar" style="background:${esc(u.color||'#6c63ff')};width:36px;height:36px;font-size:14px">${esc(u.name[0].toUpperCase())}</div>
+        <div style="flex:1"><div class="staff-name">${esc(u.name)}</div></div>
       </div>
       <div class="admin-att-options" id="attopts_${u.id}">
         ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}"
           tabindex="0"
           data-userid="${u.id}" data-val="${v}" data-idx="${i}"
-          onclick="setDailyAtt('${u.id}',${v})"
-          onkeydown="attBtnKeydown(event,'${u.id}',${v},${i})">
+          onclick="setDailyAtt(${jsArg(u.id)},${v})"
+          onkeydown="attBtnKeydown(event,${jsArg(u.id)},${v},${i})">
           <span>${v===0.5?'½':v}</span>
           <small>${['Absent','Half','Full','OT','Dbl'][i]}</small>
         </div>`).join('')}
-        ${cur !== undefined ? `<button class="att-clear-btn" onclick="confirmClearAtt('${u.id}','${u.name}')">✕ Clear</button>` : ''}
+        ${cur !== undefined ? `<button class="att-clear-btn" onclick="confirmClearAtt(${jsArg(u.id)})">✕ Clear</button>` : ''}
       </div>
       <div class="daily-adv-section">
         ${chipsHtml ? `<div class="daily-adv-chips">${chipsHtml}</div>` : ''}
@@ -1611,8 +1949,8 @@ function renderDailyAtt() {
         <div class="daily-remark-row">
           <input type="text" id="remark_${u.id}"
             placeholder="📝 Remarks (e.g. No work, came late, village visit...)"
-            value="${att[u.id]?.[date + '_remark'] || ''}"
-            onkeydown="remarkKeydown(event,'${u.id}')">
+            value="${esc(att[u.id]?.[date + '_remark'] || '')}" data-orig="${esc(att[u.id]?.[date + '_remark'] || '')}"
+            onkeydown="remarkKeydown(event,${jsArg(u.id)})">
         </div>
       </div>
     </div>`;
@@ -1620,6 +1958,7 @@ function renderDailyAtt() {
 }
 
 async function setDailyAtt(userId, val) {
+  dailyTouched.add(userId);
   await saveAttendance(userId, dailySelectedDate, val);
   // Update ONLY this employee's button UI — no full re-render so typed fields are preserved
   const row = document.getElementById('attrow_' + userId);
@@ -1640,22 +1979,22 @@ async function setDailyAtt(userId, val) {
     const clearBtn = document.createElement('button');
     clearBtn.className = 'att-clear-btn';
     clearBtn.textContent = '✕ Clear';
-    clearBtn.onclick = () => confirmClearAtt(userId, u ? u.name : userId);
+    clearBtn.onclick = () => confirmClearAtt(userId);
     attOpts.appendChild(clearBtn);
   }
 }
 
-function confirmClearAtt(userId, userName) {
-  const date = dailySelectedDate;
-  const [y,m,d] = date.split('-');
-  const label = `${d}/${m}/${y}`;
-  if (!confirm(`Clear ${userName}'s attendance for ${label}?\nThis cannot be undone.`)) return;
-  doClearAtt(userId);
+function confirmClearAtt(userId, date = dailySelectedDate) {
+  const u = getData('users', []).find(x => x.id === userId);
+  const userName = u ? u.name : 'this employee';
+  if (!confirm(`Clear ${userName}'s attendance for ${fmtDate(date)}?\nThis cannot be undone.`)) return;
+  doClearAtt(userId, date);
 }
+// ✕ button on the Home "Today's Attendance" list
+function clearDailyAtt(userId) { confirmClearAtt(userId, todayStr()); }
 
-async function doClearAtt(userId) {
+async function doClearAtt(userId, date = dailySelectedDate) {
   const att = getData('attendance', {});
-  const date = dailySelectedDate;
   if (att[userId] && att[userId][date] !== undefined) {
     delete att[userId][date];
     setCache('attendance', att);
@@ -1668,7 +2007,7 @@ async function doClearAtt(userId) {
   showToast('✅ Attendance cleared!');
 
   // Surgically reset only this employee's row buttons — preserve other rows' typed fields
-  const row = document.getElementById('attrow_' + userId);
+  const row = date === dailySelectedDate ? document.getElementById('attrow_' + userId) : null;
   if (row) {
     row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
     const clearBtn = row.querySelector('.att-clear-btn');
@@ -1681,10 +2020,13 @@ async function saveAllAttendance() {
   const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const date  = dailySelectedDate;
   const vals  = [0, 0.5, 1, 1.5, 2];
+  const att   = getData('attendance', {});
   let attSaved = 0;
   let advSaved = 0;
+  let remSaved = 0;
 
   showLoader(true);
+  try {
   for (const u of users) {
     // ── Attendance ──
     let selectedVal = undefined;
@@ -1696,8 +2038,9 @@ async function saveAllAttendance() {
         if (btn.classList.contains(classes[i])) { selectedVal = v; break; }
       }
     }
-    if (selectedVal !== undefined) {
-      await saveAttendance(u.id, date, selectedVal);
+    // Only rows tapped on this device — never overwrite a value changed on another device
+    if (selectedVal !== undefined && dailyTouched.has(u.id)) {
+      if (att[u.id]?.[date] !== selectedVal) await saveAttendance(u.id, date, selectedVal);
       attSaved++;
     }
 
@@ -1713,15 +2056,33 @@ async function saveAllAttendance() {
       if (amtEl)  amtEl.value  = '';
       if (noteEl) noteEl.value = '';
     }
+
+    // ── Remark (save only if it changed; empty box removes an existing remark) ──
+    const remEl = document.getElementById(`remark_${u.id}`);
+    if (remEl) {
+      const newRemark = remEl.value.trim();
+      const oldRemark = att[u.id]?.[date + '_remark'] || '';
+      if (newRemark !== oldRemark) {
+        await saveRemark(u.id, date, newRemark);
+        remSaved++;
+      }
+    }
+  }
+  } catch (e) {
+    console.error('Save all error:', e);
+    showLoader(false);
+    showToast('⚠️ Could not save everything — check internet and try again');
+    return;
   }
   showLoader(false);
 
-  if (attSaved === 0 && advSaved === 0) {
+  if (attSaved === 0 && advSaved === 0 && remSaved === 0) {
     showToast('⚠️ Nothing to save');
   } else {
     const parts = [];
     if (attSaved > 0) parts.push(`attendance for ${attSaved}`);
     if (advSaved > 0) parts.push(`${advSaved} advance${advSaved > 1 ? 's' : ''}`);
+    if (remSaved > 0) parts.push(`${remSaved} remark${remSaved > 1 ? 's' : ''}`);
     showToast(`✅ Saved ${parts.join(' + ')}`);
   }
   renderDailyAtt();
@@ -1729,7 +2090,11 @@ async function saveAllAttendance() {
 }
 
 // Delete advance chip from Daily Mark
-async function deleteAdvanceChip(advId, empName, amount) {
+async function deleteAdvanceChip(advId) {
+  const adv = getData('advances', []).find(a => a.id === advId);
+  if (!adv) return;
+  const empName = getData('users', []).find(u => u.id === adv.userId)?.name || 'employee';
+  const amount = adv.amount;
   if (!confirm(`Delete ₹${Number(amount).toLocaleString('en-IN')} advance for ${empName}?\nThis cannot be undone.`)) return;
   showLoader(true);
   try {
@@ -1781,9 +2146,10 @@ function onDailyDateChange(val) {
 
 function switchAttTab(tab) {
   document.querySelectorAll('#attTabs .tab').forEach((t,i) => {
-    t.classList.toggle('active', ['daily','calendar','report'][i] === tab);
+    t.classList.toggle('active', ['daily','register','calendar','report'][i] === tab);
   });
   document.getElementById('attTabDaily').style.display    = tab==='daily'    ? 'block':'none';
+  document.getElementById('attTabRegister').style.display = tab==='register' ? 'block':'none';
   document.getElementById('attTabCalendar').style.display = tab==='calendar' ? 'block':'none';
   document.getElementById('attTabReport').style.display   = tab==='report'   ? 'block':'none';
   if (tab==='daily') {
@@ -1792,8 +2158,100 @@ function switchAttTab(tab) {
     if (picker) { picker.value = dailySelectedDate; picker.max = dailySelectedDate; }
     renderDailyAtt();
   }
+  if (tab==='register') renderRegister();
   if (tab==='calendar') populateCalEmpSelect();
   if (tab==='report')   { renderReport(); }
+}
+
+// ══════════════════════════════════════════
+// MONTHLY REGISTER — all staff × all days of a month
+// ══════════════════════════════════════════
+let regYear  = new Date().getFullYear();
+let regMonth = new Date().getMonth();
+const REG_CODES = {
+  '0':   { code:'A',  cls:'rt-0',      label:'Absent' },
+  '0.5': { code:'½',  cls:'rt-half',   label:'Half day' },
+  '1':   { code:'P',  cls:'rt-1',      label:'Full day' },
+  '1.5': { code:'OT', cls:'rt-ot',     label:'Overtime (1.5)' },
+  '2':   { code:'D',  cls:'rt-double', label:'Double (2)' }
+};
+
+function changeRegMonth(dir) {
+  const next = new Date(regYear, regMonth + dir, 1);
+  const now = new Date();
+  if (next > new Date(now.getFullYear(), now.getMonth(), 1)) return; // no future months
+  regYear = next.getFullYear(); regMonth = next.getMonth();
+  renderRegister();
+}
+
+function renderRegister() {
+  const grid = document.getElementById('registerGrid');
+  if (!grid) return;
+  const ym      = monthStr(regYear, regMonth);
+  const today   = todayStr();
+  const daysIn  = new Date(regYear, regMonth + 1, 0).getDate();
+  const att     = getData('attendance', {});
+  document.getElementById('regMonthLabel').textContent =
+    new Date(regYear, regMonth, 1).toLocaleString('en-IN', { month:'long', year:'numeric' });
+  document.getElementById('regNextBtn').style.opacity = ym >= today.slice(0, 7) ? '0.3' : '1';
+
+  // Active staff, plus inactive staff who have attendance in this month
+  const hasMonthData = u => Object.keys(att[u.id] || {}).some(k => isDayKey(k) && k.startsWith(ym));
+  const staff = getData('users', []).filter(u => u.role !== 'admin');
+  const users = [...staff.filter(u => u.active !== false), ...staff.filter(u => u.active === false && hasMonthData(u))];
+  if (users.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff for this month</p></div>';
+    return;
+  }
+
+  const DOW = ['S','M','T','W','T','F','S'];
+  const days = [];
+  for (let d = 1; d <= daysIn; d++) {
+    const ds = `${ym}-${String(d).padStart(2, '0')}`;
+    days.push({ d, ds, dow: new Date(regYear, regMonth, d).getDay() });
+  }
+  const presentPerDay = days.map(() => 0);
+
+  let html = '<table class="reg"><thead><tr><th class="reg-name">Staff</th>';
+  days.forEach(({ d, ds, dow }) => {
+    html += `<th class="${dow === 0 ? 'rd-sun' : ''} ${ds === today ? 'rd-today' : ''}"><span class="rd-dow">${DOW[dow]}</span><span class="rd-num">${d}</span></th>`;
+  });
+  html += '<th class="reg-tot">Total</th></tr></thead><tbody>';
+
+  users.forEach(u => {
+    const ua = att[u.id] || {};
+    const inactive = u.active === false;
+    html += `<tr class="${inactive ? 'reg-inactive' : ''}"><td class="reg-name"><div class="reg-person">
+      <div class="staff-avatar" style="background:${esc(u.color || '#6c63ff')}">${esc((u.name || '?')[0].toUpperCase())}</div>
+      <div><b title="${esc(u.name)}">${esc(u.name)}</b><small>${inactive ? 'Inactive · ' : ''}${fmtMoney(getWageForDate(u, ym + '-15'))}/day</small></div>
+    </div></td>`;
+    let absent = 0;
+    days.forEach(({ ds }, i) => {
+      const v = ua[ds];
+      const remark = ua[ds + '_remark'] || '';
+      const info = v !== undefined ? REG_CODES[String(v)] : null;
+      if (v === 0) absent++;
+      if (Number(v) > 0) presentPerDay[i]++;
+      if (ds > today) { html += '<td><span class="rt rt-future"></span></td>'; return; }
+      const tip = `${u.name} · ${fmtDate(ds)} · ${info ? info.label : 'Not marked'}${remark ? ' · ' + remark : ''}`;
+      html += `<td><span class="rt ${info ? info.cls : ''} ${ds === today ? 'rt-today' : ''}" title="${esc(tip)}"
+        onclick="openEditAttModal(${jsArg(u.id)},${jsArg(ds)})">${info ? info.code : ''}${remark ? '<i class="rt-dot"></i>' : ''}</span></td>`;
+    });
+    const { days: worked, earned } = monthWork(u, ym);
+    html += `<td class="reg-tot"><b>${worked} d</b><small style="color:var(--green)">${fmtMoney(earned)}</small>${absent ? `<small style="color:var(--red)">${absent} A</small>` : ''}</td></tr>`;
+  });
+
+  html += '</tbody><tfoot><tr><td class="reg-name">Present</td>';
+  days.forEach(({ ds }, i) => { html += `<td>${ds > today ? '' : presentPerDay[i]}</td>`; });
+  html += '<td class="reg-tot"></td></tr></tfoot></table>';
+  grid.innerHTML = html;
+
+  // Current month: open with today as the last visible day (shows the past week, not empty future days)
+  if (ym === today.slice(0, 7)) {
+    const todayTh = grid.querySelector('th.rd-today');
+    const totTh   = grid.querySelector('thead .reg-tot');
+    if (todayTh && totTh) grid.scrollLeft = Math.max(0, todayTh.offsetLeft + todayTh.offsetWidth + 6 - (grid.clientWidth - totTh.offsetWidth));
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1803,7 +2261,7 @@ function populateCalEmpSelect() {
   const users = getData('users', []).filter(u => u.role !== 'admin');
   document.getElementById('calEmpSelect').innerHTML =
     '<option value="">-- Select Employee --</option>' +
-    users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+    users.map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
 }
 
 function renderCalendar() {
@@ -1845,7 +2303,7 @@ function renderCalGrid(gridId, labelId, empId, year, month, isAdmin) {
     if (v !== undefined) cls += ' ' + ATT_COLORS[String(v)];
     if (isToday)  cls += ' today';
     if (isFuture) cls += ' future';
-    const editClick = isAdmin ? `onclick="openEditAttModal('${empId}','${dateStr}')"` : '';
+    const editClick = isAdmin ? `onclick="openEditAttModal(${jsArg(empId)},${jsArg(dateStr)})"` : '';
     html += `<div class="${cls}" ${editClick}>${d}</div>`;
   }
   grid.innerHTML = html;
@@ -1870,7 +2328,7 @@ function renderEmpMonthSummary() {
   const month  = monthStr(empCalYear, empCalMonth);
   let total = 0, earned = 0;
   Object.entries(empAtt).forEach(([d,v]) => {
-    if (d.startsWith(month)) { total += Number(v); earned += Number(v) * Number(currentUser.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { total += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   document.getElementById('empMonthSummary').innerHTML = `
@@ -1903,7 +2361,7 @@ function renderReport() {
   if (sel) {
     const cur = sel.value;
     sel.innerHTML = '<option value="">— Select Employee —</option>' +
-      users.map(u => `<option value="${u.id}">${u.name}${u.active===false?' (Inactive)':''}</option>`).join('');
+      users.map(u => `<option value="${esc(u.id)}">${esc(u.name)}${u.active===false?' (Inactive)':''}</option>`).join('');
     if (cur) sel.value = cur;
     if (sel.value) renderHisabSummary();
     else {
@@ -1919,54 +2377,16 @@ function renderHisabSummary() {
   const users    = getData('users', []);
   const u        = users.find(x => x.id === userId);
   if (!u) return;
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
   hisabWageOverrides = {};
-
-  const startDate = u.joinDate || todayStr();
-  const startYM   = startDate.substring(0,7);
-  const todayYM   = todayStr().substring(0,7);
-  const months = [];
-  let [sy,sm] = startYM.split('-').map(Number);
-  const [ty,tm] = todayYM.split('-').map(Number);
-  while (sy<ty||(sy===ty&&sm<=tm)) {
-    months.push(`${sy}-${String(sm).padStart(2,'0')}`);
-    sm++; if(sm>12){sm=1;sy++;}
-  }
-
-  // Opening balance from advance records tagged Opening Balance
-  let openingBalance = 0;
-  advances.filter(a => a.note && a.note.includes('Opening Balance')).forEach(a => {
-    if (a.type === 'advance')   openingBalance -= Number(a.amount);
-    if (a.type === 'deduction') openingBalance += Number(a.amount);
-  });
-
-  let totalDays=0, totalEarned=0, totalAdvances=0, totalSettlements=0;
-  const monthRows = months.map(ym => {
-    let days = 0;
-    Object.entries(att).forEach(([d,v]) => { if(d.startsWith(ym)&&!d.includes('_')) days+=Number(v)||0; });
-    const wage = hisabWageOverrides[ym]!==undefined ? hisabWageOverrides[ym] : getWageForDate(u, ym+'-15');
-    const earned = days * wage;
-    let monthAdv=0, monthSettle=0;
-    advances.forEach(a => {
-      if(!a.date||!a.date.startsWith(ym)) return;
-      if(a.note&&a.note.includes('Opening Balance')) return;
-      if(a.type==='advance')    monthAdv    += Number(a.amount);
-      if(a.type==='settlement') monthSettle += Number(a.amount);
-    });
-    totalDays+=days; totalEarned+=earned; totalAdvances+=monthAdv; totalSettlements+=monthSettle;
-    return { ym, days, wage, earned, adv:monthAdv, settle:monthSettle };
-  });
-
-  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const { monthRows, openingBalance, totalDays, totalEarned, totalAdvances, totalSettlements, closingBalance } = computeHisab(u, hisabWageOverrides);
   const balColor = closingBalance>=0 ? 'var(--green)' : 'var(--red)';
   const balLabel = closingBalance>=0 ? `You owe ${u.name}` : `${u.name} owes you`;
 
   let html = '';
   html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:#fff;border-radius:14px;padding:14px;box-shadow:var(--shadow)">
-    <div class="staff-avatar" style="background:${u.color};width:48px;height:48px;font-size:18px">${u.name[0].toUpperCase()}</div>
+    <div class="staff-avatar" style="background:${esc(u.color)};width:48px;height:48px;font-size:18px">${esc(u.name[0].toUpperCase())}</div>
     <div>
-      <div style="font-size:18px;font-weight:800">${u.name}</div>
+      <div style="font-size:18px;font-weight:800">${esc(u.name)}</div>
       <div style="font-size:12px;color:var(--text2)">Joined ${fmtDate(u.joinDate)} · ${fmtMoney(u.wage)}/day current</div>
     </div>
   </div>`;
@@ -1993,12 +2413,12 @@ function renderHisabSummary() {
       <div style="text-align:center">
         <input type="number" value="${row.wage}" min="0"
           style="width:65px;text-align:center;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;background:#f8faff;color:var(--text);outline:none"
-          onchange="updateHisabWage('${userId}','${row.ym}',this.value)">
+          onchange="updateHisabWage(${jsArg(userId)},${jsArg(row.ym)},this.value)">
       </div>
       <div id="earned_${row.ym}" style="text-align:right;font-size:12px;font-weight:700;color:var(--green)">${fmtMoney(row.earned)}</div>
       <div style="text-align:right;font-size:12px;font-weight:700;color:var(--red)">${row.adv>0?fmtMoney(row.adv):'—'}</div>
       <div style="text-align:right">
-        <button onclick="openHisabDetail('${userId}','${row.ym}')"
+        <button onclick="openHisabDetail(${jsArg(userId)},${jsArg(row.ym)})"
           style="background:var(--blue-bg);border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;color:var(--purple)">▶</button>
       </div>
     </div>`;
@@ -2020,17 +2440,20 @@ function renderHisabSummary() {
         <div style="font-size:16px;font-weight:800;color:var(--red)">${fmtMoney(totalAdvances)}</div>
       </div>
     </div>
+    ${totalSettlements > 0 ? `<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;font-weight:700;color:var(--text2)">
+      <span>💵 Salary paid (settlements)</span><span style="color:var(--purple)">−${fmtMoney(totalSettlements)}</span>
+    </div>` : ''}
   </div>`;
 
   html += `<div id="hisabBalanceCard" style="background:${closingBalance>=0?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:12px">
     <div style="font-size:12px;font-weight:600;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px">Final Balance</div>
     <div id="hisabFinalBalance" style="font-size:36px;font-weight:800;font-family:'Poppins',sans-serif;margin:6px 0">${closingBalance>=0?'+':''}${fmtMoney(Math.abs(closingBalance))}</div>
-    <div id="hisabFinalLabel" style="font-size:14px;font-weight:700;opacity:0.9">${balLabel}</div>
+    <div id="hisabFinalLabel" style="font-size:14px;font-weight:700;opacity:0.9">${esc(balLabel)}</div>
   </div>`;
 
   html += `<div style="display:flex;gap:8px;margin-bottom:8px">
-    <button class="btn-sm btn-sm-purple" style="flex:1" onclick="saveHisabWages('${userId}')">💾 Save Wages</button>
-    <button class="btn-sm" style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="exportHisabPDF('${userId}')">📄 Summary PDF</button>
+    <button class="btn-sm btn-sm-purple" style="flex:1" onclick="saveHisabWages(${jsArg(userId)})">💾 Save Wages</button>
+    <button class="btn-sm" style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="exportHisabPDF(${jsArg(userId)})">📄 Summary PDF</button>
   </div>`;
 
   document.getElementById('reportSummaryContent').innerHTML = html;
@@ -2053,43 +2476,9 @@ function updateHisabWage(userId, ym, val) {
 }
 
 function recalcHisabTotals(userId) {
-  const users = getData('users', []);
-  const u = users.find(x => x.id === userId);
+  const u = getData('users', []).find(x => x.id === userId);
   if (!u) return;
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
-
-  const startYM = (u.joinDate || todayStr()).substring(0,7);
-  const todayYM = todayStr().substring(0,7);
-  const months  = [];
-  let [sy,sm] = startYM.split('-').map(Number);
-  const [ty,tm] = todayYM.split('-').map(Number);
-  while(sy<ty||(sy===ty&&sm<=tm)){
-    months.push(`${sy}-${String(sm).padStart(2,'0')}`);
-    sm++; if(sm>12){sm=1;sy++;}
-  }
-
-  let totalEarned=0, totalAdvances=0, totalSettlements=0;
-  let openingBalance = 0;
-  advances.filter(a=>a.note&&a.note.includes('Opening Balance')).forEach(a=>{
-    if(a.type==='advance')   openingBalance -= Number(a.amount);
-    if(a.type==='deduction') openingBalance += Number(a.amount);
-  });
-
-  months.forEach(ym => {
-    let days=0;
-    Object.entries(att).forEach(([d,v])=>{ if(d.startsWith(ym)&&!d.includes('_')) days+=Number(v)||0; });
-    const wage = hisabWageOverrides[ym]!==undefined ? hisabWageOverrides[ym] : getWageForDate(u, ym+'-15');
-    totalEarned += days * wage;
-    advances.forEach(a=>{
-      if(!a.date||!a.date.startsWith(ym)) return;
-      if(a.note&&a.note.includes('Opening Balance')) return;
-      if(a.type==='advance')    totalAdvances    += Number(a.amount);
-      if(a.type==='settlement') totalSettlements += Number(a.amount);
-    });
-  });
-
-  const closing = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const { totalEarned, closingBalance: closing } = computeHisab(u, hisabWageOverrides);
   const balEl = document.getElementById('hisabFinalBalance');
   const balLabelEl = document.getElementById('hisabFinalLabel');
   if (balEl) balEl.textContent = `${closing>=0?'+':''}${fmtMoney(Math.abs(closing))}`;
@@ -2132,6 +2521,7 @@ async function saveHisabWages(userId) {
 }
 
 function openHisabDetail(userId, ym) {
+  hisabDetailOpen = { userId, ym };
   const users = getData('users',[]);
   const u = users.find(x=>x.id===userId);
   if(!u) return;
@@ -2152,27 +2542,27 @@ function openHisabDetail(userId, ym) {
     ${dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('')}`;
   for(let i=0;i<firstDay;i++) calHtml+='<div class="cal-day empty"></div>';
 
-  let fullD=0,otD=0,halfD=0,absentD=0,unmarked=0,totalEarned=0;
+  let fullD=0,otD=0,halfD=0,absentD=0,unmarked=0;
   for(let d=1;d<=daysInMonth;d++){
     const ds=`${ym}-${String(d).padStart(2,'0')}`;
     const v=att[ds];
-    const dayWage=getWageForDate(u,ds);
     let cls='cal-day', lbl=String(d);
     if(v===0){cls+=' att-0';absentD++;}
-    else if(v===0.5){cls+=' att-half';halfD++;lbl=`${d}`;}
-    else if(v===1){cls+=' att-1';fullD++;totalEarned+=dayWage;}
-    else if(v===1.5){cls+=' att-ot';otD++;totalEarned+=1.5*dayWage;}
-    else if(v===2){cls+=' att-double';otD++;totalEarned+=2*dayWage;}
+    else if(v===0.5){cls+=' att-half';halfD++;}
+    else if(v===1){cls+=' att-1';fullD++;}
+    else if(v===1.5){cls+=' att-ot';otD++;}
+    else if(v===2){cls+=' att-double';otD++;}
     else unmarked++;
     const remark=att[ds+'_remark']||'';
-    calHtml+=`<div class="${cls}" title="${remark}" style="position:relative">
+    calHtml+=`<div class="${cls}" title="${esc(remark)}" style="position:relative">
       ${lbl}
       ${remark?'<span style="position:absolute;bottom:2px;right:2px;width:4px;height:4px;background:currentColor;border-radius:50%;opacity:0.6"></span>':''}
     </div>`;
   }
   calHtml+=`</div>`;
 
-  const totalDays=fullD+(otD*1)+halfD*0.5;
+  // Same numbers as the Hisab summary row (shared calculation)
+  const { days: totalDays, earned: totalEarned } = monthWork(u, ym, hisabWageOverrides);
   calHtml+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
     <span style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">Full: ${fullD}</span>
     <span style="background:#ede9fe;color:#7c3aed;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">OT: ${otD}</span>
@@ -2198,17 +2588,19 @@ function openHisabDetail(userId, ym) {
     ledgerHtml+=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">No entries for this month</div>`;
   } else {
     monthEntries.forEach(a=>{
-      const isCredit=a.type==='deduction'||a.type==='settlement';
+      const eff=entryEffect(a);
       const icon=a.type==='advance'?'💸':a.type==='settlement'?'💵':'✂️';
+      const amtHtml = eff===0
+        ? `<span style="font-weight:600;font-size:12px;color:var(--text2)">${fmtMoney(a.amount)} · info only</span>`
+        : `<span style="color:${eff>0?'var(--green)':'var(--red)'}">${eff>0?'+':'-'}${fmtMoney(a.amount)}</span>`;
       ledgerHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div><div style="font-weight:700;font-size:13px">${icon} ${a.note||a.type}</div>
+        <div><div style="font-weight:700;font-size:13px">${icon} ${esc(a.note||a.type)}</div>
         <div style="font-size:11px;color:var(--text2)">${fmtDate(a.date)}</div></div>
-        <div style="font-weight:800;font-size:14px;color:${isCredit?'var(--green)':'var(--red)'}">${isCredit?'+':'-'}${fmtMoney(a.amount)}</div>
+        <div style="font-weight:800;font-size:14px">${amtHtml}</div>
       </div>`;
     });
   }
-  const monthAdv=monthEntries.filter(a=>a.type==='advance').reduce((s,a)=>s+Number(a.amount),0);
-  const monthNet=totalEarned-monthAdv;
+  const monthNet=totalEarned+monthEntries.reduce((s,a)=>s+entryEffect(a),0);
   ledgerHtml+=`<div style="display:flex;justify-content:space-between;padding:12px 0 0;margin-top:4px">
     <div style="font-weight:800;color:var(--text2)">Month Net</div>
     <div style="font-weight:800;font-size:16px;color:${monthNet>=0?'var(--green)':'var(--red)'}">${monthNet>=0?'+':''}${fmtMoney(monthNet)}</div>
@@ -2227,19 +2619,21 @@ function openHisabDetail(userId, ym) {
       <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px">📝 Remarks</div>
       ${remarkDays.map(r=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
         <div style="font-size:11px;color:var(--text2);flex-shrink:0;width:55px">${fmtDate(r.date)}</div>
-        <div style="font-size:13px;color:var(--text)">${r.remark}</div>
+        <div style="font-size:13px;color:var(--text)">${esc(r.remark)}</div>
       </div>`).join('')}
     </div>`;
   }
 
   document.getElementById('reportDetailContent').innerHTML = calHtml + remarksHtml + ledgerHtml +
-    `<button class="btn-primary" onclick="exportDetailPDF('${userId}','${ym}')">📄 Export Month PDF</button>`;
+    `<button class="btn-primary" onclick="exportDetailPDF(${jsArg(userId)},${jsArg(ym)})">📄 Export Month PDF</button>`;
 
   document.getElementById('reportSummaryView').style.display='none';
   document.getElementById('reportDetailView').style.display='block';
 }
 
 function closeHisabDetail() {
+  hisabDetailOpen = null;
+  refreshIfPending();
   document.getElementById('reportDetailView').style.display='none';
   document.getElementById('reportSummaryView').style.display='block';
 }
@@ -2273,44 +2667,40 @@ async function exportHisabPDF(userId) {
   doc.text('Earned',margin+85,y+5);doc.text('Advance',margin+120,y+5);doc.text('Net',margin+158,y+5);
   y+=9;
 
-  const att=getData('attendance',{})[userId]||{};
-  const advances=getData('advances',[]).filter(a=>a.userId===userId);
-  const startYM=(u.joinDate||todayStr()).substring(0,7);
-  const todayYM=todayStr().substring(0,7);
-  const months=[];
-  let [sy,sm]=startYM.split('-').map(Number);
-  const [ty,tm]=todayYM.split('-').map(Number);
-  while(sy<ty||(sy===ty&&sm<=tm)){months.push(`${sy}-${String(sm).padStart(2,'0')}`);sm++;if(sm>12){sm=1;sy++;}}
-
-  let tD=0,tE=0,tA=0;
-  months.forEach((ym,i)=>{
+  const h = computeHisab(u, hisabWageOverrides);
+  h.monthRows.forEach((row,i)=>{
     if(y>270){doc.addPage();y=20;}
-    const [my,mm]=ym.split('-').map(Number);
+    const [my,mm]=row.ym.split('-').map(Number);
     const mLabel=new Date(my,mm-1,1).toLocaleString('en-IN',{month:'short',year:'2-digit'});
-    let days=0;
-    Object.entries(att).forEach(([d,v])=>{if(d.startsWith(ym)&&!d.includes('_'))days+=Number(v)||0;});
-    const wage=hisabWageOverrides[ym]!==undefined?hisabWageOverrides[ym]:getWageForDate(u,ym+'-15');
-    const earned=days*wage;
-    let adv=0;
-    advances.forEach(a=>{if(a.date&&a.date.startsWith(ym)&&a.type==='advance'&&!(a.note&&a.note.includes('Opening Balance')))adv+=Number(a.amount);});
-    const net=earned-adv;
-    tD+=days;tE+=earned;tA+=adv;
+    const net=row.earned-row.adv-row.settle;
     if(i%2===0){doc.setFillColor(248,250,255);doc.rect(margin,y-2,180,7,'F');}
     doc.setTextColor(30,30,46);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
-    doc.text(mLabel,margin+2,y+3.5);doc.text(String(days),margin+38,y+3.5);doc.text(pdfMoney(wage),margin+55,y+3.5);
-    doc.setTextColor(22,163,74);doc.text(pdfMoney(earned),margin+85,y+3.5);
-    doc.setTextColor(220,38,38);doc.text(adv>0?pdfMoney(adv):'-',margin+120,y+3.5);
-    doc.setTextColor(net>=0?22:220,net>=0?163:38,net>=0?74:38);doc.text(pdfMoney(Math.abs(net)),margin+158,y+3.5);
+    doc.text(mLabel,margin+2,y+3.5);doc.text(String(row.days),margin+38,y+3.5);doc.text(pdfMoney(row.wage),margin+55,y+3.5);
+    doc.setTextColor(22,163,74);doc.text(pdfMoney(row.earned),margin+85,y+3.5);
+    doc.setTextColor(220,38,38);doc.text(row.adv>0?pdfMoney(row.adv):'-',margin+120,y+3.5);
+    doc.setTextColor(net>=0?22:220,net>=0?163:38,net>=0?74:38);doc.text(`${net<0?'-':''}${pdfMoney(Math.abs(net))}`,margin+158,y+3.5);
     y+=7;
   });
   y+=4;
+  if(y>250){doc.addPage();y=20;}
   doc.setFillColor(238,242,255);doc.roundedRect(margin,y,180,12,3,3,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(30,30,46);
-  doc.text(`Total: ${tD} days`,margin+2,y+8);
-  doc.setTextColor(22,163,74);doc.text(pdfMoney(tE),margin+85,y+8);
-  doc.setTextColor(220,38,38);doc.text(pdfMoney(tA),margin+120,y+8);
-  y+=18;
-  const closing=tE-tA;
+  doc.text(`Total: ${h.totalDays} days`,margin+2,y+8);
+  doc.setTextColor(22,163,74);doc.text(pdfMoney(h.totalEarned),margin+85,y+8);
+  doc.setTextColor(220,38,38);doc.text(pdfMoney(h.totalAdvances),margin+120,y+8);
+  y+=16;
+  // Other items that make up the final balance (same as the Hisab screen)
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(30,30,46);
+  if(h.openingBalance!==0){
+    doc.text(`Opening balance (${h.openingBalance>=0?'pending salary':'advance'})`,margin+2,y);
+    doc.text(`${h.openingBalance>=0?'+':'-'}${pdfMoney(Math.abs(h.openingBalance))}`,margin+177,y,{align:'right'});y+=6;
+  }
+  if(h.totalSettlements>0){
+    doc.text('Salary paid (settlements)',margin+2,y);
+    doc.text(`-${pdfMoney(h.totalSettlements)}`,margin+177,y,{align:'right'});y+=6;
+  }
+  y+=2;
+  const closing=h.closingBalance;
   doc.setFillColor(...(closing>=0?[22,163,74]:[220,38,38]));
   doc.roundedRect(margin,y,180,14,4,4,'F');
   doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
@@ -2422,15 +2812,15 @@ function renderAdminRequests() {
     ? '<div class="empty-state"><div class="emoji">💰</div><p>No advance requests</p></div>'
     : advReqs.map(r => {
         const u = users.find(x => x.id === r.userId);
-        return `<div class="request-card ${r.status}">
+        return `<div class="request-card ${esc(r.status)}">
           <div class="request-top">
-            <div class="request-type">💰 ${u?u.name:'Unknown'} — ${fmtMoney(r.amount)}</div>
-            <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+            <div class="request-type">💰 ${esc(u?u.name:'Unknown')} — ${fmtMoney(r.amount)}</div>
+            <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
           </div>
-          <div class="request-detail">${r.reason||''} · ${fmtDate(r.date)}</div>
+          <div class="request-detail">${esc(r.reason||'')} · ${fmtDate(r.date)}</div>
           ${r.status==='pending'?`<div class="request-actions">
-            <button class="btn-approve" onclick="handleRequest('${r.id}','approved','advance')">✓ Approve</button>
-            <button class="btn-reject"  onclick="handleRequest('${r.id}','rejected','advance')">✗ Reject</button>
+            <button class="btn-approve" onclick="handleRequest(${jsArg(r.id)},'approved','advance')">✓ Approve</button>
+            <button class="btn-reject"  onclick="handleRequest(${jsArg(r.id)},'rejected','advance')">✗ Reject</button>
           </div>`:''}
         </div>`;
       }).join('');
@@ -2441,15 +2831,15 @@ function renderAdminRequests() {
     ? '<div class="empty-state"><div class="emoji">🗓️</div><p>No leave requests</p></div>'
     : leaveReqs.map(r => {
         const u = users.find(x => x.id === r.userId);
-        return `<div class="request-card ${r.status}">
+        return `<div class="request-card ${esc(r.status)}">
           <div class="request-top">
-            <div class="request-type">🗓️ ${u?u.name:'Unknown'}</div>
-            <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+            <div class="request-type">🗓️ ${esc(u?u.name:'Unknown')}</div>
+            <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
           </div>
-          <div class="request-detail">${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)} · ${r.reason||''}</div>
+          <div class="request-detail">${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)} · ${esc(r.reason||'')}</div>
           ${r.status==='pending'?`<div class="request-actions">
-            <button class="btn-approve" onclick="handleRequest('${r.id}','approved','leave')">✓ Approve</button>
-            <button class="btn-reject"  onclick="handleRequest('${r.id}','rejected','leave')">✗ Reject</button>
+            <button class="btn-approve" onclick="handleRequest(${jsArg(r.id)},'approved','leave')">✓ Approve</button>
+            <button class="btn-reject"  onclick="handleRequest(${jsArg(r.id)},'rejected','leave')">✗ Reject</button>
           </div>`:''}
         </div>`;
       }).join('');
@@ -2464,24 +2854,24 @@ function renderEmpRequests() {
   const advReqs = empReqs.filter(r => r.type === 'advance');
   advList.innerHTML = advReqs.length === 0
     ? '<div class="empty-state"><div class="emoji">💰</div><p>No advance requests yet</p></div>'
-    : advReqs.map(r => `<div class="request-card ${r.status}">
+    : advReqs.map(r => `<div class="request-card ${esc(r.status)}">
         <div class="request-top">
           <div class="request-type">💰 ${fmtMoney(r.amount)}</div>
-          <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+          <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
         </div>
-        <div class="request-detail">${r.reason||''} · ${fmtDate(r.date)}</div>
+        <div class="request-detail">${esc(r.reason||'')} · ${fmtDate(r.date)}</div>
       </div>`).join('');
 
   const leaveList  = document.getElementById('empLeaveList');
   const leaveReqs  = empReqs.filter(r => r.type === 'leave');
   leaveList.innerHTML = leaveReqs.length === 0
     ? '<div class="empty-state"><div class="emoji">🗓️</div><p>No leave requests yet</p></div>'
-    : leaveReqs.map(r => `<div class="request-card ${r.status}">
+    : leaveReqs.map(r => `<div class="request-card ${esc(r.status)}">
         <div class="request-top">
           <div class="request-type">🗓️ ${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)}</div>
-          <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+          <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
         </div>
-        <div class="request-detail">${r.reason||''}</div>
+        <div class="request-detail">${esc(r.reason||'')}</div>
       </div>`).join('');
 }
 
@@ -2531,11 +2921,11 @@ function renderStaff() {
     const chip = v !== undefined
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${ATT_LABELS[String(v)]}</span>`
       : `<span class="chip chip-yellow">—</span>`;
-    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')" style="${isInactive?'opacity:0.6;':''}">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'};${isInactive?'filter:grayscale(1)':''}">${u.name[0].toUpperCase()}</div>
+    return `<div class="staff-item" onclick="openStaffDetail(${jsArg(u.id)})" style="${isInactive?'opacity:0.6;':''}">
+      <div class="staff-avatar" style="background:${esc(u.color||'#6c63ff')};${isInactive?'filter:grayscale(1)':''}">${esc(u.name[0].toUpperCase())}</div>
       <div class="staff-info">
-        <div class="staff-name">${u.name}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
-        <div class="staff-role">${u.role} · ${u.userId}</div>
+        <div class="staff-name">${esc(u.name)}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
+        <div class="staff-role">${esc(u.role)} · ${esc(u.userId)}</div>
       </div>
       <div style="text-align:right"><div class="staff-wage">${fmtMoney(u.wage)}/day</div><div class="mt8">${chip}</div></div>
     </div>`;
@@ -2568,8 +2958,19 @@ function toggleInactiveSection() {
   icon.textContent = isHidden ? '▾' : '▸';
 }
 
+// Only admin may change an existing staff member's login (User ID / password)
+function setLoginFieldsLocked(locked) {
+  ['sfUserId', 'sfPass'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = locked;
+    el.style.opacity = locked ? '0.6' : '1';
+  });
+  document.getElementById('sfPass').placeholder = locked ? 'Only admin can change passwords' : 'Set a password';
+}
+
 function openAddStaffModal() {
   editingStaffId = null;
+  setLoginFieldsLocked(false);
   document.getElementById('addStaffTitle').textContent = 'Add Staff Member';
   ['sfName','sfPhone','sfWage','sfUserId','sfPass'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('sfOpeningBal').value = '0';
@@ -2592,22 +2993,73 @@ async function saveStaff() {
   const pass     = document.getElementById('sfPass').value.trim();
   const joinDate = document.getElementById('sfJoinDate').value;
 
-  if (!name || !userId || !pass) { showToast('Name, User ID and Password are required'); return; }
+  // Managers editing staff can't touch the login (fields are locked)
+  const loginLocked = !!editingStaffId && currentUser.role !== 'admin';
+  if (!name || (!loginLocked && (!userId || !pass))) { showToast('Name, User ID and Password are required'); return; }
+  if (!loginLocked && pass.length < 4) { showToast('Password must be at least 4 characters'); return; }
+  if (!['employee', 'manager'].includes(role)) { showToast('Invalid role'); return; }
 
   const users = getData('users', []);
+  const otherHasLogin = !loginLocked && users.some(u => u.id !== editingStaffId && loginEmail(u.userId) === loginEmail(userId));
+  if (otherHasLogin) { showToast('User ID already exists!'); return; }
   showLoader(true);
 
+  try {
   if (editingStaffId) {
-    const users = getData('users', []);
-    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, wageHistory: tempWageHistory };
+    const old     = users.find(u => u.id === editingStaffId);
+    const oldCred = getData('credentials', {})[editingStaffId];
+    const data = { name, phone, wage: Number(wage), role, userId: loginLocked ? old.userId : userId, joinDate, wageHistory: tempWageHistory };
+    const active = old?.active !== false;
+    if (loginLocked) {
+      // Manager: profile/wage/role only — keep the login exactly as it is
+      if (old?.authUid) await setDoc(doc(db, 'uidMap', old.authUid), { userDocId: editingStaffId, role, active });
+    } else if (old?.authUid && oldCred) {
+      let uid = old.authUid;
+      const loginChanged = loginEmail(old.userId) !== loginEmail(userId);
+      const passChanged  = pass !== oldCred.password;
+      if (loginChanged || passChanged) {
+        try {
+          const oldSess = await signInWithEmailAndPassword(staffAuth, loginEmail(old.userId), authPassword(oldCred.password));
+          if (loginChanged) {
+            // New login ID → new Auth account, then remove the old one
+            const created = await createUserWithEmailAndPassword(staffAuth, loginEmail(userId), authPassword(pass));
+            const newUid = created.user.uid;
+            await signInWithEmailAndPassword(staffAuth, loginEmail(old.userId), authPassword(oldCred.password));
+            await deleteUser(staffAuth.currentUser);
+            await deleteDoc(doc(db, 'uidMap', uid));
+            uid = newUid;
+          } else {
+            await updatePassword(oldSess.user, authPassword(pass));
+          }
+        } finally {
+          await signOut(staffAuth).catch(() => {});
+        }
+      }
+      data.authUid = uid;
+      await setDoc(doc(db, 'uidMap', uid), { userDocId: editingStaffId, role, active });
+      await setDoc(doc(db, 'credentials', editingStaffId), { password: pass, role, uid, userId });
+      getData('credentials', {})[editingStaffId] = { password: pass, role, uid, userId };
+    } else {
+      // Not yet migrated to secure login — keep legacy field until "Secure staff logins" runs
+      data.password = pass;
+    }
     await saveUserDoc(editingStaffId, data);
     showToast('✅ Staff updated!');
   } else {
-    if (users.find(u => u.userId === userId)) { showLoader(false); showToast('User ID already exists!'); return; }
     const colorIdx = users.filter(u => u.role !== 'admin').length % COLORS.length;
     const newId    = 'emp_' + Date.now();
-    const data     = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, color: COLORS[colorIdx] };
+    let uid;
+    try {
+      const created = await createUserWithEmailAndPassword(staffAuth, loginEmail(userId), authPassword(pass));
+      uid = created.user.uid;
+    } finally {
+      await signOut(staffAuth).catch(() => {});
+    }
+    const data     = { name, phone, wage: Number(wage), role, userId, joinDate, color: COLORS[colorIdx], authUid: uid };
     await saveUserDoc(newId, data);
+    await setDoc(doc(db, 'uidMap', uid), { userDocId: newId, role, active: true });
+    await setDoc(doc(db, 'credentials', newId), { password: pass, role, uid, userId });
+    getData('credentials', {})[newId] = { password: pass, role, uid, userId };
     // Save opening balance if provided
     const openingBal = Number(document.getElementById('sfOpeningBal').value || 0);
     const openingBalType = document.getElementById('sfOpeningBalType').value;
@@ -2617,6 +3069,12 @@ async function saveStaff() {
       await addAdvance({ userId: newId, amount: openingBal, note: balNote, date: todayStr(), month: todayStr().substring(0,7), type: balType });
     }
     showToast('✅ Staff added!');
+  }
+  } catch (e) {
+    console.error('Save staff error:', e);
+    showLoader(false);
+    showToast(e.code === 'auth/email-already-in-use' ? 'User ID already exists!' : '⚠️ Could not save: ' + (e.code || e.message));
+    return;
   }
 
   showLoader(false);
@@ -2634,17 +3092,17 @@ function openStaffDetail(userId) {
 
   document.getElementById('staffDetailContent').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <div class="staff-avatar" style="background:${u.color};width:56px;height:56px;font-size:22px">${u.name[0].toUpperCase()}</div>
+      <div class="staff-avatar" style="background:${esc(u.color)};width:56px;height:56px;font-size:22px">${esc(u.name[0].toUpperCase())}</div>
       <div>
-        <div style="font-size:20px;font-weight:800">${u.name}</div>
-        <div class="text-xs">${u.role} · Joined ${fmtDate(u.joinDate)}</div>
+        <div style="font-size:20px;font-weight:800">${esc(u.name)}</div>
+        <div class="text-xs">${esc(u.role)} · Joined ${fmtDate(u.joinDate)}</div>
         <div style="font-size:12px;color:var(--purple);font-weight:700">${fmtMoney(u.wage)}/day</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div style="background:var(--blue-bg);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:12px;color:var(--text2)">Phone</div>
-        <div style="font-weight:700">${u.phone||'—'}</div>
+        <div style="font-weight:700">${esc(u.phone||'—')}</div>
       </div>
       <div style="background:#fee2e2;border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:12px;color:var(--text2)">Advance Balance</div>
@@ -2652,14 +3110,14 @@ function openStaffDetail(userId) {
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-primary" style="flex:1" onclick="editStaff(\'${u.id}\')">✏️ Edit</button>
-      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}(\'${u.id}\')">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
-      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff(\'${u.id}\')">🗑️ Delete</button>
+      <button class="btn-primary" style="flex:1" onclick="editStaff(${jsArg(u.id)})">✏️ Edit</button>
+      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}(${jsArg(u.id)})">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
+      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff(${jsArg(u.id)})">🗑️ Delete</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor('${u.id}')">+ Advance</button>
-      <button class="btn-sm" style="flex:1;background:#dcfce7;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="closeModal('staffDetailModal');openDeductModal('${u.id}')">− Deduct</button>
-      <button class="btn-sm" style="flex:1;background:#ede9fe;color:var(--purple);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="openLedger('${u.id}')">📒 Ledger</button>
+      <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor(${jsArg(u.id)})">+ Advance</button>
+      <button class="btn-sm" style="flex:1;background:#dcfce7;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="closeModal('staffDetailModal');openDeductModal(${jsArg(u.id)})">− Deduct</button>
+      <button class="btn-sm" style="flex:1;background:#ede9fe;color:var(--purple);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="openLedger(${jsArg(u.id)})">📒 Ledger</button>
     </div>
     ${(() => {
       const ob = advances.find(a => a.note && a.note.includes('Opening Balance'));
@@ -2668,14 +3126,14 @@ function openStaffDetail(userId) {
         <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Opening Balance</div>
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div>
-            <div style="font-weight:700">${ob.note}</div>
+            <div style="font-weight:700">${esc(ob.note)}</div>
             <div style="font-size:11px;color:var(--text2)">${fmtDate(ob.date)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
             <div style="font-weight:800;color:${ob.type==='deduction'?'var(--green)':'var(--red)'}">${ob.type==='deduction'?'-':'+'}${fmtMoney(ob.amount)}</div>
-            <button onclick="editOpeningBalance('${ob.id}','${u.id}',${ob.amount},'${ob.type}')"
+            <button onclick="editOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)},${Number(ob.amount)||0},${jsArg(ob.type)})"
               style="background:#ede9fe;color:var(--purple);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Edit</button>
-            <button onclick="deleteOpeningBalance('${ob.id}','${u.id}')"
+            <button onclick="deleteOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)})"
               style="background:#fee2e2;color:var(--red);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Delete</button>
           </div>
         </div>
@@ -2687,7 +3145,7 @@ function openStaffDetail(userId) {
       : advances.filter(a => !(a.note && a.note.includes('Opening Balance'))).map(a=>`<div class="advance-item">
         <div class="advance-info">
           <div class="adv-date">${fmtDate(a.date)}</div>
-          <div class="adv-note">${a.note||'Advance'}</div>
+          <div class="adv-note">${esc(a.note||'Advance')}</div>
           ${a.type==='deduction'?'<div style="font-size:10px;color:var(--green)">DEDUCTION</div>':''}
           ${a.type==='settlement'?'<div style="font-size:10px;color:var(--purple)">SETTLEMENT</div>':''}
         </div>
@@ -2708,7 +3166,8 @@ function editStaff(userId) {
   document.getElementById('sfWage').value     = u.wage;
   document.getElementById('sfRole').value     = u.role;
   document.getElementById('sfUserId').value   = u.userId;
-  document.getElementById('sfPass').value     = u.password;
+  document.getElementById('sfPass').value     = u.password ?? getData('credentials', {})[u.id]?.password ?? '';
+  setLoginFieldsLocked(currentUser.role !== 'admin');
   document.getElementById('sfJoinDate').value = u.joinDate||'';
 
   // Init tempWageHistory from existing data
@@ -2722,16 +3181,111 @@ function editStaff(userId) {
   openModal('addStaffModal');
 }
 
-async function deleteStaff(userId) {
+// What would be lost if this staff member were deleted
+function staffRecordCounts(userId) {
+  const att = getData('attendance', {})[userId] || {};
+  return {
+    days:     Object.keys(att).filter(isDayKey).length,
+    remarks:  Object.keys(att).filter(k => k.endsWith('_remark')).length,
+    ledger:   getData('advances', []).filter(a => a.userId === userId).length,
+    requests: getData('requests', []).filter(r => r.userId === userId).length
+  };
+}
+
+function deleteStaff(userId) {
   const u = getData('users', []).find(x => x.id === userId);
-  const name = u ? u.name : 'this staff member';
-  if (!confirm(`Delete ${name}?\nAll their attendance and records will be removed.\nThis cannot be undone.`)) return;
+  if (!u) return;
+  const c = staffRecordCounts(userId);
+
+  // Nothing recorded yet (e.g. added by mistake) → simple confirm
+  if (c.days === 0 && c.ledger === 0 && c.requests === 0) {
+    if (!confirm(`Delete ${u.name}?\nThey have no attendance or ledger records.\nTheir login will be removed. This cannot be undone.`)) return;
+    doDeleteStaff(userId);
+    return;
+  }
+
+  const items = [
+    c.days     ? `📅 <b>${c.days}</b> day${c.days>1?'s':''} of attendance` : '',
+    c.remarks  ? `📝 <b>${c.remarks}</b> remark${c.remarks>1?'s':''}` : '',
+    c.ledger   ? `💰 <b>${c.ledger}</b> ledger entr${c.ledger>1?'ies':'y'} (advances, deductions, settlements)` : '',
+    c.requests ? `📩 <b>${c.requests}</b> leave/advance request${c.requests>1?'s':''}` : ''
+  ].filter(Boolean).map(t => `<div style="padding:4px 0">${t}</div>`).join('');
+  const isInactive = u.active === false;
+
+  document.getElementById('deleteStaffContent').innerHTML = `
+    <div class="modal-title">Delete ${esc(u.name)}?</div>
+    <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.5">
+      <div style="font-weight:800;color:#c2410c;margin-bottom:6px">⚠️ This will permanently erase:</div>
+      ${items}
+      <div style="margin-top:8px;color:var(--text2)">Their hisab, ledger and PDFs can never be produced again.</div>
+    </div>
+    ${isInactive
+      ? `<div style="font-size:13px;color:var(--text2);margin-bottom:12px">${esc(u.name)} is already deactivated — they're hidden from Daily Mark and the active staff list, and their records are kept. You usually don't need to delete.</div>`
+      : `<div style="font-size:13px;color:var(--text2);margin-bottom:12px"><b style="color:var(--text)">Recommended:</b> deactivate instead. They'll be hidden from Daily Mark and the staff list, but their attendance and ledger stay available.</div>
+         <button class="btn-primary mb8" onclick="closeModal('deleteStaffModal');deactivateStaff(${jsArg(userId)}, true)">⏸ Deactivate instead</button>`}
+    <button class="btn-secondary mb8" style="color:var(--red)" onclick="confirmDeleteEverything(${jsArg(userId)})">🗑️ Delete ${esc(u.name)} and all records</button>
+    <button class="btn-secondary" onclick="closeModal('deleteStaffModal')">Cancel</button>`;
+  openModal('deleteStaffModal');
+}
+
+function confirmDeleteEverything(userId) {
+  const u = getData('users', []).find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Last check: permanently delete ${u.name} and ALL their attendance, ledger entries and requests?\nThis cannot be undone.`)) return;
+  closeModal('deleteStaffModal');
+  doDeleteStaff(userId);
+}
+
+async function doDeleteStaff(userId) {
+  const u = getData('users', []).find(x => x.id === userId);
+  if (!u) return;
   showLoader(true);
-  await deleteUserDoc(userId);
+  const problems = [];
+  const tryDo = async (label, fn) => { try { await fn(); } catch (e) { console.warn(label, e); problems.push(label); } };
+
+  // 1. Remove their login first so the account can no longer sign in
+  const cred = getData('credentials', {})[userId];
+  if (u.authUid) {
+    if (cred) {
+      try {
+        await signInWithEmailAndPassword(staffAuth, loginEmail(u.userId), authPassword(cred.password));
+        await deleteUser(staffAuth.currentUser);
+      } catch (e) { console.warn('Could not delete auth account', e); }
+      finally { await signOut(staffAuth).catch(() => {}); }
+    }
+    await tryDo('login link', () => deleteDoc(doc(db, 'uidMap', u.authUid)));
+    if (currentUser.role === 'admin') await tryDo('saved password', () => deleteDoc(doc(db, 'credentials', userId)));
+  }
+
+  // 2. Their records
+  await tryDo('attendance', () => deleteDoc(doc(db, 'attendance', userId)));
+  for (const a of getData('advances', []).filter(a => a.userId === userId)) {
+    await tryDo('ledger entry', () => deleteDoc(doc(db, 'advances', a.id)));
+  }
+  for (const r of getData('requests', []).filter(r => r.userId === userId)) {
+    await tryDo('request', () => deleteDoc(doc(db, 'requests', r.id)));
+  }
+  for (const n of getData('notifications', []).filter(n => n.for === userId)) {
+    // only admin may delete notifications; harmless to leave them for managers
+    try { await deleteDoc(doc(db, 'notifications', n.id)); } catch (e) {}
+  }
+
+  // 3. The staff record itself
+  await tryDo('staff record', () => deleteUserDoc(userId));
+
+  // Update local cache
+  const att = getData('attendance', {}); delete att[userId]; setCache('attendance', att);
+  setCache('advances', getData('advances', []).filter(a => a.userId !== userId));
+  setCache('requests', getData('requests', []).filter(r => r.userId !== userId));
+  setCache('notifications', getData('notifications', []).filter(n => n.for !== userId));
+  const creds = getData('credentials', {}); delete creds[userId];
+
   showLoader(false);
   closeModal('staffDetailModal');
   renderStaff();
-  showToast('Staff removed');
+  renderHome();
+  if (problems.length) alert(`${u.name} was removed, but some items could not be deleted:\n• ${[...new Set(problems)].join('\n• ')}\nCheck your connection and try again.`);
+  else showToast(`🗑️ ${u.name} and their records deleted`);
 }
 
 // ══════════════════════════════════════════
@@ -2739,7 +3293,7 @@ async function deleteStaff(userId) {
 // ══════════════════════════════════════════
 function populateAdvEmpSelect() {
   const users = getData('users', []).filter(u => u.role !== 'admin');
-  document.getElementById('advEmpSelect').innerHTML = users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+  document.getElementById('advEmpSelect').innerHTML = users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
 }
 
 function openAddAdvanceModalFor(userId) {
@@ -2818,7 +3372,7 @@ function openDeductModal(userId) {
   deductingUserId = userId;
   const u       = getData('users', []).find(x => x.id === userId);
   const balance = getAdvanceBalance(userId);
-  document.getElementById('deductEmpInfo').innerHTML = `<div class="flex-between"><span class="fw700">${u?.name}</span><span class="text-red fw700">Balance: ${fmtMoney(balance)}</span></div>`;
+  document.getElementById('deductEmpInfo').innerHTML = `<div class="flex-between"><span class="fw700">${esc(u?.name)}</span><span class="text-red fw700">Balance: ${fmtMoney(balance)}</span></div>`;
   document.getElementById('deductAmount').value = '';
   document.getElementById('deductNote').value   = '';
   openModal('deductModal');
@@ -2844,13 +3398,13 @@ async function saveDeduction() {
 let editAttUserId = null;
 
 function openEditAttModal(userId, date) {
-  if (currentUser.role !== 'admin') return;
+  if (!isStaffRole(currentUser)) return;
   editAttUserId = userId;
   const u   = getData('users', []).find(x => x.id === userId);
   const att = getData('attendance', {});
   const cur = att[userId]?.[date];
   const existingRemark = att[userId]?.[date + '_remark'] || '';
-  document.getElementById('editAttInfo').innerHTML   = `<div class="fw700">${u?.name||'Unknown'}</div>`;
+  document.getElementById('editAttInfo').innerHTML   = `<div class="fw700">${esc(u?.name||'Unknown')}</div>`;
   document.getElementById('editAttDate').value       = date;
   document.getElementById('editAttValue').value      = cur !== undefined ? String(cur) : '1';
   document.getElementById('editAttRemark').value     = existingRemark;
@@ -2871,6 +3425,7 @@ async function saveEditedAttendance() {
   renderHome();
   renderDailyAtt();
   if (document.getElementById('calendarCard').style.display!=='none') renderCalendar();
+  if (document.getElementById('attTabRegister').style.display!=='none') renderRegister();
 }
 
 // ══════════════════════════════════════════
@@ -2878,6 +3433,8 @@ async function saveEditedAttendance() {
 // ══════════════════════════════════════════
 function renderProfile() {
   document.getElementById('changePassBtn').style.display = currentUser.role==='admin' ? 'block':'none';
+  const needsMigration = currentUser.role === 'admin' && getData('users', []).some(u => u.password !== undefined);
+  document.getElementById('migrateBtn').style.display = needsMigration ? 'block' : 'none';
   document.getElementById('profileAvatarBig').textContent  = currentUser.name[0].toUpperCase();
   document.getElementById('profileAvatarBig').style.background = currentUser.color||'var(--purple)';
   document.getElementById('profileName').textContent       = currentUser.name;
@@ -2888,7 +3445,7 @@ function renderProfile() {
   document.getElementById('adminSalarySection').style.display = !isEmp ? 'block':'none';
 
   if (isEmp) renderEmpSalary();
-  else populateSalaryEmpSelect();
+  // (admin salary view moved to Staff detail — nothing to populate here)
 }
 
 function renderEmpSalary() {
@@ -2897,7 +3454,7 @@ function renderEmpSalary() {
   const att    = getData('attendance', {})[currentUser.id] || {};
   let days = 0, earned = 0;
   Object.entries(att).forEach(([d,v]) => {
-    if (d.startsWith(month)) { days += Number(v); earned += Number(v)*Number(currentUser.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { days += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   const net = Math.max(0, earned-adv);
@@ -2914,46 +3471,9 @@ function renderEmpSalary() {
   document.getElementById('profileAdvanceList').innerHTML = advances.length===0
     ? '<div class="empty-state" style="padding:20px"><p>No transactions yet</p></div>'
     : advances.map(a=>`<div class="advance-item">
-        <div class="advance-info"><div class="adv-date">${fmtDate(a.date)}</div><div class="adv-note">${a.note||'Advance'}</div></div>
+        <div class="advance-info"><div class="adv-date">${fmtDate(a.date)}</div><div class="adv-note">${esc(a.note||'Advance')}</div></div>
         <div class="advance-amount" style="${a.type==='deduction'?'color:var(--green)':''}">${a.type==='deduction'?'-':'+'}${fmtMoney(a.amount)}</div>
       </div>`).join('');
-}
-
-function populateSalaryEmpSelect() {
-  const users = getData('users', []).filter(u => u.role!=='admin');
-  document.getElementById('salaryEmpSelect').innerHTML =
-    '<option value="">-- Select Employee --</option>' +
-    users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
-}
-
-function renderSalaryView() {
-  const userId = document.getElementById('salaryEmpSelect').value;
-  const view   = document.getElementById('adminSalaryView');
-  if (!userId) { view.innerHTML=''; return; }
-  const u     = getData('users', []).find(x => x.id===userId);
-  const now   = new Date();
-  const month = monthStr(now.getFullYear(), now.getMonth());
-  const att   = getData('attendance', {})[userId] || {};
-  let days=0, earned=0;
-  Object.entries(att).forEach(([d,v])=>{
-    if (d.startsWith(month)) { days+=Number(v); earned+=Number(v)*Number(u.wage||0); }
-  });
-  const adv = getAdvanceBalance(userId);
-  const net = Math.max(0, earned-adv);
-  view.innerHTML=`
-    <div class="salary-card mb8">
-      <h3>This Month — ${u.name}</h3>
-      <div class="salary-amount">${fmtMoney(net)}</div>
-      <div class="salary-breakdown">
-        <div class="salary-item"><div class="val">${days}</div><div class="lbl">Days</div></div>
-        <div class="salary-item"><div class="val">${fmtMoney(earned)}</div><div class="lbl">Earned</div></div>
-        <div class="salary-item"><div class="val">${fmtMoney(adv)}</div><div class="lbl">Advance</div></div>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn-primary" style="flex:1" onclick="openDeductModal('${userId}')">Deduct Advance</button>
-      <button class="btn-secondary" style="flex:1" onclick="openAddAdvanceModal()">Add Advance</button>
-    </div>`;
 }
 
 // ══════════════════════════════════════════
@@ -2967,14 +3487,14 @@ async function addAdminNotification(title, body) {
 function updateNotifBadge() {
   const notifs = getData('notifications', []);
   const unread = notifs.filter(n =>
-    (currentUser.role==='admin' ? n.for==='admin' : n.for===currentUser.id) && !n.read
+    isMyNotif(n) && !n.read
   ).length;
   document.getElementById('notifBadge').style.display = unread>0 ? 'block':'none';
 }
 
 async function openNotifPanel() {
   const notifs   = getData('notifications', []);
-  const myNotifs = notifs.filter(n => currentUser.role==='admin' ? n.for==='admin' : n.for===currentUser.id);
+  const myNotifs = notifs.filter(isMyNotif);
   const list     = document.getElementById('notifList');
   list.innerHTML = myNotifs.length===0
     ? '<div class="empty-state"><div class="emoji">🔔</div><p>No notifications</p></div>'
@@ -2982,16 +3502,16 @@ async function openNotifPanel() {
         const d = new Date(n.time);
         const timeStr = d.toLocaleDateString('en-IN')+' '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
         return `<div class="notif-item">
-          <div class="notif-icon" style="background:var(--blue-bg)">${n.title[0]}</div>
+          <div class="notif-icon" style="background:var(--blue-bg)">${esc([...String(n.title||'')][0]||'')}</div>
           <div class="notif-content">
-            <div class="notif-title">${n.title}</div>
-            <div class="notif-body">${n.body}</div>
+            <div class="notif-title">${esc(n.title)}</div>
+            <div class="notif-body">${esc(n.body)}</div>
             <div class="notif-time">${timeStr}</div>
           </div>
         </div>`;
       }).join('');
 
-  await markNotifsRead(currentUser.id, currentUser.role==='admin');
+  await markNotifsRead();
   updateNotifBadge();
   openModal('notifPanel');
 }
@@ -3027,12 +3547,26 @@ async function saveNewPassword() {
   const nw      = document.getElementById('newPass').value;
   const confirm = document.getElementById('confirmPass').value;
   if (!cur||!nw||!confirm) { showToast('Please fill all fields'); return; }
-  if (cur !== currentUser.password) { showToast('❌ Current password is incorrect'); return; }
   if (nw !== confirm) { showToast('❌ New passwords do not match'); return; }
   if (nw.length < 4)  { showToast('Password must be at least 4 characters'); return; }
+  const fbUser = auth.currentUser;
+  if (!fbUser) { showToast('Please log in again'); return; }
   showLoader(true);
-  await saveUserDoc(currentUser.id, { password: nw });
-  currentUser.password = nw;
+  try {
+    await reauthenticateWithCredential(fbUser, EmailAuthProvider.credential(fbUser.email, authPassword(cur)));
+  } catch (e) {
+    showLoader(false);
+    showToast(e.code === 'auth/too-many-requests' ? 'Too many attempts, try later' : '❌ Current password is incorrect');
+    return;
+  }
+  try {
+    await updatePassword(fbUser, authPassword(nw));
+    await setDoc(doc(db, 'credentials', currentUser.id), { password: nw }, { merge: true });
+  } catch (e) {
+    showLoader(false);
+    showToast('⚠️ Could not update password');
+    return;
+  }
   showLoader(false);
   closeModal('changePassModal');
   showToast('✅ Password updated!');
@@ -3042,10 +3576,10 @@ async function saveNewPassword() {
 // MODAL HELPERS
 // ══════════════════════════════════════════
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); refreshIfPending(); }
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => { if (e.target===overlay) overlay.classList.remove('open'); });
+  overlay.addEventListener('click', e => { if (e.target===overlay) { overlay.classList.remove('open'); refreshIfPending(); } });
 });
 
 // ══════════════════════════════════════════
@@ -3101,7 +3635,7 @@ function attBtnKeydown(e, userId, val, idx) {
   if (e.key === 'Tab' && e.shiftKey && idx === 0) {
     e.preventDefault();
     // Find previous employee
-    const users = getData('users', []).filter(u => u.role !== 'admin');
+    const users = dailyMarkUsers();
     const curIdx = users.findIndex(u => u.id === userId);
     if (curIdx > 0) {
       const prevUser = users[curIdx - 1];
@@ -3115,7 +3649,7 @@ function attBtnKeydown(e, userId, val, idx) {
 // Handled via keydown on remarks input
 function remarkKeydown(e, userId) {
   if (e.key === 'Tab' && !e.shiftKey) {
-    const users = getData('users', []).filter(u => u.role !== 'admin');
+    const users = dailyMarkUsers();
     const curIdx = users.findIndex(u => u.id === userId);
     if (curIdx < users.length - 1) {
       e.preventDefault();
@@ -3181,55 +3715,7 @@ function renderLedger() {
   const u       = users.find(x => x.id === userId);
   if (!u) return;
 
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
-  const wage     = Number(u.wage || 0);
-
-  // ── Build all entries sorted by date ──
-  const allEntries = [];
-
-  // Attendance entries (earned) — use wage applicable on that date
-  Object.entries(att).forEach(([dateKey, val]) => {
-    if (dateKey.includes('_')) return; // skip remark keys
-    const v = Number(val);
-    if (isNaN(v) || v === 0) return; // skip absent / zero
-    const dayWage = getWageForDate(u, dateKey);
-    allEntries.push({ date: dateKey, type: 'earned', amount: v * dayWage, days: v, note: `${ATT_LABELS[String(v)] || String(v)} @ ${fmtMoney(dayWage)}/day` });
-  });
-
-  // Advance / deduction / settlement entries
-  advances.forEach(a => {
-    allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
-  });
-
-  allEntries.sort((a, b) => a.date.localeCompare(b.date));
-
-  // ── Calculate opening balance (everything before fromVal) ──
-  let openingBalance = 0;
-  allEntries.forEach(e => {
-    if (e.date >= fromVal) return;
-    if (e.type === 'earned')    openingBalance += e.amount;
-    if (e.type === 'advance')   openingBalance -= e.amount;
-    if (e.type === 'deduction') openingBalance += e.amount; // deduction reduces advance balance = increases net
-    if (e.type === 'settlement') openingBalance -= e.amount;
-  });
-
-  // ── Entries within range ──
-  const rangeEntries = allEntries.filter(e => e.date >= fromVal && e.date <= toVal);
-
-  let totalEarned     = 0;
-  let totalAdvances   = 0;
-  let totalSettlements = 0;
-  let totalDeductions = 0;
-
-  rangeEntries.forEach(e => {
-    if (e.type === 'earned')     totalEarned      += e.amount;
-    if (e.type === 'advance')    totalAdvances    += e.amount;
-    if (e.type === 'settlement') totalSettlements += e.amount;
-    if (e.type === 'deduction')  totalDeductions  += e.amount;
-  });
-
-  const closingBalance = openingBalance + totalEarned - totalAdvances + totalDeductions - totalSettlements;
+  const { rangeEntries, openingBalance, closingBalance, totalEarned, totalAdvances, totalSettlements } = buildLedger(u, fromVal, toVal);
 
   // ── Render ──
   const balColor = (bal) => bal >= 0 ? 'var(--green)' : 'var(--red)';
@@ -3267,12 +3753,15 @@ function renderLedger() {
 
       if (e.type === 'earned')     { credit = fmtMoney(e.amount); typeIcon = '💼'; }
       if (e.type === 'advance')    { debit  = fmtMoney(e.amount); typeIcon = '💸'; }
-      if (e.type === 'deduction')  { credit = fmtMoney(e.amount); typeIcon = '✂️'; }
+      if (e.type === 'deduction')  { typeIcon = '✂️'; if (e.effect > 0) credit = fmtMoney(e.amount); }
       if (e.type === 'settlement') { debit  = fmtMoney(e.amount); typeIcon = '💵'; }
+      // Regular deduction = advance recovered from salary: shown for the record, no effect on balance
+      const infoOnly = e.type === 'deduction' && e.effect === 0
+        ? ` <span style="color:var(--text2);font-weight:500;font-size:11px">· ${fmtMoney(e.amount)} recovered from salary (info only)</span>` : '';
 
       html += `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px;gap:4px;padding:9px 12px;background:${bg};border-bottom:1px solid var(--border);font-size:12px">
         <div style="color:var(--text2);font-size:11px">${fmtDate(e.date)}</div>
-        <div style="font-weight:600">${typeIcon} ${e.note || ''}</div>
+        <div style="font-weight:600">${typeIcon} ${esc(e.note || '')}${infoOnly}</div>
         <div style="text-align:right;color:var(--green);font-weight:700">${credit}</div>
         <div style="text-align:right;color:var(--red);font-weight:700">${debit}</div>
       </div>`;
@@ -3358,40 +3847,8 @@ async function exportLedgerPDF() {
   const { jsPDF: JSPDF } = window.jspdf;
   const doc = new JSPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
-  const wage     = Number(u.wage || 0);
-
-  const allEntries = [];
-  Object.entries(att).forEach(([dateKey, val]) => {
-    if (dateKey.includes('_')) return;
-    const v = Number(val);
-    if (isNaN(v) || v === 0) return;
-    const dayWage = getWageForDate(u, dateKey);
-    allEntries.push({ date: dateKey, type: 'earned', amount: v * dayWage, note: `${ATT_LABELS[String(v)] || String(v)} @ ${fmtMoney(dayWage)}/day` });
-  });
-  advances.forEach(a => {
-    allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
-  });
-  allEntries.sort((a, b) => a.date.localeCompare(b.date));
-
-  let openingBalance = 0;
-  allEntries.forEach(e => {
-    if (e.date >= fromVal) return;
-    if (e.type === 'earned')     openingBalance += e.amount;
-    if (e.type === 'advance')    openingBalance -= e.amount;
-    if (e.type === 'deduction')  openingBalance += e.amount;
-    if (e.type === 'settlement') openingBalance -= e.amount;
-  });
-
-  const rangeEntries = allEntries.filter(e => e.date >= fromVal && e.date <= toVal);
-  let totalEarned = 0, totalAdvances = 0, totalSettlements = 0;
-  rangeEntries.forEach(e => {
-    if (e.type === 'earned')     totalEarned      += e.amount;
-    if (e.type === 'advance')    totalAdvances    += e.amount;
-    if (e.type === 'settlement') totalSettlements += e.amount;
-  });
-  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const { rangeEntries, openingBalance, closingBalance, totalEarned, totalAdvances, totalSettlements } = buildLedger(u, fromVal, toVal);
+  const wage = getWageForDate(u, toVal);
 
   const margin = 15;
   let y = margin;
@@ -3446,7 +3903,11 @@ async function exportLedgerPDF() {
     const typeLabel = e.type==='earned'?'Earned':e.type==='advance'?'Advance':e.type==='settlement'?'Settlement':'Deduction';
     const desc = (e.note && e.note.trim()) ? e.note.trim() : typeLabel;
      doc.text(doc.splitTextToSize(desc, 95)[0], margin + 28, y + 4);
-    if (e.type === 'earned' || e.type === 'deduction') {
+    if (e.type === 'deduction' && e.effect === 0) {
+      // record only — recovered from salary, no effect on balance
+      doc.setTextColor(107, 114, 128);
+      doc.text(`(${pdfMoney(e.amount)} info)`, margin + 130, y + 4);
+    } else if (e.type === 'earned' || e.type === 'deduction') {
       doc.setTextColor(22, 163, 74);
       doc.text(pdfMoney(e.amount), margin + 130, y + 4);
     } else {
@@ -3460,8 +3921,9 @@ async function exportLedgerPDF() {
   y += 6;
 
   // Totals
+  if (y > 240) { doc.addPage(); y = 20; }
   doc.setFillColor(238, 242, 255);
-  doc.roundedRect(margin, y, 180, 22, 3, 3, 'F');
+  doc.roundedRect(margin, y, 180, totalSettlements > 0 ? 30 : 22, 3, 3, 'F');
   doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,30,46);
   doc.text(`Total Earned:`, margin + 3, y + 8);
   doc.setTextColor(22, 163, 74);
@@ -3470,6 +3932,13 @@ async function exportLedgerPDF() {
   doc.text(`Total Advances:`, margin + 3, y + 16);
   doc.setTextColor(220, 38, 38);
   doc.text(pdfMoney(totalAdvances), margin + 177, y + 16, { align: 'right' });
+  if (totalSettlements > 0) {
+    doc.setTextColor(30,30,46);
+    doc.text(`Salary Paid (Settlements):`, margin + 3, y + 24);
+    doc.setTextColor(108, 99, 255);
+    doc.text(pdfMoney(totalSettlements), margin + 177, y + 24, { align: 'right' });
+    y += 8;
+  }
   y += 28;
 
   // Closing balance
@@ -3490,6 +3959,119 @@ async function exportLedgerPDF() {
 // ══════════════════════════════════════════
 // WAGE HISTORY
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// MONEY — the ONE balance calculation used by every screen and PDF
+// Balance = what the company owes the employee (+) / employee owes (−)
+//   earned (attendance × wage for that day)      → +
+//   advance (incl. "Opening Balance (Advance)")   → −
+//   settlement (salary paid out)                   → −
+//   "Opening Balance (Pending Salary)"            → +
+//   regular deduction ("advance recovered from salary") → 0, record only
+// ══════════════════════════════════════════
+function isOpeningBal(a) { return !!(a.note && a.note.includes('Opening Balance')); }
+
+function entryEffect(a) {
+  const amt = Number(a.amount) || 0;
+  if (a.type === 'advance')    return -amt;
+  if (a.type === 'settlement') return -amt;
+  if (a.type === 'deduction')  return isOpeningBal(a) ? amt : 0;
+  return 0;
+}
+
+// Wage for one day; a per-month override (unsaved Hisab edit) wins over wage history
+function wageOn(u, dateKey, overrides) {
+  const ov = overrides?.[dateKey.slice(0, 7)];
+  return ov !== undefined ? Number(ov) || 0 : getWageForDate(u, dateKey);
+}
+
+// Days worked + earned for one month (ym = 'YYYY-MM')
+function monthWork(u, ym, overrides) {
+  const att = getData('attendance', {})[u.id] || {};
+  let days = 0, earned = 0;
+  Object.entries(att).forEach(([k, v]) => {
+    if (!isDayKey(k) || !k.startsWith(ym)) return;
+    const n = Number(v) || 0;
+    days += n;
+    earned += n * wageOn(u, k, overrides);
+  });
+  return { days, earned };
+}
+
+function addMonths(ym, n) {
+  let [y, m] = ym.split('-').map(Number);
+  m += n; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; }
+  return `${y}-${String(m).padStart(2, '0')}`;
+}
+
+// Month-by-month hisab from the first activity (or join date) up to this month
+function computeHisab(u, overrides = {}) {
+  const att      = getData('attendance', {})[u.id] || {};
+  const advances = getData('advances', []).filter(a => a.userId === u.id);
+  const todayYM  = todayStr().slice(0, 7);
+
+  const starts = [ (u.joinDate || todayStr()).slice(0, 7) ];
+  Object.keys(att).forEach(k => { if (isDayKey(k)) starts.push(k.slice(0, 7)); });
+  advances.forEach(a => { if (a.date && !isOpeningBal(a)) starts.push(a.date.slice(0, 7)); });
+  let ym = starts.filter(s => /^\d{4}-\d{2}$/.test(s)).sort()[0] || todayYM;
+  if (ym > todayYM) ym = todayYM;
+
+  let openingBalance = 0;
+  advances.filter(isOpeningBal).forEach(a => { openingBalance += entryEffect(a); });
+
+  const monthRows = [];
+  let totalDays = 0, totalEarned = 0, totalAdvances = 0, totalSettlements = 0, totalDeductions = 0;
+  for (; ym <= todayYM; ym = addMonths(ym, 1)) {
+    const { days, earned } = monthWork(u, ym, overrides);
+    let adv = 0, settle = 0, deduct = 0;
+    advances.forEach(a => {
+      if (!a.date || !a.date.startsWith(ym) || isOpeningBal(a)) return;
+      if (a.type === 'advance')    adv    += Number(a.amount) || 0;
+      if (a.type === 'settlement') settle += Number(a.amount) || 0;
+      if (a.type === 'deduction')  deduct += Number(a.amount) || 0;
+    });
+    const wage = overrides[ym] !== undefined ? Number(overrides[ym]) || 0 : getWageForDate(u, ym + '-15');
+    monthRows.push({ ym, days, wage, earned, adv, settle, deduct });
+    totalDays += days; totalEarned += earned; totalAdvances += adv; totalSettlements += settle; totalDeductions += deduct;
+  }
+  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  return { monthRows, openingBalance, totalDays, totalEarned, totalAdvances, totalSettlements, totalDeductions, closingBalance };
+}
+
+// Dated ledger for a From–To range (opening = everything before From)
+function buildLedger(u, fromVal, toVal) {
+  const att      = getData('attendance', {})[u.id] || {};
+  const advances = getData('advances', []).filter(a => a.userId === u.id);
+  const all = [];
+  Object.entries(att).forEach(([k, v]) => {
+    if (!isDayKey(k)) return;
+    const n = Number(v);
+    if (isNaN(n) || n === 0) return;
+    const w = getWageForDate(u, k);
+    all.push({ date: k, type: 'earned', amount: n * w, effect: n * w, days: n,
+               note: `${ATT_LABELS[String(n)] || String(n)} @ ${fmtMoney(w)}/day` });
+  });
+  advances.forEach(a => {
+    all.push({ date: a.date || '', type: a.type, amount: Number(a.amount) || 0, effect: entryEffect(a),
+               note: a.note || '', opening: isOpeningBal(a) });
+  });
+  all.sort((a, b) => a.date.localeCompare(b.date));
+
+  let openingBalance = 0;
+  all.forEach(e => { if (e.date < fromVal) openingBalance += e.effect; });
+  const rangeEntries = all.filter(e => e.date >= fromVal && e.date <= toVal);
+  const t = { earned: 0, advances: 0, settlements: 0, deductions: 0, credits: 0 };
+  rangeEntries.forEach(e => {
+    if (e.type === 'earned')     t.earned      += e.amount;
+    if (e.type === 'advance')    t.advances    += e.amount;
+    if (e.type === 'settlement') t.settlements += e.amount;
+    if (e.type === 'deduction')  { if (e.effect > 0) t.credits += e.amount; else t.deductions += e.amount; }
+  });
+  const closingBalance = openingBalance + rangeEntries.reduce((s, e) => s + e.effect, 0);
+  return { rangeEntries, openingBalance, closingBalance,
+           totalEarned: t.earned, totalAdvances: t.advances, totalSettlements: t.settlements,
+           totalDeductions: t.deductions, totalCredits: t.credits };
+}
 
 // Get applicable wage for a specific date for a user
 function getWageForDate(user, dateStr) {
@@ -3527,7 +4109,7 @@ function renderWageHistoryList(user) {
         <span style="font-weight:700;color:var(--purple)">${fmtMoney(h.wage)}/day</span>
         <span style="font-size:11px;color:var(--text2);margin-left:8px">from ${fmtDate(h.from)}</span>
       </div>
-      <button onclick="removeWageHistoryEntry('${h.from}')"
+      <button onclick="removeWageHistoryEntry(${jsArg(h.from)})"
         style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;font-weight:800;padding:0 4px">✕</button>
     </div>
   `).join('');
@@ -3616,14 +4198,16 @@ async function deleteOpeningBalance(advId, userId) {
 // ══════════════════════════════════════════
 // DEACTIVATE / REACTIVATE STAFF
 // ══════════════════════════════════════════
-async function deactivateStaff(userId) {
+async function deactivateStaff(userId, skipConfirm = false) {
   const users = getData('users', []);
   const u = users.find(x => x.id === userId);
   if (!u) return;
-  if (!confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
+  if (!skipConfirm && !confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list, and won't be able to log in.\nAll their data and ledger will remain intact.`)) return;
   showLoader(true);
   try {
     await updateDoc(doc(db, 'users', userId), { active: false });
+    // Blocks their login (enforced by the security rules too)
+    if (u.authUid) await updateDoc(doc(db, 'uidMap', u.authUid), { active: false });
     const idx = users.findIndex(x => x.id === userId);
     if (idx >= 0) users[idx].active = false;
     setCache('users', users);
@@ -3643,6 +4227,7 @@ async function reactivateStaff(userId) {
   showLoader(true);
   try {
     await updateDoc(doc(db, 'users', userId), { active: true });
+    if (u.authUid) await updateDoc(doc(db, 'uidMap', u.authUid), { active: true });
     const idx = users.findIndex(x => x.id === userId);
     if (idx >= 0) users[idx].active = true;
     setCache('users', users);
@@ -3654,7 +4239,40 @@ async function reactivateStaff(userId) {
   showLoader(false);
 }
 
+// ══════════════════════════════════════════
+// ONE-TIME MIGRATION — create Firebase Auth logins for all existing staff
+// Run by admin BEFORE publishing the new firestore.rules.
+// ══════════════════════════════════════════
+async function migrateAllAccounts() {
+  const pending = getData('users', []).filter(u => u.password !== undefined);
+  if (pending.length === 0) { showToast('✅ All logins are already secured'); renderProfile(); return; }
+  if (!confirm(`Create secure logins for ${pending.length} account(s)?\nEveryone keeps the same User ID and password.`)) return;
+  showLoader(true);
+  const failed = [];
+  for (const u of pending) {
+    try {
+      const cred = await createOrSignIn(staffAuth, u.userId, u.password);
+      await linkAccount(u.id, u, cred.user.uid, u.password);
+      delete u.password;
+      u.authUid = cred.user.uid;
+    } catch (e) {
+      console.error('Migration failed for', u.userId, e);
+      failed.push(`• ${u.name} (${u.userId}): ${e.code || e.message}`);
+    } finally {
+      await signOut(staffAuth).catch(() => {});
+    }
+  }
+  showLoader(false);
+  if (failed.length) {
+    alert(`Secured ${pending.length - failed.length} of ${pending.length} logins.\n\nFailed:\n${failed.join('\n')}\n\nFix these (e.g. edit duplicate User IDs) and tap the button again.`);
+  } else {
+    alert(`✅ All ${pending.length} logins secured.\n\nNext step: publish the new Firestore security rules.`);
+  }
+  renderProfile();
+}
+
 // Expose functions to global scope (required for type="module")
+window.migrateAllAccounts = migrateAllAccounts;
 window.doLogin = doLogin;
 window.doLogout = doLogout;
 window.switchPage = switchPage;
@@ -3663,6 +4281,7 @@ window.selectAtt = selectAtt;
 window.confirmAttendance = confirmAttendance;
 window.saveAllAttendance = saveAllAttendance;
 window.switchAttTab = switchAttTab;
+window.changeRegMonth = changeRegMonth;
 window.renderCalendar = renderCalendar;
 window.changeCalMonth = changeCalMonth;
 window.changeEmpCalMonth = changeEmpCalMonth;
@@ -3681,6 +4300,7 @@ window.recordSettlement = recordSettlement;
 window.exportLedgerPDF = exportLedgerPDF;
 window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
+window.confirmDeleteEverything = confirmDeleteEverything;
 window.deactivateStaff = deactivateStaff;
 window.reactivateStaff = reactivateStaff;
 window.toggleInactiveSection = toggleInactiveSection;
@@ -3703,7 +4323,6 @@ window.openDeductModal = openDeductModal;
 window.saveDeduction = saveDeduction;
 window.openEditAttModal = openEditAttModal;
 window.saveEditedAttendance = saveEditedAttendance;
-window.renderSalaryView = renderSalaryView;
 window.openNotifPanel = openNotifPanel;
 window.openChangePassModal = openChangePassModal;
 window.saveNewPassword = saveNewPassword;
@@ -3711,6 +4330,7 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.setDailyAtt = setDailyAtt;
 window.confirmClearAtt = confirmClearAtt;
+window.clearDailyAtt = clearDailyAtt;
 window.deleteAdvanceChip = deleteAdvanceChip;
 window.dailyPrevDay = dailyPrevDay;
 window.dailyNextDay = dailyNextDay;
@@ -3720,28 +4340,23 @@ window.remarkKeydown = remarkKeydown;
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
-(async () => {
-  const btn = document.getElementById('loginBtn');
-  const enableBtn = () => {
-    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; btn.style.opacity = '1'; }
-  };
-  try {
-    initKeyboardShortcuts();
-    await loadAllData();
-    enableBtn();
-    // Restore session
-    const savedId = localStorage.getItem('af_session');
-    if (savedId) {
-      const users = getData('users', []);
-      const u = users.find(x => x.id === savedId);
-      if (u) { currentUser = u; startApp(); }
-    }
-  } catch(e) {
-    console.error('App init error:', e);
-    showToast('⚠️ Failed to load. Please refresh.');
-    enableBtn(); // Always enable button so user can try logging in
+// ══════════════════════════════════════════
+// STARTUP — Firebase Auth keeps the session; no data is loaded before login
+// ══════════════════════════════════════════
+initKeyboardShortcuts();
+localStorage.removeItem('af_session'); // old insecure session key
+showLoader(true);
+onAuthStateChanged(auth, async fbUser => {
+  if (authBusy) return;           // doLogin is handling this sign-in
+  if (fbUser) {
+    if (!currentUser) await enterApp(fbUser);
+  } else {
+    currentUser = null;
+    showLoader(false);
+    showLoginScreen();
   }
-})();
+  setLoginBusy(false);
+});
 </script>
 
 <!-- ══════════════════════════════════════════ -->
@@ -3990,6 +4605,25 @@ window.populateCalEmpSelect = populateCalEmpSelect;
         📝 <strong>Remarks in detail view</strong> — Days with remarks show a dot indicator on calendar + full remarks section below<br>
         💸 <strong>Advances for inactive staff</strong> — Record advances from the Inactive section in Staff tab<br>
         🔧 Fixed ledger entry credit/debit signs in detail view
+      </div>
+    </div>
+
+    <!-- v1.1.0 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.1.0</div>
+        <div style="font-size:11px;color:var(--text2)">November 2026 — Security &amp; Major Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🔐 <strong>Secure login</strong> — Firebase Authentication; same User ID &amp; password; data protected by security rules<br>
+        📊 <strong>Monthly Register</strong> — Attendance → Register: whole month for all staff on one screen, tap a day to fix<br>
+        🔄 <strong>Live sync</strong> — changes on one phone appear on all others within seconds<br>
+        💰 <strong>One balance everywhere</strong> — Hisab, Ledger and both PDFs now always match; "Deduct" is record-only<br>
+        📅 <strong>Wage history</strong> used on employee screens; half days counted correctly in month detail<br>
+        📝 <strong>Remarks</strong> in Daily Mark now saved by Save All; no more "NaN" day counts<br>
+        👔 <strong>Managers</strong> can edit attendance and see requests; staff passwords are admin-only<br>
+        ⏸ <strong>Deactivated staff</strong> can't log in; Delete warns and suggests Deactivate<br>
+        🛡️ Safer handling of names/notes (e.g. D'Souza) · 🌙 Night summary after 11 PM · 📱 Better Android app icon
       </div>
     </div>
 
