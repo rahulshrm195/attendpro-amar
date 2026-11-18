@@ -45,6 +45,20 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 - **Roles:** `.staff-only` (admin + manager) and `.emp-only` are switched by `body.role-emp`.
 - Shown sections use `style.display = ''` (not `'block'`) so their CSS grid/flex layout applies.
 
+## Keyboard (v1.2.2 — the owner marks with Tab / Space / Enter only)
+- Daily Mark Tab path per person: values `0 ½ 1 1.5 2` → Advance ₹ → Note → Remark → next person
+  (`attBtnKeydown`, `remarkKeydown`); the ✕ clear and chip buttons are `tabindex="-1"`. After the last
+  person Tab goes to `#saveAllBtn`; ⇧Tab from the first person reaches the "Mark everyone" bar.
+  Don't add single-key value shortcuts or Enter-moves-down — the owner wants every field visited.
+- Opens on the first unmarked person (`focusFirstUnmarked`, computer only); redraws keep focus.
+- `bulkMark(v)` marks everyone not marked yet (all, after a confirm, if everyone is marked);
+  `clearAllDay()`; both write one `writeBatch` (`writeAttendance`) and are undoable.
+- Undo: `pushUndo(label, [{userId,date,prev}])` → toast with Undo + ⌘Z (`undoLast`). Used by single
+  marks, clears, the edit dialog and the bulk actions.
+- Keys (not while typing in a box): `[` `]` `T` day, `/` find person, `?` help (`#shortcutsModal`),
+  ⌘S save all, ⌘Z undo. ⌘K palette: one letter per page (`PAGE_KEYS`), ⇧Enter on a person = add advance.
+  Dialogs with `data-enter="fn"` save on Enter in an input.
+
 ## Data + logic (don't duplicate)
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,
   `buildLedger`. A regular "Deduct" is record-only; "Opening Balance (Pending Salary)" counts.

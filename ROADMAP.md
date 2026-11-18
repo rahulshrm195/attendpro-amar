@@ -6,6 +6,8 @@
   After it's live: spot-check 2–3 employees' Hisab / Ledger balances if not done yet.
 - **v1.2.1** — automatic updates (banner + auto-reload, like the Orders app), clay app icon, staff colours in the warm palette.
   Devices on v1.2.0 pick this one up the normal way (next time the app is opened online); from v1.2.1 on, updates arrive by themselves.
+- **v1.2.2** — fast keyboard marking (Tab / Space / Enter path through every field, opens on the first unmarked person),
+  "Mark everyone not marked yet" + Clear all, Undo (toast + ⌘Z), [ ] T / ? keys, ⌘K letters per page, ⇧Enter = advance, Enter saves dialogs.
 
 ## Planned features
 
