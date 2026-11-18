@@ -9,9 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="AttendPro">
 <title>AttendPro — Amar Furniture</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192x192.png">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192x192.png">
-<link rel="apple-touch-icon" sizes="144x144" href="icon-192x192.png">
+<link rel="icon" type="image/png" href="icon-192x192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
 // Night mode: Auto (follows the phone / computer), Light or Dark, chosen per device (localStorage ap-theme).
 // Set before the page draws so there is no white flash; the status-bar colour follows.
@@ -696,6 +695,16 @@ body:not(.role-emp) .emp-only{display:none!important}
 [data-theme="dark"] body.search-open .search input{background:#26211A}
 [data-theme="dark"] .shop-bar{background:rgba(255,255,255,.08)}
 [data-theme="dark"] #appLoader{background:rgba(0,0,0,.6)}
+/* ── Update banner (self-update) ── */
+.update-bar{position:fixed;left:50%;top:14px;z-index:950;display:flex;align-items:center;gap:12px;width:min(520px,calc(100vw - 24px));padding:10px 10px 10px 16px;border-radius:22px;
+  background:var(--glass-bg-modal);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);box-shadow:var(--glass-highlight),0 20px 50px rgba(0,0,0,.22);
+  transform:translate(-50%,-140%);transition:transform .5s var(--spring);color:var(--ink)}
+.update-bar.show{transform:translate(-50%,0)}
+.update-bar svg{color:var(--clay)}
+.update-bar .x{flex:1;min-width:0}
+.update-bar b{display:block;font-size:13.5px}
+.update-bar small{display:block;font-size:12px;color:var(--ink2);margin-top:1px}
+
 /* ── Small helpers used by the markup ── */
 .btn-reset{border:0;background:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer}
 button.set-row:hover{background:var(--row-hover)}
@@ -712,7 +721,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.0</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.1</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -738,7 +747,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.0</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.1</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -1281,6 +1290,13 @@ button.set-row:hover{background:var(--row-hover)}
 
 <script>
 // ══════════════════════════════════════════
+// VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
+// The self-update below compares this with the live index.html.
+// ══════════════════════════════════════════
+const APP_VERSION = 'v1.2.1';
+document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
+
+// ══════════════════════════════════════════
 // ICONS (24px grid, round strokes — same style as the orders app) + THEME + DRAWER + CLOCK
 // Plain script so the shell works before the app module loads.
 // ══════════════════════════════════════════
@@ -1359,6 +1375,73 @@ function tickClock() {
                    d.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' });
 }
 tickClock(); setInterval(tickClock, 20000);
+
+// ══════════════════════════════════════════
+// SELF-UPDATE — when a newer version is published, show "New version … · Update now" and reload by
+// itself after a short countdown. It never reloads while the user is busy (a dialog open, typing,
+// unsaved Daily Mark entries or Hisab wages); it waits until they're done. Tries once per version per
+// session so a slow CDN can't cause reload loops.
+// ══════════════════════════════════════════
+let _updVer = null, _updTimer = null, _updating = false;
+function userBusy() {
+  if (document.querySelector('.modal-overlay.open')) return true;
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+  try { return !!(window.apIsBusy && window.apIsBusy()); } catch (e) { return false; }
+}
+async function checkForUpdate() {
+  if (document.hidden || _updating || _updVer) return;
+  try {
+    const r = await fetch('/index.html?v=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const m = (await r.text()).match(/const APP_VERSION = '([^']+)'/);
+    if (!m || m[1] === APP_VERSION) return;
+    if (sessionStorage.getItem('ap-updated-to') === m[1]) return;   // already tried once for this build
+    _updVer = m[1];
+    showUpdateBar();
+  } catch (e) {}
+}
+function showUpdateBar() {
+  let bar = document.getElementById('updateBar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'updateBar';
+    bar.className = 'update-bar';
+    bar.setAttribute('role', 'status');
+    bar.innerHTML = `${svgi('sparkle', 18)}<div class="x"><b>New version <span class="mono" id="updVer"></span> is ready</b><small id="updMsg"></small></div>
+      <button class="btn-primary btn-sm" id="updNow" onclick="applyUpdate()">Update now</button>`;
+    document.body.appendChild(bar);
+  }
+  document.getElementById('updVer').textContent = _updVer;
+  requestAnimationFrame(() => bar.classList.add('show'));
+  let left = 10;
+  clearInterval(_updTimer);
+  const tick = () => {
+    const msg = document.getElementById('updMsg');
+    if (userBusy()) { left = Math.max(left, 5); msg.textContent = 'Updates as soon as you finish what you are doing'; return; }
+    msg.textContent = `Updating in ${left}s…`;
+    if (left-- <= 0) applyUpdate();
+  };
+  tick(); _updTimer = setInterval(tick, 1000);
+}
+async function applyUpdate() {
+  if (_updating) return;
+  _updating = true;
+  clearInterval(_updTimer);
+  if (_updVer) { try { sessionStorage.setItem('ap-updated-to', _updVer); } catch (e) {} }
+  const msg = document.getElementById('updMsg'); if (msg) msg.textContent = 'Updating…';
+  const btn = document.getElementById('updNow'); if (btn) btn.disabled = true;
+  // Drop the old service worker and caches so the new files load fresh
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(g => g.unregister()));
+    await Promise.all((await caches.keys()).map(k => caches.delete(k)));
+  } catch (e) {}
+  location.reload();
+}
+setTimeout(checkForUpdate, 4000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(); });
+setInterval(checkForUpdate, 5 * 60 * 1000);
 </script>
 
 <script type="module">
@@ -1574,6 +1657,7 @@ function isUserBusy() {
   return false;
 }
 
+window.apIsBusy = () => isUserBusy();   // used by the self-update (waits until the user is done)
 function refreshCurrentPage() {
   if (!currentUser) return;
   updateNotifBadge();
@@ -1695,7 +1779,7 @@ let dailySelectedDate = todayStr();
 
 const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double' };
 const ATT_COLORS = { '0':'att-0','0.5':'att-half','1':'att-1','1.5':'att-ot','2':'att-double' };
-const COLORS = ['#C1602F','#4E7DB5','#5C8A6B','#8A5A2B','#3F6E8C','#9C5B8F','#B08A2E','#6B7F3A'];
+const COLORS = ['#C1602F','#4E7DB5','#5C8A6B','#8A5A2B','#3F6E8C','#9C5B8F','#B08A2E','#6B7F3A'];   // same as NEW_COLORS
 
 function todayStr() {
   const d = new Date();
@@ -1720,9 +1804,21 @@ function esc(v) {
 // Safely pass a value as an argument inside an inline handler: onclick="fn(${jsArg(x)})"
 function jsArg(v) { return esc(JSON.stringify(v ?? '')); }
 function fmtMoney(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+// Staff colours: people added before v1.2 have colours from the old bright palette; show each one
+// as the matching shade of the new warm palette (display only — nothing is rewritten in the database).
+const OLD_COLORS = ['#6c63ff','#22c55e','#f59e0b','#ef4444','#ec4899','#06b6d4','#8b5cf6','#f97316'];
+const NEW_COLORS = ['#C1602F','#4E7DB5','#5C8A6B','#8A5A2B','#3F6E8C','#9C5B8F','#B08A2E','#6B7F3A'];
+function staffColor(u) {
+  const c = String(u?.color || '').toLowerCase();
+  if (NEW_COLORS.some(x => x.toLowerCase() === c)) return u.color;
+  const i = OLD_COLORS.indexOf(c);
+  if (i >= 0) return NEW_COLORS[i];
+  let h = 0; for (const ch of String(u?.id || u?.name || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return NEW_COLORS[h % NEW_COLORS.length];
+}
 // Round avatar with the person's colour and initial
 function avatarHtml(u, size) {
-  return `<span class="av ${size || ''}" style="background:${esc(u.color || '#C1602F')}">${esc((u.name || '?')[0].toUpperCase())}</span>`;
+  return `<span class="av ${size || ''}" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</span>`;
 }
 // Status chip for an attendance value (undefined = not marked)
 const ATT_CHIP = { '0':'chip-abs', '0.5':'chip-half', '1':'chip-full', '1.5':'chip-ot', '2':'chip-dbl' };
@@ -1886,9 +1982,9 @@ function startApp() {
   const initial = (currentUser.name || '?')[0].toUpperCase();
   const roleLabel = currentUser.role === 'admin' ? 'Administrator' : currentUser.role === 'manager' ? 'Manager' : 'Employee';
   document.getElementById('headerAvatar').textContent = initial;
-  document.getElementById('headerAvatar').style.background = currentUser.color || '';
+  document.getElementById('headerAvatar').style.background = staffColor(currentUser);
   document.getElementById('meAvatar').textContent = initial;
-  document.getElementById('meAvatar').style.background = currentUser.color || 'var(--clay-fill)';
+  document.getElementById('meAvatar').style.background = staffColor(currentUser);
   document.getElementById('meName').textContent = currentUser.name;
   document.getElementById('headerSub').textContent = roleLabel;
 
@@ -2036,7 +2132,7 @@ function onSearch() {
   searchSel = Math.min(searchSel, Math.max(0, searchItems.length - 1));
   let i = 0, html = '';
   if (staff.length) html += '<div class="sr-h">Staff</div>' + staff.map(u => `<div class="sr-it ${i === searchSel ? 'on' : ''}" data-ix="${i++}" onmousedown="pickSearch(${i - 1})">
-      <span class="av sm" style="background:${esc(u.color || '#C1602F')}">${esc((u.name || '?')[0].toUpperCase())}</span>${esc(u.name)}${u.active === false ? '<span class="inactive-tag">Inactive</span>' : ''}<small>${esc(u.userId || '')}</small></div>`).join('');
+      <span class="av sm" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</span>${esc(u.name)}${u.active === false ? '<span class="inactive-tag">Inactive</span>' : ''}<small>${esc(u.userId || '')}</small></div>`).join('');
   if (pages.length) html += '<div class="sr-h">Go to</div>' + pages.map(([k, t]) => `<div class="sr-it ${i === searchSel ? 'on' : ''}" data-ix="${i++}" onmousedown="pickSearch(${i - 1})">${svgi(k === 'advance' ? 'rupee' : 'chevR', 15)}${esc(t)}</div>`).join('');
   res.innerHTML = html || '<div class="sr-empty">No matches</div>';
   res.classList.add('open');
@@ -2584,7 +2680,7 @@ function renderRegister() {
     const ua = att[u.id] || {};
     const inactive = u.active === false;
     html += `<tr class="${inactive ? 'reg-inactive' : ''}"><td class="reg-name"><div class="reg-person">
-      <div class="staff-avatar" style="background:${esc(u.color || '#C1602F')}">${esc((u.name || '?')[0].toUpperCase())}</div>
+      <div class="staff-avatar" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</div>
       <div><b title="${esc(u.name)}">${esc(u.name)}</b><small>${inactive ? 'Inactive · ' : ''}${fmtMoney(getWageForDate(u, ym + '-15'))}/day</small></div>
     </div></td>`;
     let absent = 0;
@@ -3705,7 +3801,7 @@ function renderProfile() {
   document.getElementById('migrateBtn').style.display = needsMigration ? '' : 'none';
   const big = document.getElementById('profileAvatarBig');
   big.textContent      = (currentUser.name || '?')[0].toUpperCase();
-  big.style.background = currentUser.color || 'var(--clay-fill)';
+  big.style.background = staffColor(currentUser);
   document.getElementById('profileName').textContent      = currentUser.name;
   document.getElementById('profileRoleLabel').textContent = (currentUser.role==='admin'?'Administrator':currentUser.role==='manager'?'Manager':'Employee') + ' · ' + (currentUser.userId || '');
 
@@ -4598,6 +4694,14 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.1</span><span class="wn-date">November 2026 — Updates &amp; icon</span></div>
+      <ul>
+        <li>🔄 <b>Automatic updates</b> — when a new version is published you'll see "New version is ready"; it updates by itself in a few seconds, or tap <b>Update now</b>. It waits if you're in the middle of something</li>
+        <li>🟧 <b>New app icon</b> — clay square with the AttendPro calendar mark, like the Orders app (re-add the app to your home screen to see it)</li>
+        <li>🎨 <b>Staff colours</b> — everyone's avatar now uses the warm Amar Furniture colours</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.0</span><span class="wn-date">November 2026 — New design</span></div>
       <ul>
         <li>🖥️ <b>Designed for the computer first</b> — sidebar menu, top bar with search (⌘K), clock and quick actions</li>
@@ -4825,10 +4929,15 @@ onAuthStateChanged(auth, async fbUser => {
 <!-- SW REGISTRATION -->
 <script>
 if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  // A new service worker took over: check whether the page itself is a newer version
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) checkForUpdate(); });
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('SW registered:', reg.scope))
-      .catch(err => console.log('SW registration failed:', err));
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(reg => {
+      const check = () => reg.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+      setInterval(check, 30 * 60 * 1000);
+    }).catch(err => console.log('SW registration failed:', err));
   });
 }
 </script>

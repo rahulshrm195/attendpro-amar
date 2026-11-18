@@ -1,9 +1,9 @@
 // ══════════════════════════════════════════
 // AttendPro Service Worker
-// Version: 1.2.0
+// Version: 1.2.1
 // ══════════════════════════════════════════
 
-const CACHE_NAME = 'attendpro-v1.2.0';   // bump on each release so old caches are cleared
+const CACHE_NAME = 'attendpro-v1.2.1';   // bump on each release (with APP_VERSION in index.html)
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
@@ -14,62 +14,53 @@ const PRECACHE_ASSETS = [
   '/icon-192x192.png',
   '/icon-512x512.png',
   '/icon-maskable-192x192.png',
-  '/icon-maskable-512x512.png'
+  '/icon-maskable-512x512.png',
+  '/apple-touch-icon.png'
 ];
 
-// Install — cache core assets
+// Install — cache core assets. 'reload' skips the browser's HTTP cache, so a new version never
+// stores a stale copy of itself.
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(PRECACHE_ASSETS).catch(err => {
-        console.log('SW: Some assets failed to cache', err);
-      });
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => Promise.all(PRECACHE_ASSETS.map(u =>
+        cache.add(new Request(u, { cache: 'reload' })).catch(err => console.log('SW: could not cache', u, err)))))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activate — clear old caches
+// Activate — clear old caches and take over open pages
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch — network first, cache fallback
+// Fetch — network first, cache fallback (offline)
 self.addEventListener('fetch', event => {
-  // Skip Firebase / Google API calls — always go to network
-  if (event.request.url.includes('firebase') ||
-      event.request.url.includes('googleapis') ||
-      event.request.url.includes('gstatic') ||
-      event.request.url.includes('firestore')) {
-    return;
-  }
+  if (event.request.method !== 'GET') return;
+  // Firebase / Google APIs: always straight to the network
+  const url = event.request.url;
+  if (url.includes('firebase') || url.includes('googleapis') || url.includes('gstatic') || url.includes('firestore')) return;
 
+  // Our own files: always ask the server (GitHub Pages lets browsers reuse a copy for 10 minutes,
+  // which is why updates looked stuck)
+  const own = new URL(url).origin === self.location.origin;
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, own ? { cache: 'no-store' } : undefined)
       .then(response => {
-        // Cache successful GET responses
-        if (event.request.method === 'GET' && response.status === 200) {
+        if (response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
       })
-      .catch(() => {
-        // Offline fallback
-        return caches.match(event.request).then(cached => {
-          if (cached) return cached;
-          if (event.request.destination === 'document') {
-            return caches.match(OFFLINE_URL);
-          }
-        });
-      })
+      .catch(() => caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        if (event.request.destination === 'document') return caches.match(OFFLINE_URL);
+      }))
   );
 });
 
@@ -87,10 +78,16 @@ self.addEventListener('push', event => {
   );
 });
 
-// Notification click — open app
+// Notification click — focus the open app (or open it) on the right page
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  const target = event.notification.data?.url || '/';
   event.waitUntil(
-    clients.openWindow(event.notification.data?.url || '/')
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const client of list) {
+        if (client.url.includes(self.location.origin)) { client.focus(); return client.navigate(target); }
+      }
+      return clients.openWindow(target);
+    })
   );
 });
