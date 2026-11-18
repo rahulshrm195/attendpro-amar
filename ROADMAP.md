@@ -13,6 +13,7 @@
   ⇧Backspace clears the day; the five values are one Tab stop (← → inside, ↑ ↓ between people), Tab → ✕ → Advance → Note → Remark.
   Night mode fix: the focused Advance / Remark box no longer hides typed text.
 - **v1.2.4** — Daily Mark "Total advances" line (saved + typed, live); [ ] change the day from the Advance / Note / Remark boxes too; changing the day with unsaved advances / remarks asks, then saves them first.
+- **v1.2.5** — dialogs take the keyboard (focus moves in, Tab stays inside, Esc returns the cursor); a person's details open on + Advance, keys A / D / L / E; Add advance's Employee box is a type-to-filter list (active staff only) instead of a drop-down.
 
 ## Planned features
 
