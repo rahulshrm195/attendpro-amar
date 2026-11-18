@@ -1143,7 +1143,7 @@ async function createOrSignIn(a, userId, pass) {
 // Link an Auth account to a staff record and move the password out of `users`.
 async function linkAccount(docId, data, uid, pass) {
   const role = data.role || 'employee';
-  await setDoc(doc(db, 'uidMap', uid), { userDocId: docId, role });
+  await setDoc(doc(db, 'uidMap', uid), { userDocId: docId, role, active: data.active !== false });
   await setDoc(doc(db, 'credentials', docId), { password: pass, role, uid, userId: data.userId });
   await updateDoc(doc(db, 'users', docId), { authUid: uid, password: deleteField() });
   const creds = getData('credentials', {});
@@ -1183,16 +1183,15 @@ async function loadAllData(profile) {
   const mine = profile.userDocId;
 
   if (isStaffRole) {
-    const credQuery = profile.role === 'admin'
-      ? collection(db, 'credentials')
-      : query(collection(db, 'credentials'), where('role', '!=', 'admin'));
+    // Saved staff passwords: admin only
+    const credQuery = profile.role === 'admin' ? collection(db, 'credentials') : null;
     const [usersS, attS, advS, reqS, notifS, credS] = await Promise.all([
       getDocs(collection(db, 'users')),
       getDocs(collection(db, 'attendance')),
       getDocs(collection(db, 'advances')),
       getDocs(collection(db, 'requests')),
       getDocs(collection(db, 'notifications')),
-      getDocs(credQuery).catch(e => { console.warn('credentials not readable', e); return null; })
+      credQuery ? getDocs(credQuery).catch(e => { console.warn('credentials not readable', e); return null; }) : Promise.resolve(null)
     ]);
     setCache('users', rows(usersS));
     const att = {}; attS.forEach(d => { att[d.id] = d.data(); });
@@ -1286,10 +1285,10 @@ async function addNotifDoc(data) {
   notifs.unshift({ id: ref.id, ...data });
   setCache('notifications', notifs);
 }
-async function markNotifsRead(userId, isAdmin) {
+async function markNotifsRead() {
   const notifs = getData('notifications', []);
   for (const n of notifs) {
-    if (!n.read && (isAdmin ? n.for === 'admin' : n.for === userId)) {
+    if (!n.read && isMyNotif(n)) {
       n.read = true;
       try { await updateDoc(doc(db, 'notifications', n.id), { read: true }); } catch(e) {}
     }
@@ -1322,6 +1321,9 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 // Attendance docs mix day values ('2026-11-18': 1) with remarks ('2026-11-18_remark': 'text')
+function isStaffRole(u) { return !!u && (u.role === 'admin' || u.role === 'manager'); }
+// Notifications meant for the signed-in user: admin & managers share the "admin" inbox
+function isMyNotif(n) { return n.for === currentUser.id || (isStaffRole(currentUser) && n.for === 'admin'); }
 function isDayKey(k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }
 function monthStr(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
 function fmtDate(str) {
@@ -1415,6 +1417,11 @@ async function enterApp(fbUser) {
       return;
     }
     const profile = profSnap.data();
+    if (profile.active === false) {
+      await signOut(auth);
+      showLoginError('Your account has been deactivated. Please contact admin.');
+      return;
+    }
     await loadAllData(profile);
     const u = getData('users', []).find(x => x.id === profile.userDocId);
     if (!u) {
@@ -1674,10 +1681,25 @@ function selectAtt(val, el) {
 async function confirmAttendance() {
   if (selectedAttValue === null) { showToast('Please select an attendance value'); return; }
   showLoader(true);
-  await saveAttendance(currentUser.id, todayStr(), selectedAttValue);
+  const today = todayStr();
+  try {
+    await saveAttendance(currentUser.id, today, selectedAttValue);
+  } catch (e) {
+    // Not saved (e.g. after the 11 PM cutoff, already marked, or offline) — undo the local copy
+    const att = getData('attendance', {});
+    if (att[currentUser.id]) delete att[currentUser.id][today];
+    showLoader(false);
+    showToast(e.code === 'permission-denied'
+      ? '⚠️ Attendance window is closed (11 PM) — contact admin'
+      : '⚠️ Could not save — check internet and try again');
+    renderHome();
+    return;
+  }
   // Notify admin
   const attLabel = {0:'Absent',0.5:'Half Day',1:'Full Day',1.5:'Overtime'}[selectedAttValue] || String(selectedAttValue);
-  await addNotifDoc({ for:'admin', title:`📋 Attendance Marked`, body:`${currentUser.name} marked attendance: ${attLabel}`, time: new Date().toISOString(), read: false });
+  try {
+    await addNotifDoc({ for:'admin', title:`📋 Attendance Marked`, body:`${currentUser.name} marked attendance: ${attLabel}`, time: new Date().toISOString(), read: false });
+  } catch (e) { console.warn('notify admin failed', e); }
   showLoader(false);
   showToast('✅ Attendance marked!');
   selectedAttValue = null;
@@ -2655,8 +2677,19 @@ function toggleInactiveSection() {
   icon.textContent = isHidden ? '▾' : '▸';
 }
 
+// Only admin may change an existing staff member's login (User ID / password)
+function setLoginFieldsLocked(locked) {
+  ['sfUserId', 'sfPass'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = locked;
+    el.style.opacity = locked ? '0.6' : '1';
+  });
+  document.getElementById('sfPass').placeholder = locked ? 'Only admin can change passwords' : 'Set a password';
+}
+
 function openAddStaffModal() {
   editingStaffId = null;
+  setLoginFieldsLocked(false);
   document.getElementById('addStaffTitle').textContent = 'Add Staff Member';
   ['sfName','sfPhone','sfWage','sfUserId','sfPass'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('sfOpeningBal').value = '0';
@@ -2679,13 +2712,14 @@ async function saveStaff() {
   const pass     = document.getElementById('sfPass').value.trim();
   const joinDate = document.getElementById('sfJoinDate').value;
 
-  if (!name || !userId || !pass) { showToast('Name, User ID and Password are required'); return; }
-
-  if (pass.length < 4) { showToast('Password must be at least 4 characters'); return; }
+  // Managers editing staff can't touch the login (fields are locked)
+  const loginLocked = !!editingStaffId && currentUser.role !== 'admin';
+  if (!name || (!loginLocked && (!userId || !pass))) { showToast('Name, User ID and Password are required'); return; }
+  if (!loginLocked && pass.length < 4) { showToast('Password must be at least 4 characters'); return; }
   if (!['employee', 'manager'].includes(role)) { showToast('Invalid role'); return; }
 
   const users = getData('users', []);
-  const otherHasLogin = users.some(u => u.id !== editingStaffId && loginEmail(u.userId) === loginEmail(userId));
+  const otherHasLogin = !loginLocked && users.some(u => u.id !== editingStaffId && loginEmail(u.userId) === loginEmail(userId));
   if (otherHasLogin) { showToast('User ID already exists!'); return; }
   showLoader(true);
 
@@ -2693,8 +2727,12 @@ async function saveStaff() {
   if (editingStaffId) {
     const old     = users.find(u => u.id === editingStaffId);
     const oldCred = getData('credentials', {})[editingStaffId];
-    const data = { name, phone, wage: Number(wage), role, userId, joinDate, wageHistory: tempWageHistory };
-    if (old?.authUid && oldCred) {
+    const data = { name, phone, wage: Number(wage), role, userId: loginLocked ? old.userId : userId, joinDate, wageHistory: tempWageHistory };
+    const active = old?.active !== false;
+    if (loginLocked) {
+      // Manager: profile/wage/role only — keep the login exactly as it is
+      if (old?.authUid) await setDoc(doc(db, 'uidMap', old.authUid), { userDocId: editingStaffId, role, active });
+    } else if (old?.authUid && oldCred) {
       let uid = old.authUid;
       const loginChanged = loginEmail(old.userId) !== loginEmail(userId);
       const passChanged  = pass !== oldCred.password;
@@ -2717,7 +2755,7 @@ async function saveStaff() {
         }
       }
       data.authUid = uid;
-      await setDoc(doc(db, 'uidMap', uid), { userDocId: editingStaffId, role });
+      await setDoc(doc(db, 'uidMap', uid), { userDocId: editingStaffId, role, active });
       await setDoc(doc(db, 'credentials', editingStaffId), { password: pass, role, uid, userId });
       getData('credentials', {})[editingStaffId] = { password: pass, role, uid, userId };
     } else {
@@ -2738,7 +2776,7 @@ async function saveStaff() {
     }
     const data     = { name, phone, wage: Number(wage), role, userId, joinDate, color: COLORS[colorIdx], authUid: uid };
     await saveUserDoc(newId, data);
-    await setDoc(doc(db, 'uidMap', uid), { userDocId: newId, role });
+    await setDoc(doc(db, 'uidMap', uid), { userDocId: newId, role, active: true });
     await setDoc(doc(db, 'credentials', newId), { password: pass, role, uid, userId });
     getData('credentials', {})[newId] = { password: pass, role, uid, userId };
     // Save opening balance if provided
@@ -2848,6 +2886,7 @@ function editStaff(userId) {
   document.getElementById('sfRole').value     = u.role;
   document.getElementById('sfUserId').value   = u.userId;
   document.getElementById('sfPass').value     = u.password ?? getData('credentials', {})[u.id]?.password ?? '';
+  setLoginFieldsLocked(currentUser.role !== 'admin');
   document.getElementById('sfJoinDate').value = u.joinDate||'';
 
   // Init tempWageHistory from existing data
@@ -2934,7 +2973,7 @@ async function doDeleteStaff(userId) {
       finally { await signOut(staffAuth).catch(() => {}); }
     }
     await tryDo('login link', () => deleteDoc(doc(db, 'uidMap', u.authUid)));
-    await tryDo('saved password', () => deleteDoc(doc(db, 'credentials', userId)));
+    if (currentUser.role === 'admin') await tryDo('saved password', () => deleteDoc(doc(db, 'credentials', userId)));
   }
 
   // 2. Their records
@@ -3078,7 +3117,7 @@ async function saveDeduction() {
 let editAttUserId = null;
 
 function openEditAttModal(userId, date) {
-  if (currentUser.role !== 'admin') return;
+  if (!isStaffRole(currentUser)) return;
   editAttUserId = userId;
   const u   = getData('users', []).find(x => x.id === userId);
   const att = getData('attendance', {});
@@ -3203,14 +3242,14 @@ async function addAdminNotification(title, body) {
 function updateNotifBadge() {
   const notifs = getData('notifications', []);
   const unread = notifs.filter(n =>
-    (currentUser.role==='admin' ? n.for==='admin' : n.for===currentUser.id) && !n.read
+    isMyNotif(n) && !n.read
   ).length;
   document.getElementById('notifBadge').style.display = unread>0 ? 'block':'none';
 }
 
 async function openNotifPanel() {
   const notifs   = getData('notifications', []);
-  const myNotifs = notifs.filter(n => currentUser.role==='admin' ? n.for==='admin' : n.for===currentUser.id);
+  const myNotifs = notifs.filter(isMyNotif);
   const list     = document.getElementById('notifList');
   list.innerHTML = myNotifs.length===0
     ? '<div class="empty-state"><div class="emoji">🔔</div><p>No notifications</p></div>'
@@ -3227,7 +3266,7 @@ async function openNotifPanel() {
         </div>`;
       }).join('');
 
-  await markNotifsRead(currentUser.id, currentUser.role==='admin');
+  await markNotifsRead();
   updateNotifBadge();
   openModal('notifPanel');
 }
@@ -3918,10 +3957,12 @@ async function deactivateStaff(userId, skipConfirm = false) {
   const users = getData('users', []);
   const u = users.find(x => x.id === userId);
   if (!u) return;
-  if (!skipConfirm && !confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
+  if (!skipConfirm && !confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list, and won't be able to log in.\nAll their data and ledger will remain intact.`)) return;
   showLoader(true);
   try {
     await updateDoc(doc(db, 'users', userId), { active: false });
+    // Blocks their login (enforced by the security rules too)
+    if (u.authUid) await updateDoc(doc(db, 'uidMap', u.authUid), { active: false });
     const idx = users.findIndex(x => x.id === userId);
     if (idx >= 0) users[idx].active = false;
     setCache('users', users);
@@ -3941,6 +3982,7 @@ async function reactivateStaff(userId) {
   showLoader(true);
   try {
     await updateDoc(doc(db, 'users', userId), { active: true });
+    if (u.authUid) await updateDoc(doc(db, 'uidMap', u.authUid), { active: true });
     const idx = users.findIndex(x => x.id === userId);
     if (idx >= 0) users[idx].active = true;
     setCache('users', users);

@@ -3,7 +3,7 @@ rules_version = '2';
 // AttendPro — Firestore security rules
 //
 // Identity: every Firebase Auth user has a doc at uidMap/{authUid}
-//   { userDocId: "<id of their doc in users/>", role: "admin" | "manager" | "employee" }
+//   { userDocId: "<id of their doc in users/>", role: "admin" | "manager" | "employee", active: bool }
 // Roles are read from uidMap (which only admin/manager can write), never from users/.
 //
 // Publish these ONLY AFTER the admin has run "🔐 Secure all staff logins" in the app.
@@ -14,7 +14,8 @@ service cloud.firestore {
     // ── Helpers ────────────────────────────────────────────
     function signedIn()   { return request.auth != null; }
     function profilePath() { return /databases/$(database)/documents/uidMap/$(request.auth.uid); }
-    function hasProfile() { return signedIn() && exists(profilePath()); }
+    // A deactivated account (uidMap.active == false) has no access at all
+    function hasProfile() { return signedIn() && exists(profilePath()) && get(profilePath()).data.get('active', true) != false; }
     function me()         { return get(profilePath()).data; }
     function role()       { return hasProfile() ? me().role : ''; }
     function isAdmin()    { return role() == 'admin'; }
@@ -43,21 +44,21 @@ service cloud.firestore {
 
     // ── Login mapping ─────────────────────────────────────
     match /uidMap/{uid} {
+      // own mapping stays readable so the app can say "your account is deactivated"
       allow read:   if signedIn() && (request.auth.uid == uid || isStaff());
       allow create, update: if isAdmin()
         || (isStaff() && request.resource.data.role in ['employee', 'manager'] && managerSafe());
       allow delete: if isAdmin() || (isStaff() && resource.data.role != 'admin');
     }
 
-    // ── Staff passwords (visible to admin so they can help staff) ──
+    // ── Staff passwords: admin only (managers may only set the first one for new staff) ──
     match /credentials/{docId} {
-      allow read: if isAdmin()
-        || (isStaff() && resource.data.role != 'admin')
-        || isMe(docId);
-      allow create, update: if isAdmin()
-        || (isStaff() && managerSafe())
-        || (isMe(docId) && resource != null && changedKeys().hasOnly(['password']));
-      allow delete: if isAdmin() || (isStaff() && resource.data.role != 'admin');
+      allow read: if isAdmin() || isMe(docId);
+      allow create: if isAdmin()
+        || (isStaff() && request.resource.data.role in ['employee', 'manager']);
+      allow update: if isAdmin()
+        || (isMe(docId) && changedKeys().hasOnly(['password']));
+      allow delete: if isAdmin();
     }
 
     // ── Staff records ─────────────────────────────────────
