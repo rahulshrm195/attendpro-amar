@@ -46,9 +46,9 @@ Done:
 - [x] #8 One shared balance calculation for Hisab screen, Hisab PDF, month detail, Ledger and Ledger PDF
       (regular "Deduct" = record only; "Opening Balance (Pending Salary)" still counts in employee's favour)
 - [x] #9 Employee screens use wage history (per-day wage)
+- [x] #10 Delete staff warns what will be lost and suggests Deactivate; "Delete everything" really removes all records
 
 Open:
-- [ ] #10 Deleting staff leaves attendance/advances behind (dialog says they are removed)
 - [ ] #13 Manager role: can't edit attendance from calendar, doesn't see admin notifications
 - [ ] #15 No live sync between devices (one-time load; concurrent edits can overwrite)
 - [ ] #16 Small items: dead `checkNightSummary`, `.text-yellow` missing, Shift+Tab uses inactive staff

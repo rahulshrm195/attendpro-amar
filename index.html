@@ -956,6 +956,14 @@
   </div>
 </div>
 
+<!-- Delete Staff Modal -->
+<div class="modal-overlay" id="deleteStaffModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="deleteStaffContent"></div>
+  </div>
+</div>
+
 <!-- Add Advance Modal (Admin) -->
 <div class="modal-overlay" id="addAdvanceModal">
   <div class="modal-sheet">
@@ -2853,14 +2861,71 @@ function editStaff(userId) {
   openModal('addStaffModal');
 }
 
-async function deleteStaff(userId) {
+// What would be lost if this staff member were deleted
+function staffRecordCounts(userId) {
+  const att = getData('attendance', {})[userId] || {};
+  return {
+    days:     Object.keys(att).filter(isDayKey).length,
+    remarks:  Object.keys(att).filter(k => k.endsWith('_remark')).length,
+    ledger:   getData('advances', []).filter(a => a.userId === userId).length,
+    requests: getData('requests', []).filter(r => r.userId === userId).length
+  };
+}
+
+function deleteStaff(userId) {
   const u = getData('users', []).find(x => x.id === userId);
-  const name = u ? u.name : 'this staff member';
-  if (!confirm(`Delete ${name}?\nAll their attendance and records will be removed.\nThis cannot be undone.`)) return;
+  if (!u) return;
+  const c = staffRecordCounts(userId);
+
+  // Nothing recorded yet (e.g. added by mistake) → simple confirm
+  if (c.days === 0 && c.ledger === 0 && c.requests === 0) {
+    if (!confirm(`Delete ${u.name}?\nThey have no attendance or ledger records.\nTheir login will be removed. This cannot be undone.`)) return;
+    doDeleteStaff(userId);
+    return;
+  }
+
+  const items = [
+    c.days     ? `📅 <b>${c.days}</b> day${c.days>1?'s':''} of attendance` : '',
+    c.remarks  ? `📝 <b>${c.remarks}</b> remark${c.remarks>1?'s':''}` : '',
+    c.ledger   ? `💰 <b>${c.ledger}</b> ledger entr${c.ledger>1?'ies':'y'} (advances, deductions, settlements)` : '',
+    c.requests ? `📩 <b>${c.requests}</b> leave/advance request${c.requests>1?'s':''}` : ''
+  ].filter(Boolean).map(t => `<div style="padding:4px 0">${t}</div>`).join('');
+  const isInactive = u.active === false;
+
+  document.getElementById('deleteStaffContent').innerHTML = `
+    <div class="modal-title">Delete ${esc(u.name)}?</div>
+    <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.5">
+      <div style="font-weight:800;color:#c2410c;margin-bottom:6px">⚠️ This will permanently erase:</div>
+      ${items}
+      <div style="margin-top:8px;color:var(--text2)">Their hisab, ledger and PDFs can never be produced again.</div>
+    </div>
+    ${isInactive
+      ? `<div style="font-size:13px;color:var(--text2);margin-bottom:12px">${esc(u.name)} is already deactivated — they're hidden from Daily Mark and the active staff list, and their records are kept. You usually don't need to delete.</div>`
+      : `<div style="font-size:13px;color:var(--text2);margin-bottom:12px"><b style="color:var(--text)">Recommended:</b> deactivate instead. They'll be hidden from Daily Mark and the staff list, but their attendance and ledger stay available.</div>
+         <button class="btn-primary mb8" onclick="closeModal('deleteStaffModal');deactivateStaff(${jsArg(userId)}, true)">⏸ Deactivate instead</button>`}
+    <button class="btn-secondary mb8" style="color:var(--red)" onclick="confirmDeleteEverything(${jsArg(userId)})">🗑️ Delete ${esc(u.name)} and all records</button>
+    <button class="btn-secondary" onclick="closeModal('deleteStaffModal')">Cancel</button>`;
+  openModal('deleteStaffModal');
+}
+
+function confirmDeleteEverything(userId) {
+  const u = getData('users', []).find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`Last check: permanently delete ${u.name} and ALL their attendance, ledger entries and requests?\nThis cannot be undone.`)) return;
+  closeModal('deleteStaffModal');
+  doDeleteStaff(userId);
+}
+
+async function doDeleteStaff(userId) {
+  const u = getData('users', []).find(x => x.id === userId);
+  if (!u) return;
   showLoader(true);
-  // Remove their login first so the account can no longer sign in
+  const problems = [];
+  const tryDo = async (label, fn) => { try { await fn(); } catch (e) { console.warn(label, e); problems.push(label); } };
+
+  // 1. Remove their login first so the account can no longer sign in
   const cred = getData('credentials', {})[userId];
-  if (u?.authUid) {
+  if (u.authUid) {
     if (cred) {
       try {
         await signInWithEmailAndPassword(staffAuth, loginEmail(u.userId), authPassword(cred.password));
@@ -2868,14 +2933,39 @@ async function deleteStaff(userId) {
       } catch (e) { console.warn('Could not delete auth account', e); }
       finally { await signOut(staffAuth).catch(() => {}); }
     }
-    try { await deleteDoc(doc(db, 'uidMap', u.authUid)); } catch (e) { console.warn(e); }
-    try { await deleteDoc(doc(db, 'credentials', userId)); } catch (e) { console.warn(e); }
+    await tryDo('login link', () => deleteDoc(doc(db, 'uidMap', u.authUid)));
+    await tryDo('saved password', () => deleteDoc(doc(db, 'credentials', userId)));
   }
-  await deleteUserDoc(userId);
+
+  // 2. Their records
+  await tryDo('attendance', () => deleteDoc(doc(db, 'attendance', userId)));
+  for (const a of getData('advances', []).filter(a => a.userId === userId)) {
+    await tryDo('ledger entry', () => deleteDoc(doc(db, 'advances', a.id)));
+  }
+  for (const r of getData('requests', []).filter(r => r.userId === userId)) {
+    await tryDo('request', () => deleteDoc(doc(db, 'requests', r.id)));
+  }
+  for (const n of getData('notifications', []).filter(n => n.for === userId)) {
+    // only admin may delete notifications; harmless to leave them for managers
+    try { await deleteDoc(doc(db, 'notifications', n.id)); } catch (e) {}
+  }
+
+  // 3. The staff record itself
+  await tryDo('staff record', () => deleteUserDoc(userId));
+
+  // Update local cache
+  const att = getData('attendance', {}); delete att[userId]; setCache('attendance', att);
+  setCache('advances', getData('advances', []).filter(a => a.userId !== userId));
+  setCache('requests', getData('requests', []).filter(r => r.userId !== userId));
+  setCache('notifications', getData('notifications', []).filter(n => n.for !== userId));
+  const creds = getData('credentials', {}); delete creds[userId];
+
   showLoader(false);
   closeModal('staffDetailModal');
   renderStaff();
-  showToast('Staff removed');
+  renderHome();
+  if (problems.length) alert(`${u.name} was removed, but some items could not be deleted:\n• ${[...new Set(problems)].join('\n• ')}\nCheck your connection and try again.`);
+  else showToast(`🗑️ ${u.name} and their records deleted`);
 }
 
 // ══════════════════════════════════════════
@@ -3824,11 +3914,11 @@ async function deleteOpeningBalance(advId, userId) {
 // ══════════════════════════════════════════
 // DEACTIVATE / REACTIVATE STAFF
 // ══════════════════════════════════════════
-async function deactivateStaff(userId) {
+async function deactivateStaff(userId, skipConfirm = false) {
   const users = getData('users', []);
   const u = users.find(x => x.id === userId);
   if (!u) return;
-  if (!confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
+  if (!skipConfirm && !confirm(`Deactivate ${u.name}?\nThey will be hidden from Daily Mark and active staff list.\nAll their data and ledger will remain intact.`)) return;
   showLoader(true);
   try {
     await updateDoc(doc(db, 'users', userId), { active: false });
@@ -3922,6 +4012,7 @@ window.recordSettlement = recordSettlement;
 window.exportLedgerPDF = exportLedgerPDF;
 window.editStaff = editStaff;
 window.deleteStaff = deleteStaff;
+window.confirmDeleteEverything = confirmDeleteEverything;
 window.deactivateStaff = deactivateStaff;
 window.reactivateStaff = reactivateStaff;
 window.toggleInactiveSection = toggleInactiveSection;
