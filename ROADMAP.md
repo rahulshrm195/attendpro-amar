@@ -1,13 +1,9 @@
 # AttendPro — Roadmap & Notes
 
-## Release checklist (do once all review items are finished)
-1. Firebase console → Authentication → enable **Email/Password**
-2. Deploy the new code to the live site
-3. Log in as admin → Profile → **🔐 Secure all staff logins**
-4. Firestore → Rules → paste `firestore.rules` → Publish
-5. Test one employee + admin login; change the admin password
-6. Spot-check 2–3 employees' Hisab/Ledger balances (deduction / settlement / pre-join work now counted consistently)
-7. ~~Bump the version label and add a What's New entry~~ — done (v1.1.0)
+## Releases
+- **v1.1.0** (18 Nov 2026) — secure login + security rules: released (Email/Password on, logins secured, rules published).
+- **v1.2.0** — computer-first redesign in the orders-app style (Concept A + liquid glass, night mode). Code-only release: no Firebase steps.
+  After it's live: spot-check 2–3 employees' Hisab / Ledger balances if not done yet.
 
 ## Planned features
 
