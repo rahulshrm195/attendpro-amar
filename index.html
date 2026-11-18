@@ -1313,6 +1313,8 @@ function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+// Attendance docs mix day values ('2026-11-18': 1) with remarks ('2026-11-18_remark': 'text')
+function isDayKey(k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }
 function monthStr(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
 function fmtDate(str) {
   if (!str) return '';
@@ -1620,7 +1622,7 @@ function renderEmpHome() {
   const empAtt = att[currentUser.id] || {};
   let totalDays = 0, earned = 0;
   Object.entries(empAtt).forEach(([d, v]) => {
-    if (d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * Number(currentUser.wage || 0); }
+    if (isDayKey(d) && d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * Number(currentUser.wage || 0); }
   });
 
   const advBalance = getAdvanceBalance(currentUser.id);
@@ -1802,10 +1804,13 @@ async function saveAllAttendance() {
   const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const date  = dailySelectedDate;
   const vals  = [0, 0.5, 1, 1.5, 2];
+  const att   = getData('attendance', {});
   let attSaved = 0;
   let advSaved = 0;
+  let remSaved = 0;
 
   showLoader(true);
+  try {
   for (const u of users) {
     // ── Attendance ──
     let selectedVal = undefined;
@@ -1834,15 +1839,33 @@ async function saveAllAttendance() {
       if (amtEl)  amtEl.value  = '';
       if (noteEl) noteEl.value = '';
     }
+
+    // ── Remark (save only if it changed; empty box removes an existing remark) ──
+    const remEl = document.getElementById(`remark_${u.id}`);
+    if (remEl) {
+      const newRemark = remEl.value.trim();
+      const oldRemark = att[u.id]?.[date + '_remark'] || '';
+      if (newRemark !== oldRemark) {
+        await saveRemark(u.id, date, newRemark);
+        remSaved++;
+      }
+    }
+  }
+  } catch (e) {
+    console.error('Save all error:', e);
+    showLoader(false);
+    showToast('⚠️ Could not save everything — check internet and try again');
+    return;
   }
   showLoader(false);
 
-  if (attSaved === 0 && advSaved === 0) {
+  if (attSaved === 0 && advSaved === 0 && remSaved === 0) {
     showToast('⚠️ Nothing to save');
   } else {
     const parts = [];
     if (attSaved > 0) parts.push(`attendance for ${attSaved}`);
     if (advSaved > 0) parts.push(`${advSaved} advance${advSaved > 1 ? 's' : ''}`);
+    if (remSaved > 0) parts.push(`${remSaved} remark${remSaved > 1 ? 's' : ''}`);
     showToast(`✅ Saved ${parts.join(' + ')}`);
   }
   renderDailyAtt();
@@ -1995,7 +2018,7 @@ function renderEmpMonthSummary() {
   const month  = monthStr(empCalYear, empCalMonth);
   let total = 0, earned = 0;
   Object.entries(empAtt).forEach(([d,v]) => {
-    if (d.startsWith(month)) { total += Number(v); earned += Number(v) * Number(currentUser.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { total += Number(v); earned += Number(v) * Number(currentUser.wage||0); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   document.getElementById('empMonthSummary').innerHTML = `
@@ -3089,7 +3112,7 @@ function renderEmpSalary() {
   const att    = getData('attendance', {})[currentUser.id] || {};
   let days = 0, earned = 0;
   Object.entries(att).forEach(([d,v]) => {
-    if (d.startsWith(month)) { days += Number(v); earned += Number(v)*Number(currentUser.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { days += Number(v); earned += Number(v)*Number(currentUser.wage||0); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   const net = Math.max(0, earned-adv);
@@ -3128,7 +3151,7 @@ function renderSalaryView() {
   const att   = getData('attendance', {})[userId] || {};
   let days=0, earned=0;
   Object.entries(att).forEach(([d,v])=>{
-    if (d.startsWith(month)) { days+=Number(v); earned+=Number(v)*Number(u.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { days+=Number(v); earned+=Number(v)*Number(u.wage||0); }
   });
   const adv = getAdvanceBalance(userId);
   const net = Math.max(0, earned-adv);

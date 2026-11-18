@@ -1,5 +1,12 @@
 # AttendPro — Roadmap & Notes
 
+## Release checklist (do once all review items are finished)
+1. Firebase console → Authentication → enable **Email/Password**
+2. Deploy the new code to the live site
+3. Log in as admin → Profile → **🔐 Secure all staff logins**
+4. Firestore → Rules → paste `firestore.rules` → Publish
+5. Test one employee + admin login; change the admin password
+
 ## Planned features
 
 ### Monthly attendance register (grid view)
@@ -34,10 +41,10 @@ Done:
 - [x] #1–3 Firebase Auth login + Firestore security rules (`firestore.rules`)
 - [x] #4 Escape user-entered text (XSS) and fix handler arguments for names with apostrophes
 - [x] #5 Employee home crash · #12 admin profile crash · Home "✕" clear button
+- [x] #6 Daily Mark remarks now saved by "Save All" (clearing the box removes the remark)
+- [x] #7 Remark keys no longer make day counts show `NaN`
 
 Open:
-- [ ] #6 Daily Mark remarks are not saved by "Save All"
-- [ ] #7 Remark keys make day counts show `NaN` (employee home / calendar / salary)
 - [ ] #8 Four different balance calculations (Hisab screen, Hisab PDF, Ledger, Ledger PDF) — unify
 - [ ] #9 Employee screens use current wage instead of wage history
 - [ ] #10 Deleting staff leaves attendance/advances behind (dialog says they are removed)
