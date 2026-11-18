@@ -6,6 +6,8 @@
 3. Log in as admin → Profile → **🔐 Secure all staff logins**
 4. Firestore → Rules → paste `firestore.rules` → Publish
 5. Test one employee + admin login; change the admin password
+6. Spot-check 2–3 employees' Hisab/Ledger balances (deduction / settlement / pre-join work now counted consistently)
+7. Optional: bump the version label (v1.0.16 in header/login) and add a What's New entry
 
 ## Planned features
 
@@ -48,10 +50,11 @@ Done:
 - [x] #9 Employee screens use wage history (per-day wage)
 - [x] #13 Managers can edit attendance and see admin notifications; staff passwords are admin-only
 - [x] Deactivated staff can no longer log in (enforced in rules too)
+- [x] #16 Night summary wired up (skips inactive staff); `.text-yellow` added; Daily Mark Tab/Shift+Tab skip inactive staff; unused admin-salary code removed
+- [x] Service worker: notification tap opens the right page; cache name bumped to v1.1.0
+- [x] Manifest: separate `any` / `maskable` icons (new navy maskable icons); pinch-zoom no longer blocked
 - [x] #15 Live sync between devices (Firestore listeners); Save All only writes rows tapped on this device
 - [x] #10 Delete staff warns what will be lost and suggests Deactivate; "Delete everything" really removes all records
 
 Open:
-- [ ] #16 Small items: dead `checkNightSummary`, `.text-yellow` missing, Shift+Tab uses inactive staff
-- [ ] Service worker `notificationclick` uses `event.data` (should be `event.notification.data`)
-- [ ] Manifest: separate `any` / `maskable` icons; allow pinch-zoom
+- (none — all review items done)

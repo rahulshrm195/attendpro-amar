@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#1a1a2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -274,6 +274,7 @@
   .text-red { color:var(--red); }
   .text-green { color:var(--green); }
   .text-purple { color:var(--purple); }
+  .text-yellow { color:var(--yellow); }
   .text-sm { font-size:12px; }
   .text-xs { font-size:11px; color:var(--text2); }
   .fw700 { font-weight:700; }
@@ -1569,7 +1570,8 @@ function checkNightSummary() {
   if (localStorage.getItem(todayKey)) return; // Already shown today
   localStorage.setItem(todayKey, '1');
   // Build summary
-  const users = getData('users', []).filter(u => u.role !== 'admin');
+  const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
+  if (users.length === 0) return;
   const att   = getData('attendance', {});
   const today = todayStr();
   const present  = users.filter(u => att[u.id]?.[today] > 0);
@@ -1618,6 +1620,7 @@ function startApp() {
 
   switchPage('home');
   scheduleNotifications();
+  checkNightSummary();
 }
 
 function setupNav() {
@@ -1817,9 +1820,12 @@ async function confirmAttendance() {
 // Rows the user tapped in Daily Mark since it was last drawn (Save All only writes these)
 let dailyTouched = new Set();
 
+// Staff shown in Daily Mark (keyboard navigation must use the same list)
+function dailyMarkUsers() { return getData('users', []).filter(u => u.role !== 'admin' && u.active !== false); }
+
 function renderDailyAtt() {
   dailyTouched = new Set();
-  const users    = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
+  const users    = dailyMarkUsers();
   const att      = getData('attendance', {});
   const advances = getData('advances', []);
   const date     = dailySelectedDate;
@@ -3308,43 +3314,6 @@ function renderEmpSalary() {
       </div>`).join('');
 }
 
-function populateSalaryEmpSelect() {
-  const users = getData('users', []).filter(u => u.role!=='admin');
-  document.getElementById('salaryEmpSelect').innerHTML =
-    '<option value="">-- Select Employee --</option>' +
-    users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
-}
-
-function renderSalaryView() {
-  const userId = document.getElementById('salaryEmpSelect').value;
-  const view   = document.getElementById('adminSalaryView');
-  if (!userId) { view.innerHTML=''; return; }
-  const u     = getData('users', []).find(x => x.id===userId);
-  const now   = new Date();
-  const month = monthStr(now.getFullYear(), now.getMonth());
-  const att   = getData('attendance', {})[userId] || {};
-  let days=0, earned=0;
-  Object.entries(att).forEach(([d,v])=>{
-    if (isDayKey(d) && d.startsWith(month)) { days+=Number(v); earned+=Number(v) * getWageForDate(u, d); }
-  });
-  const adv = getAdvanceBalance(userId);
-  const net = Math.max(0, earned-adv);
-  view.innerHTML=`
-    <div class="salary-card mb8">
-      <h3>This Month — ${esc(u.name)}</h3>
-      <div class="salary-amount">${fmtMoney(net)}</div>
-      <div class="salary-breakdown">
-        <div class="salary-item"><div class="val">${days}</div><div class="lbl">Days</div></div>
-        <div class="salary-item"><div class="val">${fmtMoney(earned)}</div><div class="lbl">Earned</div></div>
-        <div class="salary-item"><div class="val">${fmtMoney(adv)}</div><div class="lbl">Advance</div></div>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn-primary" style="flex:1" onclick="openDeductModal(${jsArg(userId)})">Deduct Advance</button>
-      <button class="btn-secondary" style="flex:1" onclick="openAddAdvanceModal()">Add Advance</button>
-    </div>`;
-}
-
 // ══════════════════════════════════════════
 // NOTIFICATIONS
 // ══════════════════════════════════════════
@@ -3504,7 +3473,7 @@ function attBtnKeydown(e, userId, val, idx) {
   if (e.key === 'Tab' && e.shiftKey && idx === 0) {
     e.preventDefault();
     // Find previous employee
-    const users = getData('users', []).filter(u => u.role !== 'admin');
+    const users = dailyMarkUsers();
     const curIdx = users.findIndex(u => u.id === userId);
     if (curIdx > 0) {
       const prevUser = users[curIdx - 1];
@@ -3518,7 +3487,7 @@ function attBtnKeydown(e, userId, val, idx) {
 // Handled via keydown on remarks input
 function remarkKeydown(e, userId) {
   if (e.key === 'Tab' && !e.shiftKey) {
-    const users = getData('users', []).filter(u => u.role !== 'admin');
+    const users = dailyMarkUsers();
     const curIdx = users.findIndex(u => u.id === userId);
     if (curIdx < users.length - 1) {
       e.preventDefault();
@@ -4191,7 +4160,6 @@ window.openDeductModal = openDeductModal;
 window.saveDeduction = saveDeduction;
 window.openEditAttModal = openEditAttModal;
 window.saveEditedAttendance = saveEditedAttendance;
-window.renderSalaryView = renderSalaryView;
 window.openNotifPanel = openNotifPanel;
 window.openChangePassModal = openChangePassModal;
 window.saveNewPassword = saveNewPassword;
