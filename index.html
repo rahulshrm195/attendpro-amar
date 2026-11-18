@@ -1316,9 +1316,16 @@ function todayStr() {
 function monthStr(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
 function fmtDate(str) {
   if (!str) return '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(str))) return esc(str); // never trust stored strings
   const [y,m,d] = str.split('-');
   return `${d}/${m}/${y}`;
 }
+// Escape user-entered text before putting it into HTML
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+// Safely pass a value as an argument inside an inline handler: onclick="fn(${jsArg(x)})"
+function jsArg(v) { return esc(JSON.stringify(v ?? '')); }
 function fmtMoney(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
 
 // ══════════════════════════════════════════
@@ -1576,11 +1583,11 @@ function renderAdminHome() {
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${label}</span>`
       : `<span class="chip chip-yellow">Not Marked</span>`;
     return `<div class="staff-item">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'}" onclick="openEditAttModal('${u.id}','${today}')">${u.name[0].toUpperCase()}</div>
-      <div class="staff-info" onclick="openEditAttModal('${u.id}','${today}')"><div class="staff-name">${u.name}</div><div class="staff-role">${u.role}</div></div>
+      <div class="staff-avatar" style="background:${esc(u.color||'#6c63ff')}" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})">${esc(u.name[0].toUpperCase())}</div>
+      <div class="staff-info" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})"><div class="staff-name">${esc(u.name)}</div><div class="staff-role">${esc(u.role)}</div></div>
       <div style="display:flex;align-items:center;gap:6px">
         ${chip}
-        ${v !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt('${u.id}')">✕</button>` : ''}
+        ${v !== undefined ? `<button class="att-clear-btn" onclick="clearDailyAtt(${jsArg(u.id)})">✕</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1695,26 +1702,26 @@ function renderDailyAtt() {
     const existingAdv = advances.filter(a => a.userId === u.id && a.date === date && a.type === 'advance');
     const chipsHtml = existingAdv.map(a =>
       `<div class="daily-adv-chip">
-        ₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + a.note : ''}
-        <button onclick="deleteAdvanceChip('${a.id}','${u.name}',${a.amount})">✕</button>
+        ₹${Number(a.amount).toLocaleString('en-IN')}${a.note ? ' · ' + esc(a.note) : ''}
+        <button onclick="deleteAdvanceChip(${jsArg(a.id)})">✕</button>
       </div>`
     ).join('');
 
     return `<div class="admin-att-row" id="attrow_${u.id}">
       <div class="admin-att-top">
-        <div class="staff-avatar" style="background:${u.color||'#6c63ff'};width:36px;height:36px;font-size:14px">${u.name[0].toUpperCase()}</div>
-        <div style="flex:1"><div class="staff-name">${u.name}</div></div>
+        <div class="staff-avatar" style="background:${esc(u.color||'#6c63ff')};width:36px;height:36px;font-size:14px">${esc(u.name[0].toUpperCase())}</div>
+        <div style="flex:1"><div class="staff-name">${esc(u.name)}</div></div>
       </div>
       <div class="admin-att-options" id="attopts_${u.id}">
         ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}"
           tabindex="0"
           data-userid="${u.id}" data-val="${v}" data-idx="${i}"
-          onclick="setDailyAtt('${u.id}',${v})"
-          onkeydown="attBtnKeydown(event,'${u.id}',${v},${i})">
+          onclick="setDailyAtt(${jsArg(u.id)},${v})"
+          onkeydown="attBtnKeydown(event,${jsArg(u.id)},${v},${i})">
           <span>${v===0.5?'½':v}</span>
           <small>${['Absent','Half','Full','OT','Dbl'][i]}</small>
         </div>`).join('')}
-        ${cur !== undefined ? `<button class="att-clear-btn" onclick="confirmClearAtt('${u.id}','${u.name}')">✕ Clear</button>` : ''}
+        ${cur !== undefined ? `<button class="att-clear-btn" onclick="confirmClearAtt(${jsArg(u.id)})">✕ Clear</button>` : ''}
       </div>
       <div class="daily-adv-section">
         ${chipsHtml ? `<div class="daily-adv-chips">${chipsHtml}</div>` : ''}
@@ -1725,8 +1732,8 @@ function renderDailyAtt() {
         <div class="daily-remark-row">
           <input type="text" id="remark_${u.id}"
             placeholder="📝 Remarks (e.g. No work, came late, village visit...)"
-            value="${att[u.id]?.[date + '_remark'] || ''}"
-            onkeydown="remarkKeydown(event,'${u.id}')">
+            value="${esc(att[u.id]?.[date + '_remark'] || '')}"
+            onkeydown="remarkKeydown(event,${jsArg(u.id)})">
         </div>
       </div>
     </div>`;
@@ -1754,22 +1761,22 @@ async function setDailyAtt(userId, val) {
     const clearBtn = document.createElement('button');
     clearBtn.className = 'att-clear-btn';
     clearBtn.textContent = '✕ Clear';
-    clearBtn.onclick = () => confirmClearAtt(userId, u ? u.name : userId);
+    clearBtn.onclick = () => confirmClearAtt(userId);
     attOpts.appendChild(clearBtn);
   }
 }
 
-function confirmClearAtt(userId, userName) {
-  const date = dailySelectedDate;
-  const [y,m,d] = date.split('-');
-  const label = `${d}/${m}/${y}`;
-  if (!confirm(`Clear ${userName}'s attendance for ${label}?\nThis cannot be undone.`)) return;
-  doClearAtt(userId);
+function confirmClearAtt(userId, date = dailySelectedDate) {
+  const u = getData('users', []).find(x => x.id === userId);
+  const userName = u ? u.name : 'this employee';
+  if (!confirm(`Clear ${userName}'s attendance for ${fmtDate(date)}?\nThis cannot be undone.`)) return;
+  doClearAtt(userId, date);
 }
+// ✕ button on the Home "Today's Attendance" list
+function clearDailyAtt(userId) { confirmClearAtt(userId, todayStr()); }
 
-async function doClearAtt(userId) {
+async function doClearAtt(userId, date = dailySelectedDate) {
   const att = getData('attendance', {});
-  const date = dailySelectedDate;
   if (att[userId] && att[userId][date] !== undefined) {
     delete att[userId][date];
     setCache('attendance', att);
@@ -1782,7 +1789,7 @@ async function doClearAtt(userId) {
   showToast('✅ Attendance cleared!');
 
   // Surgically reset only this employee's row buttons — preserve other rows' typed fields
-  const row = document.getElementById('attrow_' + userId);
+  const row = date === dailySelectedDate ? document.getElementById('attrow_' + userId) : null;
   if (row) {
     row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
     const clearBtn = row.querySelector('.att-clear-btn');
@@ -1843,7 +1850,11 @@ async function saveAllAttendance() {
 }
 
 // Delete advance chip from Daily Mark
-async function deleteAdvanceChip(advId, empName, amount) {
+async function deleteAdvanceChip(advId) {
+  const adv = getData('advances', []).find(a => a.id === advId);
+  if (!adv) return;
+  const empName = getData('users', []).find(u => u.id === adv.userId)?.name || 'employee';
+  const amount = adv.amount;
   if (!confirm(`Delete ₹${Number(amount).toLocaleString('en-IN')} advance for ${empName}?\nThis cannot be undone.`)) return;
   showLoader(true);
   try {
@@ -1917,7 +1928,7 @@ function populateCalEmpSelect() {
   const users = getData('users', []).filter(u => u.role !== 'admin');
   document.getElementById('calEmpSelect').innerHTML =
     '<option value="">-- Select Employee --</option>' +
-    users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+    users.map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
 }
 
 function renderCalendar() {
@@ -1959,7 +1970,7 @@ function renderCalGrid(gridId, labelId, empId, year, month, isAdmin) {
     if (v !== undefined) cls += ' ' + ATT_COLORS[String(v)];
     if (isToday)  cls += ' today';
     if (isFuture) cls += ' future';
-    const editClick = isAdmin ? `onclick="openEditAttModal('${empId}','${dateStr}')"` : '';
+    const editClick = isAdmin ? `onclick="openEditAttModal(${jsArg(empId)},${jsArg(dateStr)})"` : '';
     html += `<div class="${cls}" ${editClick}>${d}</div>`;
   }
   grid.innerHTML = html;
@@ -2017,7 +2028,7 @@ function renderReport() {
   if (sel) {
     const cur = sel.value;
     sel.innerHTML = '<option value="">— Select Employee —</option>' +
-      users.map(u => `<option value="${u.id}">${u.name}${u.active===false?' (Inactive)':''}</option>`).join('');
+      users.map(u => `<option value="${esc(u.id)}">${esc(u.name)}${u.active===false?' (Inactive)':''}</option>`).join('');
     if (cur) sel.value = cur;
     if (sel.value) renderHisabSummary();
     else {
@@ -2078,9 +2089,9 @@ function renderHisabSummary() {
 
   let html = '';
   html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:#fff;border-radius:14px;padding:14px;box-shadow:var(--shadow)">
-    <div class="staff-avatar" style="background:${u.color};width:48px;height:48px;font-size:18px">${u.name[0].toUpperCase()}</div>
+    <div class="staff-avatar" style="background:${esc(u.color)};width:48px;height:48px;font-size:18px">${esc(u.name[0].toUpperCase())}</div>
     <div>
-      <div style="font-size:18px;font-weight:800">${u.name}</div>
+      <div style="font-size:18px;font-weight:800">${esc(u.name)}</div>
       <div style="font-size:12px;color:var(--text2)">Joined ${fmtDate(u.joinDate)} · ${fmtMoney(u.wage)}/day current</div>
     </div>
   </div>`;
@@ -2107,12 +2118,12 @@ function renderHisabSummary() {
       <div style="text-align:center">
         <input type="number" value="${row.wage}" min="0"
           style="width:65px;text-align:center;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;background:#f8faff;color:var(--text);outline:none"
-          onchange="updateHisabWage('${userId}','${row.ym}',this.value)">
+          onchange="updateHisabWage(${jsArg(userId)},${jsArg(row.ym)},this.value)">
       </div>
       <div id="earned_${row.ym}" style="text-align:right;font-size:12px;font-weight:700;color:var(--green)">${fmtMoney(row.earned)}</div>
       <div style="text-align:right;font-size:12px;font-weight:700;color:var(--red)">${row.adv>0?fmtMoney(row.adv):'—'}</div>
       <div style="text-align:right">
-        <button onclick="openHisabDetail('${userId}','${row.ym}')"
+        <button onclick="openHisabDetail(${jsArg(userId)},${jsArg(row.ym)})"
           style="background:var(--blue-bg);border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;color:var(--purple)">▶</button>
       </div>
     </div>`;
@@ -2139,12 +2150,12 @@ function renderHisabSummary() {
   html += `<div id="hisabBalanceCard" style="background:${closingBalance>=0?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:12px">
     <div style="font-size:12px;font-weight:600;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px">Final Balance</div>
     <div id="hisabFinalBalance" style="font-size:36px;font-weight:800;font-family:'Poppins',sans-serif;margin:6px 0">${closingBalance>=0?'+':''}${fmtMoney(Math.abs(closingBalance))}</div>
-    <div id="hisabFinalLabel" style="font-size:14px;font-weight:700;opacity:0.9">${balLabel}</div>
+    <div id="hisabFinalLabel" style="font-size:14px;font-weight:700;opacity:0.9">${esc(balLabel)}</div>
   </div>`;
 
   html += `<div style="display:flex;gap:8px;margin-bottom:8px">
-    <button class="btn-sm btn-sm-purple" style="flex:1" onclick="saveHisabWages('${userId}')">💾 Save Wages</button>
-    <button class="btn-sm" style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="exportHisabPDF('${userId}')">📄 Summary PDF</button>
+    <button class="btn-sm btn-sm-purple" style="flex:1" onclick="saveHisabWages(${jsArg(userId)})">💾 Save Wages</button>
+    <button class="btn-sm" style="flex:1;background:#f8faff;border:1.5px solid var(--border);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="exportHisabPDF(${jsArg(userId)})">📄 Summary PDF</button>
   </div>`;
 
   document.getElementById('reportSummaryContent').innerHTML = html;
@@ -2279,7 +2290,7 @@ function openHisabDetail(userId, ym) {
     else if(v===2){cls+=' att-double';otD++;totalEarned+=2*dayWage;}
     else unmarked++;
     const remark=att[ds+'_remark']||'';
-    calHtml+=`<div class="${cls}" title="${remark}" style="position:relative">
+    calHtml+=`<div class="${cls}" title="${esc(remark)}" style="position:relative">
       ${lbl}
       ${remark?'<span style="position:absolute;bottom:2px;right:2px;width:4px;height:4px;background:currentColor;border-radius:50%;opacity:0.6"></span>':''}
     </div>`;
@@ -2315,7 +2326,7 @@ function openHisabDetail(userId, ym) {
       const isCredit=a.type==='deduction'||a.type==='settlement';
       const icon=a.type==='advance'?'💸':a.type==='settlement'?'💵':'✂️';
       ledgerHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div><div style="font-weight:700;font-size:13px">${icon} ${a.note||a.type}</div>
+        <div><div style="font-weight:700;font-size:13px">${icon} ${esc(a.note||a.type)}</div>
         <div style="font-size:11px;color:var(--text2)">${fmtDate(a.date)}</div></div>
         <div style="font-weight:800;font-size:14px;color:${isCredit?'var(--green)':'var(--red)'}">${isCredit?'+':'-'}${fmtMoney(a.amount)}</div>
       </div>`;
@@ -2341,13 +2352,13 @@ function openHisabDetail(userId, ym) {
       <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px">📝 Remarks</div>
       ${remarkDays.map(r=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
         <div style="font-size:11px;color:var(--text2);flex-shrink:0;width:55px">${fmtDate(r.date)}</div>
-        <div style="font-size:13px;color:var(--text)">${r.remark}</div>
+        <div style="font-size:13px;color:var(--text)">${esc(r.remark)}</div>
       </div>`).join('')}
     </div>`;
   }
 
   document.getElementById('reportDetailContent').innerHTML = calHtml + remarksHtml + ledgerHtml +
-    `<button class="btn-primary" onclick="exportDetailPDF('${userId}','${ym}')">📄 Export Month PDF</button>`;
+    `<button class="btn-primary" onclick="exportDetailPDF(${jsArg(userId)},${jsArg(ym)})">📄 Export Month PDF</button>`;
 
   document.getElementById('reportSummaryView').style.display='none';
   document.getElementById('reportDetailView').style.display='block';
@@ -2536,15 +2547,15 @@ function renderAdminRequests() {
     ? '<div class="empty-state"><div class="emoji">💰</div><p>No advance requests</p></div>'
     : advReqs.map(r => {
         const u = users.find(x => x.id === r.userId);
-        return `<div class="request-card ${r.status}">
+        return `<div class="request-card ${esc(r.status)}">
           <div class="request-top">
-            <div class="request-type">💰 ${u?u.name:'Unknown'} — ${fmtMoney(r.amount)}</div>
-            <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+            <div class="request-type">💰 ${esc(u?u.name:'Unknown')} — ${fmtMoney(r.amount)}</div>
+            <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
           </div>
-          <div class="request-detail">${r.reason||''} · ${fmtDate(r.date)}</div>
+          <div class="request-detail">${esc(r.reason||'')} · ${fmtDate(r.date)}</div>
           ${r.status==='pending'?`<div class="request-actions">
-            <button class="btn-approve" onclick="handleRequest('${r.id}','approved','advance')">✓ Approve</button>
-            <button class="btn-reject"  onclick="handleRequest('${r.id}','rejected','advance')">✗ Reject</button>
+            <button class="btn-approve" onclick="handleRequest(${jsArg(r.id)},'approved','advance')">✓ Approve</button>
+            <button class="btn-reject"  onclick="handleRequest(${jsArg(r.id)},'rejected','advance')">✗ Reject</button>
           </div>`:''}
         </div>`;
       }).join('');
@@ -2555,15 +2566,15 @@ function renderAdminRequests() {
     ? '<div class="empty-state"><div class="emoji">🗓️</div><p>No leave requests</p></div>'
     : leaveReqs.map(r => {
         const u = users.find(x => x.id === r.userId);
-        return `<div class="request-card ${r.status}">
+        return `<div class="request-card ${esc(r.status)}">
           <div class="request-top">
-            <div class="request-type">🗓️ ${u?u.name:'Unknown'}</div>
-            <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+            <div class="request-type">🗓️ ${esc(u?u.name:'Unknown')}</div>
+            <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
           </div>
-          <div class="request-detail">${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)} · ${r.reason||''}</div>
+          <div class="request-detail">${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)} · ${esc(r.reason||'')}</div>
           ${r.status==='pending'?`<div class="request-actions">
-            <button class="btn-approve" onclick="handleRequest('${r.id}','approved','leave')">✓ Approve</button>
-            <button class="btn-reject"  onclick="handleRequest('${r.id}','rejected','leave')">✗ Reject</button>
+            <button class="btn-approve" onclick="handleRequest(${jsArg(r.id)},'approved','leave')">✓ Approve</button>
+            <button class="btn-reject"  onclick="handleRequest(${jsArg(r.id)},'rejected','leave')">✗ Reject</button>
           </div>`:''}
         </div>`;
       }).join('');
@@ -2578,24 +2589,24 @@ function renderEmpRequests() {
   const advReqs = empReqs.filter(r => r.type === 'advance');
   advList.innerHTML = advReqs.length === 0
     ? '<div class="empty-state"><div class="emoji">💰</div><p>No advance requests yet</p></div>'
-    : advReqs.map(r => `<div class="request-card ${r.status}">
+    : advReqs.map(r => `<div class="request-card ${esc(r.status)}">
         <div class="request-top">
           <div class="request-type">💰 ${fmtMoney(r.amount)}</div>
-          <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+          <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
         </div>
-        <div class="request-detail">${r.reason||''} · ${fmtDate(r.date)}</div>
+        <div class="request-detail">${esc(r.reason||'')} · ${fmtDate(r.date)}</div>
       </div>`).join('');
 
   const leaveList  = document.getElementById('empLeaveList');
   const leaveReqs  = empReqs.filter(r => r.type === 'leave');
   leaveList.innerHTML = leaveReqs.length === 0
     ? '<div class="empty-state"><div class="emoji">🗓️</div><p>No leave requests yet</p></div>'
-    : leaveReqs.map(r => `<div class="request-card ${r.status}">
+    : leaveReqs.map(r => `<div class="request-card ${esc(r.status)}">
         <div class="request-top">
           <div class="request-type">🗓️ ${fmtDate(r.fromDate)} → ${fmtDate(r.toDate)}</div>
-          <span class="request-badge badge-${r.status}">${r.status.toUpperCase()}</span>
+          <span class="request-badge badge-${esc(r.status)}">${esc(String(r.status).toUpperCase())}</span>
         </div>
-        <div class="request-detail">${r.reason||''}</div>
+        <div class="request-detail">${esc(r.reason||'')}</div>
       </div>`).join('');
 }
 
@@ -2645,11 +2656,11 @@ function renderStaff() {
     const chip = v !== undefined
       ? `<span class="chip chip-${v==0?'red':v==0.5?'orange':v==1?'green':v==1.5?'purple':'pink'}">${ATT_LABELS[String(v)]}</span>`
       : `<span class="chip chip-yellow">—</span>`;
-    return `<div class="staff-item" onclick="openStaffDetail('${u.id}')" style="${isInactive?'opacity:0.6;':''}">
-      <div class="staff-avatar" style="background:${u.color||'#6c63ff'};${isInactive?'filter:grayscale(1)':''}">${u.name[0].toUpperCase()}</div>
+    return `<div class="staff-item" onclick="openStaffDetail(${jsArg(u.id)})" style="${isInactive?'opacity:0.6;':''}">
+      <div class="staff-avatar" style="background:${esc(u.color||'#6c63ff')};${isInactive?'filter:grayscale(1)':''}">${esc(u.name[0].toUpperCase())}</div>
       <div class="staff-info">
-        <div class="staff-name">${u.name}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
-        <div class="staff-role">${u.role} · ${u.userId}</div>
+        <div class="staff-name">${esc(u.name)}${isInactive?' <span style="font-size:10px;background:#fee2e2;color:var(--red);border-radius:4px;padding:1px 5px;font-weight:700">Inactive</span>':''}</div>
+        <div class="staff-role">${esc(u.role)} · ${esc(u.userId)}</div>
       </div>
       <div style="text-align:right"><div class="staff-wage">${fmtMoney(u.wage)}/day</div><div class="mt8">${chip}</div></div>
     </div>`;
@@ -2800,17 +2811,17 @@ function openStaffDetail(userId) {
 
   document.getElementById('staffDetailContent').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <div class="staff-avatar" style="background:${u.color};width:56px;height:56px;font-size:22px">${u.name[0].toUpperCase()}</div>
+      <div class="staff-avatar" style="background:${esc(u.color)};width:56px;height:56px;font-size:22px">${esc(u.name[0].toUpperCase())}</div>
       <div>
-        <div style="font-size:20px;font-weight:800">${u.name}</div>
-        <div class="text-xs">${u.role} · Joined ${fmtDate(u.joinDate)}</div>
+        <div style="font-size:20px;font-weight:800">${esc(u.name)}</div>
+        <div class="text-xs">${esc(u.role)} · Joined ${fmtDate(u.joinDate)}</div>
         <div style="font-size:12px;color:var(--purple);font-weight:700">${fmtMoney(u.wage)}/day</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div style="background:var(--blue-bg);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:12px;color:var(--text2)">Phone</div>
-        <div style="font-weight:700">${u.phone||'—'}</div>
+        <div style="font-weight:700">${esc(u.phone||'—')}</div>
       </div>
       <div style="background:#fee2e2;border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:12px;color:var(--text2)">Advance Balance</div>
@@ -2818,14 +2829,14 @@ function openStaffDetail(userId) {
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-primary" style="flex:1" onclick="editStaff(\'${u.id}\')">✏️ Edit</button>
-      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}(\'${u.id}\')">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
-      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff(\'${u.id}\')">🗑️ Delete</button>
+      <button class="btn-primary" style="flex:1" onclick="editStaff(${jsArg(u.id)})">✏️ Edit</button>
+      <button class="btn-sm" style="flex:1;background:${u.active===false?'#dcfce7':'#fff3cd'};color:${u.active===false?'#16a34a':'#92400e'};border:1.5px solid ${u.active===false?'#16a34a':'#d97706'};border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="${u.active===false?'reactivateStaff':'deactivateStaff'}(${jsArg(u.id)})">${u.active===false?'✅ Reactivate':'⏸ Deactivate'}</button>
+      <button class="btn-secondary" style="flex:1;color:var(--red)" onclick="deleteStaff(${jsArg(u.id)})">🗑️ Delete</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor('${u.id}')">+ Advance</button>
-      <button class="btn-sm" style="flex:1;background:#dcfce7;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="closeModal('staffDetailModal');openDeductModal('${u.id}')">− Deduct</button>
-      <button class="btn-sm" style="flex:1;background:#ede9fe;color:var(--purple);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="openLedger('${u.id}')">📒 Ledger</button>
+      <button class="btn-sm btn-sm-purple" style="flex:1" onclick="closeModal('staffDetailModal');openAddAdvanceModalFor(${jsArg(u.id)})">+ Advance</button>
+      <button class="btn-sm" style="flex:1;background:#dcfce7;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="closeModal('staffDetailModal');openDeductModal(${jsArg(u.id)})">− Deduct</button>
+      <button class="btn-sm" style="flex:1;background:#ede9fe;color:var(--purple);border-radius:8px;font-weight:700;font-size:12px;padding:8px" onclick="openLedger(${jsArg(u.id)})">📒 Ledger</button>
     </div>
     ${(() => {
       const ob = advances.find(a => a.note && a.note.includes('Opening Balance'));
@@ -2834,14 +2845,14 @@ function openStaffDetail(userId) {
         <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Opening Balance</div>
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div>
-            <div style="font-weight:700">${ob.note}</div>
+            <div style="font-weight:700">${esc(ob.note)}</div>
             <div style="font-size:11px;color:var(--text2)">${fmtDate(ob.date)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
             <div style="font-weight:800;color:${ob.type==='deduction'?'var(--green)':'var(--red)'}">${ob.type==='deduction'?'-':'+'}${fmtMoney(ob.amount)}</div>
-            <button onclick="editOpeningBalance('${ob.id}','${u.id}',${ob.amount},'${ob.type}')"
+            <button onclick="editOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)},${Number(ob.amount)||0},${jsArg(ob.type)})"
               style="background:#ede9fe;color:var(--purple);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Edit</button>
-            <button onclick="deleteOpeningBalance('${ob.id}','${u.id}')"
+            <button onclick="deleteOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)})"
               style="background:#fee2e2;color:var(--red);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">Delete</button>
           </div>
         </div>
@@ -2853,7 +2864,7 @@ function openStaffDetail(userId) {
       : advances.filter(a => !(a.note && a.note.includes('Opening Balance'))).map(a=>`<div class="advance-item">
         <div class="advance-info">
           <div class="adv-date">${fmtDate(a.date)}</div>
-          <div class="adv-note">${a.note||'Advance'}</div>
+          <div class="adv-note">${esc(a.note||'Advance')}</div>
           ${a.type==='deduction'?'<div style="font-size:10px;color:var(--green)">DEDUCTION</div>':''}
           ${a.type==='settlement'?'<div style="font-size:10px;color:var(--purple)">SETTLEMENT</div>':''}
         </div>
@@ -2918,7 +2929,7 @@ async function deleteStaff(userId) {
 // ══════════════════════════════════════════
 function populateAdvEmpSelect() {
   const users = getData('users', []).filter(u => u.role !== 'admin');
-  document.getElementById('advEmpSelect').innerHTML = users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+  document.getElementById('advEmpSelect').innerHTML = users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
 }
 
 function openAddAdvanceModalFor(userId) {
@@ -2997,7 +3008,7 @@ function openDeductModal(userId) {
   deductingUserId = userId;
   const u       = getData('users', []).find(x => x.id === userId);
   const balance = getAdvanceBalance(userId);
-  document.getElementById('deductEmpInfo').innerHTML = `<div class="flex-between"><span class="fw700">${u?.name}</span><span class="text-red fw700">Balance: ${fmtMoney(balance)}</span></div>`;
+  document.getElementById('deductEmpInfo').innerHTML = `<div class="flex-between"><span class="fw700">${esc(u?.name)}</span><span class="text-red fw700">Balance: ${fmtMoney(balance)}</span></div>`;
   document.getElementById('deductAmount').value = '';
   document.getElementById('deductNote').value   = '';
   openModal('deductModal');
@@ -3029,7 +3040,7 @@ function openEditAttModal(userId, date) {
   const att = getData('attendance', {});
   const cur = att[userId]?.[date];
   const existingRemark = att[userId]?.[date + '_remark'] || '';
-  document.getElementById('editAttInfo').innerHTML   = `<div class="fw700">${u?.name||'Unknown'}</div>`;
+  document.getElementById('editAttInfo').innerHTML   = `<div class="fw700">${esc(u?.name||'Unknown')}</div>`;
   document.getElementById('editAttDate').value       = date;
   document.getElementById('editAttValue').value      = cur !== undefined ? String(cur) : '1';
   document.getElementById('editAttRemark').value     = existingRemark;
@@ -3095,7 +3106,7 @@ function renderEmpSalary() {
   document.getElementById('profileAdvanceList').innerHTML = advances.length===0
     ? '<div class="empty-state" style="padding:20px"><p>No transactions yet</p></div>'
     : advances.map(a=>`<div class="advance-item">
-        <div class="advance-info"><div class="adv-date">${fmtDate(a.date)}</div><div class="adv-note">${a.note||'Advance'}</div></div>
+        <div class="advance-info"><div class="adv-date">${fmtDate(a.date)}</div><div class="adv-note">${esc(a.note||'Advance')}</div></div>
         <div class="advance-amount" style="${a.type==='deduction'?'color:var(--green)':''}">${a.type==='deduction'?'-':'+'}${fmtMoney(a.amount)}</div>
       </div>`).join('');
 }
@@ -3104,7 +3115,7 @@ function populateSalaryEmpSelect() {
   const users = getData('users', []).filter(u => u.role!=='admin');
   document.getElementById('salaryEmpSelect').innerHTML =
     '<option value="">-- Select Employee --</option>' +
-    users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+    users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
 }
 
 function renderSalaryView() {
@@ -3123,7 +3134,7 @@ function renderSalaryView() {
   const net = Math.max(0, earned-adv);
   view.innerHTML=`
     <div class="salary-card mb8">
-      <h3>This Month — ${u.name}</h3>
+      <h3>This Month — ${esc(u.name)}</h3>
       <div class="salary-amount">${fmtMoney(net)}</div>
       <div class="salary-breakdown">
         <div class="salary-item"><div class="val">${days}</div><div class="lbl">Days</div></div>
@@ -3132,7 +3143,7 @@ function renderSalaryView() {
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn-primary" style="flex:1" onclick="openDeductModal('${userId}')">Deduct Advance</button>
+      <button class="btn-primary" style="flex:1" onclick="openDeductModal(${jsArg(userId)})">Deduct Advance</button>
       <button class="btn-secondary" style="flex:1" onclick="openAddAdvanceModal()">Add Advance</button>
     </div>`;
 }
@@ -3163,10 +3174,10 @@ async function openNotifPanel() {
         const d = new Date(n.time);
         const timeStr = d.toLocaleDateString('en-IN')+' '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
         return `<div class="notif-item">
-          <div class="notif-icon" style="background:var(--blue-bg)">${n.title[0]}</div>
+          <div class="notif-icon" style="background:var(--blue-bg)">${esc([...String(n.title||'')][0]||'')}</div>
           <div class="notif-content">
-            <div class="notif-title">${n.title}</div>
-            <div class="notif-body">${n.body}</div>
+            <div class="notif-title">${esc(n.title)}</div>
+            <div class="notif-body">${esc(n.body)}</div>
             <div class="notif-time">${timeStr}</div>
           </div>
         </div>`;
@@ -3467,7 +3478,7 @@ function renderLedger() {
 
       html += `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px;gap:4px;padding:9px 12px;background:${bg};border-bottom:1px solid var(--border);font-size:12px">
         <div style="color:var(--text2);font-size:11px">${fmtDate(e.date)}</div>
-        <div style="font-weight:600">${typeIcon} ${e.note || ''}</div>
+        <div style="font-weight:600">${typeIcon} ${esc(e.note || '')}</div>
         <div style="text-align:right;color:var(--green);font-weight:700">${credit}</div>
         <div style="text-align:right;color:var(--red);font-weight:700">${debit}</div>
       </div>`;
@@ -3722,7 +3733,7 @@ function renderWageHistoryList(user) {
         <span style="font-weight:700;color:var(--purple)">${fmtMoney(h.wage)}/day</span>
         <span style="font-size:11px;color:var(--text2);margin-left:8px">from ${fmtDate(h.from)}</span>
       </div>
-      <button onclick="removeWageHistoryEntry('${h.from}')"
+      <button onclick="removeWageHistoryEntry(${jsArg(h.from)})"
         style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;font-weight:800;padding:0 4px">✕</button>
     </div>
   `).join('');
@@ -3939,6 +3950,7 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.setDailyAtt = setDailyAtt;
 window.confirmClearAtt = confirmClearAtt;
+window.clearDailyAtt = clearDailyAtt;
 window.deleteAdvanceChip = deleteAdvanceChip;
 window.dailyPrevDay = dailyPrevDay;
 window.dailyNextDay = dailyNextDay;
