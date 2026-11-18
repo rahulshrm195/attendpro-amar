@@ -863,6 +863,7 @@
       <div id="adminSalarySection" style="display:none"></div>
 
       <div class="card mt8">
+        <button class="btn-primary mb8" id="migrateBtn" style="display:none" onclick="migrateAllAccounts()">🔐 Secure all staff logins</button>
         <button class="btn-secondary mb8" onclick="openModal('whatsNewModal')">🆕 What's New</button>
         <button class="btn-secondary mb8" id="changePassBtn" onclick="openChangePassModal()">🔑 Change Password</button>
         <button class="btn-secondary" style="color:var(--red)" onclick="doLogout()">🚪 Logout</button>
@@ -1080,8 +1081,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, collection,
-  getDocs, addDoc, updateDoc, deleteDoc, deleteField
+  getDocs, addDoc, updateDoc, deleteDoc, deleteField, query, where
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, initializeAuth, inMemoryPersistence, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  updatePassword, reauthenticateWithCredential, EmailAuthProvider, deleteUser
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCa40BIBRC8SQQENHmyI9EnlGcOsOfPskU",
@@ -1094,6 +1100,48 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
+// Secondary app instance: lets admin create / update staff logins
+// without signing the admin out of the main app.
+const staffAdminApp = initializeApp(firebaseConfig, 'staffAdmin');
+const staffAuth = initializeAuth(staffAdminApp, { persistence: inMemoryPersistence });
+
+// ══════════════════════════════════════════
+// LOGIN IDENTITY HELPERS
+// Staff keep logging in with "User ID + password"; behind the scenes each
+// User ID maps to a Firebase Auth email account.
+// ══════════════════════════════════════════
+const LOGIN_DOMAIN = 'users.attendpro.amarfurniture.in';
+function loginEmail(userId) {
+  const local = String(userId || '').trim().toLowerCase()
+    .replace(/[^a-z0-9._-]/g, c => '-' + c.charCodeAt(0).toString(16));
+  return `${local}@${LOGIN_DOMAIN}`;
+}
+// Firebase requires >= 6 chars; a fixed prefix keeps existing short passwords working.
+function authPassword(p) { return 'attendpro:' + String(p || ''); }
+
+// Create the Auth account, or sign in to it if it already exists (re-runs).
+async function createOrSignIn(a, userId, pass) {
+  try {
+    return await createUserWithEmailAndPassword(a, loginEmail(userId), authPassword(pass));
+  } catch (e) {
+    if (e.code === 'auth/email-already-in-use') {
+      return await signInWithEmailAndPassword(a, loginEmail(userId), authPassword(pass));
+    }
+    throw e;
+  }
+}
+
+// Link an Auth account to a staff record and move the password out of `users`.
+async function linkAccount(docId, data, uid, pass) {
+  const role = data.role || 'employee';
+  await setDoc(doc(db, 'uidMap', uid), { userDocId: docId, role });
+  await setDoc(doc(db, 'credentials', docId), { password: pass, role, uid, userId: data.userId });
+  await updateDoc(doc(db, 'users', docId), { authUid: uid, password: deleteField() });
+  const creds = getData('credentials', {});
+  creds[docId] = { password: pass, role, uid, userId: data.userId };
+  setCache('credentials', creds);
+}
 
 // ══════════════════════════════════════════
 // LOCAL CACHE — keeps UI fast
@@ -1120,54 +1168,48 @@ function showLoader(on) {
 // ══════════════════════════════════════════
 // LOAD ALL DATA FROM FIRESTORE
 // ══════════════════════════════════════════
-async function loadAllData() {
-  showLoader(true);
-  try {
-    // Users
-    const usersSnap = await getDocs(collection(db, 'users'));
-    const users = [];
-    usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
-    if (users.length === 0) {
-      // First-ever run — seed admin account
-      await setDoc(doc(db, 'users', 'admin'), {
-        name: 'Rahul', role: 'admin', userId: 'admin',
-        password: 'admin123', phone: '', wage: 0,
-        joinDate: todayStr(), color: '#6c63ff'
-      });
-      users.push({ id: 'admin', name: 'Rahul', role: 'admin', userId: 'admin', password: 'admin123', phone: '', wage: 0, joinDate: todayStr(), color: '#6c63ff' });
-    }
-    setCache('users', users);
+// Loads only what the signed-in role is allowed to read (must match firestore.rules).
+async function loadAllData(profile) {
+  const rows = snap => { const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); return a; };
+  const isStaffRole = profile.role === 'admin' || profile.role === 'manager';
+  const mine = profile.userDocId;
 
-    // Attendance  { docId = userId, fields = { 'YYYY-MM-DD': value } }
-    const attSnap = await getDocs(collection(db, 'attendance'));
-    const att = {};
-    attSnap.forEach(d => { att[d.id] = d.data(); });
+  if (isStaffRole) {
+    const credQuery = profile.role === 'admin'
+      ? collection(db, 'credentials')
+      : query(collection(db, 'credentials'), where('role', '!=', 'admin'));
+    const [usersS, attS, advS, reqS, notifS, credS] = await Promise.all([
+      getDocs(collection(db, 'users')),
+      getDocs(collection(db, 'attendance')),
+      getDocs(collection(db, 'advances')),
+      getDocs(collection(db, 'requests')),
+      getDocs(collection(db, 'notifications')),
+      getDocs(credQuery).catch(e => { console.warn('credentials not readable', e); return null; })
+    ]);
+    setCache('users', rows(usersS));
+    const att = {}; attS.forEach(d => { att[d.id] = d.data(); });
     setCache('attendance', att);
-
-    // Advances
-    const advSnap = await getDocs(collection(db, 'advances'));
-    const advances = [];
-    advSnap.forEach(d => advances.push({ id: d.id, ...d.data() }));
-    setCache('advances', advances);
-
-    // Requests
-    const reqSnap = await getDocs(collection(db, 'requests'));
-    const requests = [];
-    reqSnap.forEach(d => requests.push({ id: d.id, ...d.data() }));
-    setCache('requests', requests);
-
-    // Notifications
-    const notifSnap = await getDocs(collection(db, 'notifications'));
-    const notifs = [];
-    notifSnap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
-    notifs.sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
-    setCache('notifications', notifs);
-
-  } catch(e) {
-    console.error('Firebase load error:', e);
-    showToast('⚠️ Database connection failed. Check your config.');
+    setCache('advances', rows(advS));
+    setCache('requests', rows(reqS));
+    setCache('notifications', rows(notifS));
+    const creds = {}; credS?.forEach(d => { creds[d.id] = d.data(); });
+    setCache('credentials', creds);
+  } else {
+    const [meS, attS, advS, reqS, notifS] = await Promise.all([
+      getDoc(doc(db, 'users', mine)),
+      getDoc(doc(db, 'attendance', mine)),
+      getDocs(query(collection(db, 'advances'), where('userId', '==', mine))),
+      getDocs(query(collection(db, 'requests'), where('userId', '==', mine))),
+      getDocs(query(collection(db, 'notifications'), where('for', '==', mine)))
+    ]);
+    setCache('users', meS.exists() ? [{ id: meS.id, ...meS.data() }] : []);
+    setCache('attendance', attS.exists() ? { [mine]: attS.data() } : {});
+    setCache('advances', rows(advS));
+    setCache('requests', rows(reqS));
+    setCache('notifications', rows(notifS));
+    setCache('credentials', {});
   }
-  showLoader(false);
+  getData('notifications', []).sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
 }
 
 // ══════════════════════════════════════════
@@ -1282,32 +1324,106 @@ function fmtMoney(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
 // ══════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════
-function doLogin() {
-  const id = document.getElementById('loginId').value.trim();
+let authBusy = false; // true while doLogin is driving the sign-in itself
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+function setLoginBusy(busy) {
+  const btn = document.getElementById('loginBtn');
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.style.opacity = busy ? '0.6' : '1';
+  btn.textContent = busy ? 'Signing in…' : 'Sign In';
+}
+function showLoginScreen() {
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('appScreen').classList.remove('active');
+}
+
+// One-time upgrade path for accounts created before Firebase Auth.
+// Only works while the old open rules are still deployed; once the new
+// rules are live this query is denied and we simply return null.
+async function legacyLogin(id, pass) {
+  let snap;
+  try { snap = await getDocs(query(collection(db, 'users'), where('userId', '==', id))); }
+  catch (e) { return null; }
+  const d = snap.docs.find(x => x.data().password !== undefined && x.data().password === pass);
+  if (!d) return null;
+  const cred = await createOrSignIn(auth, id, pass);
+  await linkAccount(d.id, d.data(), cred.user.uid, pass);
+  return cred;
+}
+
+async function doLogin() {
+  const id   = document.getElementById('loginId').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
-  const users = getData('users', []);
-  if (users.length === 0) {
-    document.getElementById('loginError').textContent = 'Still connecting to database, please wait...';
-    document.getElementById('loginError').style.display = 'block';
-    return;
+  if (!id || !pass) { showLoginError('Please enter your user ID and password'); return; }
+  showLoginError('');
+  setLoginBusy(true);
+  authBusy = true;
+  try {
+    let cred;
+    try {
+      cred = await signInWithEmailAndPassword(auth, loginEmail(id), authPassword(pass));
+    } catch (e) {
+      if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password', 'auth/invalid-email'].includes(e.code)) throw e;
+      cred = await legacyLogin(id, pass);
+      if (!cred) { showLoginError('Invalid user ID or password'); return; }
+    }
+    await enterApp(cred.user);
+  } catch (e) {
+    console.error('Login error:', e);
+    showLoginError(
+      e.code === 'auth/too-many-requests'        ? 'Too many attempts. Please wait a few minutes and try again.' :
+      e.code === 'auth/network-request-failed'   ? 'No internet connection. Please check and try again.' :
+      e.code === 'auth/operation-not-allowed'    ? 'Login is not enabled yet. Admin: enable Email/Password in Firebase Authentication.' :
+      'Login failed. Please try again.');
+  } finally {
+    authBusy = false;
+    setLoginBusy(false);
   }
-  const user = users.find(u => u.userId === id && u.password === pass);
-  if (!user) {
-    document.getElementById('loginError').textContent = 'Invalid user ID or password';
-    document.getElementById('loginError').style.display = 'block';
+}
+
+// Load the signed-in user's staff profile + data, then show the app.
+async function enterApp(fbUser) {
+  showLoader(true);
+  try {
+    const profSnap = await getDoc(doc(db, 'uidMap', fbUser.uid));
+    if (!profSnap.exists()) {
+      await signOut(auth);
+      showLoginError('This login is not linked to a staff record. Please contact admin.');
+      return;
+    }
+    const profile = profSnap.data();
+    await loadAllData(profile);
+    const u = getData('users', []).find(x => x.id === profile.userDocId);
+    if (!u) {
+      await signOut(auth);
+      showLoginError('Staff record not found. Please contact admin.');
+      return;
+    }
+    // Role comes from uidMap (protected by rules), not the editable users doc.
+    currentUser = { ...u, role: profile.role };
+  } catch (e) {
+    console.error('Load error:', e);
+    await signOut(auth).catch(() => {});
+    showLoginError('Could not load data. Check your internet and try again.');
     return;
+  } finally {
+    showLoader(false);
   }
-  currentUser = user;
-  localStorage.setItem('af_session', user.id);
-  document.getElementById('loginError').style.display = 'none';
+  showLoginError('');
   startApp();
 }
 
-function doLogout() {
+async function doLogout() {
   currentUser = null;
-  localStorage.removeItem('af_session');
-  document.getElementById('loginScreen').classList.add('active');
-  document.getElementById('appScreen').classList.remove('active');
+  Object.keys(_cache).forEach(k => delete _cache[k]);
+  await signOut(auth).catch(() => {});
+  showLoginScreen();
   document.getElementById('loginId').value = '';
   document.getElementById('loginPass').value = '';
 }
@@ -1504,9 +1620,7 @@ function renderEmpHome() {
   const net = Math.max(0, earned - advBalance);
 
   document.getElementById('empStatDays').textContent    = totalDays;
-  document.getElementById('empStatEarned').textContent  = fmtMoney(earned);
   document.getElementById('empStatAdvance').textContent = fmtMoney(advBalance);
-  document.getElementById('empStatNet').textContent     = fmtMoney(net);
 }
 
 function getAdvanceBalance(userId) {
@@ -2594,20 +2708,66 @@ async function saveStaff() {
 
   if (!name || !userId || !pass) { showToast('Name, User ID and Password are required'); return; }
 
+  if (pass.length < 4) { showToast('Password must be at least 4 characters'); return; }
+  if (!['employee', 'manager'].includes(role)) { showToast('Invalid role'); return; }
+
   const users = getData('users', []);
+  const otherHasLogin = users.some(u => u.id !== editingStaffId && loginEmail(u.userId) === loginEmail(userId));
+  if (otherHasLogin) { showToast('User ID already exists!'); return; }
   showLoader(true);
 
+  try {
   if (editingStaffId) {
-    const users = getData('users', []);
-    const data = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, wageHistory: tempWageHistory };
+    const old     = users.find(u => u.id === editingStaffId);
+    const oldCred = getData('credentials', {})[editingStaffId];
+    const data = { name, phone, wage: Number(wage), role, userId, joinDate, wageHistory: tempWageHistory };
+    if (old?.authUid && oldCred) {
+      let uid = old.authUid;
+      const loginChanged = loginEmail(old.userId) !== loginEmail(userId);
+      const passChanged  = pass !== oldCred.password;
+      if (loginChanged || passChanged) {
+        try {
+          const oldSess = await signInWithEmailAndPassword(staffAuth, loginEmail(old.userId), authPassword(oldCred.password));
+          if (loginChanged) {
+            // New login ID → new Auth account, then remove the old one
+            const created = await createUserWithEmailAndPassword(staffAuth, loginEmail(userId), authPassword(pass));
+            const newUid = created.user.uid;
+            await signInWithEmailAndPassword(staffAuth, loginEmail(old.userId), authPassword(oldCred.password));
+            await deleteUser(staffAuth.currentUser);
+            await deleteDoc(doc(db, 'uidMap', uid));
+            uid = newUid;
+          } else {
+            await updatePassword(oldSess.user, authPassword(pass));
+          }
+        } finally {
+          await signOut(staffAuth).catch(() => {});
+        }
+      }
+      data.authUid = uid;
+      await setDoc(doc(db, 'uidMap', uid), { userDocId: editingStaffId, role });
+      await setDoc(doc(db, 'credentials', editingStaffId), { password: pass, role, uid, userId });
+      getData('credentials', {})[editingStaffId] = { password: pass, role, uid, userId };
+    } else {
+      // Not yet migrated to secure login — keep legacy field until "Secure staff logins" runs
+      data.password = pass;
+    }
     await saveUserDoc(editingStaffId, data);
     showToast('✅ Staff updated!');
   } else {
-    if (users.find(u => u.userId === userId)) { showLoader(false); showToast('User ID already exists!'); return; }
     const colorIdx = users.filter(u => u.role !== 'admin').length % COLORS.length;
     const newId    = 'emp_' + Date.now();
-    const data     = { name, phone, wage: Number(wage), role, userId, password: pass, joinDate, color: COLORS[colorIdx] };
+    let uid;
+    try {
+      const created = await createUserWithEmailAndPassword(staffAuth, loginEmail(userId), authPassword(pass));
+      uid = created.user.uid;
+    } finally {
+      await signOut(staffAuth).catch(() => {});
+    }
+    const data     = { name, phone, wage: Number(wage), role, userId, joinDate, color: COLORS[colorIdx], authUid: uid };
     await saveUserDoc(newId, data);
+    await setDoc(doc(db, 'uidMap', uid), { userDocId: newId, role });
+    await setDoc(doc(db, 'credentials', newId), { password: pass, role, uid, userId });
+    getData('credentials', {})[newId] = { password: pass, role, uid, userId };
     // Save opening balance if provided
     const openingBal = Number(document.getElementById('sfOpeningBal').value || 0);
     const openingBalType = document.getElementById('sfOpeningBalType').value;
@@ -2617,6 +2777,12 @@ async function saveStaff() {
       await addAdvance({ userId: newId, amount: openingBal, note: balNote, date: todayStr(), month: todayStr().substring(0,7), type: balType });
     }
     showToast('✅ Staff added!');
+  }
+  } catch (e) {
+    console.error('Save staff error:', e);
+    showLoader(false);
+    showToast(e.code === 'auth/email-already-in-use' ? 'User ID already exists!' : '⚠️ Could not save: ' + (e.code || e.message));
+    return;
   }
 
   showLoader(false);
@@ -2708,7 +2874,7 @@ function editStaff(userId) {
   document.getElementById('sfWage').value     = u.wage;
   document.getElementById('sfRole').value     = u.role;
   document.getElementById('sfUserId').value   = u.userId;
-  document.getElementById('sfPass').value     = u.password;
+  document.getElementById('sfPass').value     = u.password ?? getData('credentials', {})[u.id]?.password ?? '';
   document.getElementById('sfJoinDate').value = u.joinDate||'';
 
   // Init tempWageHistory from existing data
@@ -2727,6 +2893,19 @@ async function deleteStaff(userId) {
   const name = u ? u.name : 'this staff member';
   if (!confirm(`Delete ${name}?\nAll their attendance and records will be removed.\nThis cannot be undone.`)) return;
   showLoader(true);
+  // Remove their login first so the account can no longer sign in
+  const cred = getData('credentials', {})[userId];
+  if (u?.authUid) {
+    if (cred) {
+      try {
+        await signInWithEmailAndPassword(staffAuth, loginEmail(u.userId), authPassword(cred.password));
+        await deleteUser(staffAuth.currentUser);
+      } catch (e) { console.warn('Could not delete auth account', e); }
+      finally { await signOut(staffAuth).catch(() => {}); }
+    }
+    try { await deleteDoc(doc(db, 'uidMap', u.authUid)); } catch (e) { console.warn(e); }
+    try { await deleteDoc(doc(db, 'credentials', userId)); } catch (e) { console.warn(e); }
+  }
   await deleteUserDoc(userId);
   showLoader(false);
   closeModal('staffDetailModal');
@@ -2878,6 +3057,8 @@ async function saveEditedAttendance() {
 // ══════════════════════════════════════════
 function renderProfile() {
   document.getElementById('changePassBtn').style.display = currentUser.role==='admin' ? 'block':'none';
+  const needsMigration = currentUser.role === 'admin' && getData('users', []).some(u => u.password !== undefined);
+  document.getElementById('migrateBtn').style.display = needsMigration ? 'block' : 'none';
   document.getElementById('profileAvatarBig').textContent  = currentUser.name[0].toUpperCase();
   document.getElementById('profileAvatarBig').style.background = currentUser.color||'var(--purple)';
   document.getElementById('profileName').textContent       = currentUser.name;
@@ -2888,7 +3069,7 @@ function renderProfile() {
   document.getElementById('adminSalarySection').style.display = !isEmp ? 'block':'none';
 
   if (isEmp) renderEmpSalary();
-  else populateSalaryEmpSelect();
+  // (admin salary view moved to Staff detail — nothing to populate here)
 }
 
 function renderEmpSalary() {
@@ -3027,12 +3208,26 @@ async function saveNewPassword() {
   const nw      = document.getElementById('newPass').value;
   const confirm = document.getElementById('confirmPass').value;
   if (!cur||!nw||!confirm) { showToast('Please fill all fields'); return; }
-  if (cur !== currentUser.password) { showToast('❌ Current password is incorrect'); return; }
   if (nw !== confirm) { showToast('❌ New passwords do not match'); return; }
   if (nw.length < 4)  { showToast('Password must be at least 4 characters'); return; }
+  const fbUser = auth.currentUser;
+  if (!fbUser) { showToast('Please log in again'); return; }
   showLoader(true);
-  await saveUserDoc(currentUser.id, { password: nw });
-  currentUser.password = nw;
+  try {
+    await reauthenticateWithCredential(fbUser, EmailAuthProvider.credential(fbUser.email, authPassword(cur)));
+  } catch (e) {
+    showLoader(false);
+    showToast(e.code === 'auth/too-many-requests' ? 'Too many attempts, try later' : '❌ Current password is incorrect');
+    return;
+  }
+  try {
+    await updatePassword(fbUser, authPassword(nw));
+    await setDoc(doc(db, 'credentials', currentUser.id), { password: nw }, { merge: true });
+  } catch (e) {
+    showLoader(false);
+    showToast('⚠️ Could not update password');
+    return;
+  }
   showLoader(false);
   closeModal('changePassModal');
   showToast('✅ Password updated!');
@@ -3654,7 +3849,40 @@ async function reactivateStaff(userId) {
   showLoader(false);
 }
 
+// ══════════════════════════════════════════
+// ONE-TIME MIGRATION — create Firebase Auth logins for all existing staff
+// Run by admin BEFORE publishing the new firestore.rules.
+// ══════════════════════════════════════════
+async function migrateAllAccounts() {
+  const pending = getData('users', []).filter(u => u.password !== undefined);
+  if (pending.length === 0) { showToast('✅ All logins are already secured'); renderProfile(); return; }
+  if (!confirm(`Create secure logins for ${pending.length} account(s)?\nEveryone keeps the same User ID and password.`)) return;
+  showLoader(true);
+  const failed = [];
+  for (const u of pending) {
+    try {
+      const cred = await createOrSignIn(staffAuth, u.userId, u.password);
+      await linkAccount(u.id, u, cred.user.uid, u.password);
+      delete u.password;
+      u.authUid = cred.user.uid;
+    } catch (e) {
+      console.error('Migration failed for', u.userId, e);
+      failed.push(`• ${u.name} (${u.userId}): ${e.code || e.message}`);
+    } finally {
+      await signOut(staffAuth).catch(() => {});
+    }
+  }
+  showLoader(false);
+  if (failed.length) {
+    alert(`Secured ${pending.length - failed.length} of ${pending.length} logins.\n\nFailed:\n${failed.join('\n')}\n\nFix these (e.g. edit duplicate User IDs) and tap the button again.`);
+  } else {
+    alert(`✅ All ${pending.length} logins secured.\n\nNext step: publish the new Firestore security rules.`);
+  }
+  renderProfile();
+}
+
 // Expose functions to global scope (required for type="module")
+window.migrateAllAccounts = migrateAllAccounts;
 window.doLogin = doLogin;
 window.doLogout = doLogout;
 window.switchPage = switchPage;
@@ -3720,28 +3948,23 @@ window.remarkKeydown = remarkKeydown;
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
-(async () => {
-  const btn = document.getElementById('loginBtn');
-  const enableBtn = () => {
-    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; btn.style.opacity = '1'; }
-  };
-  try {
-    initKeyboardShortcuts();
-    await loadAllData();
-    enableBtn();
-    // Restore session
-    const savedId = localStorage.getItem('af_session');
-    if (savedId) {
-      const users = getData('users', []);
-      const u = users.find(x => x.id === savedId);
-      if (u) { currentUser = u; startApp(); }
-    }
-  } catch(e) {
-    console.error('App init error:', e);
-    showToast('⚠️ Failed to load. Please refresh.');
-    enableBtn(); // Always enable button so user can try logging in
+// ══════════════════════════════════════════
+// STARTUP — Firebase Auth keeps the session; no data is loaded before login
+// ══════════════════════════════════════════
+initKeyboardShortcuts();
+localStorage.removeItem('af_session'); // old insecure session key
+showLoader(true);
+onAuthStateChanged(auth, async fbUser => {
+  if (authBusy) return;           // doLogin is handling this sign-in
+  if (fbUser) {
+    if (!currentUser) await enterApp(fbUser);
+  } else {
+    currentUser = null;
+    showLoader(false);
+    showLoginScreen();
   }
-})();
+  setLoginBusy(false);
+});
 </script>
 
 <!-- ══════════════════════════════════════════ -->
