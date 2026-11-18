@@ -1089,7 +1089,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, collection,
-  getDocs, addDoc, updateDoc, deleteDoc, deleteField, query, where
+  getDocs, addDoc, updateDoc, deleteDoc, deleteField, query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, initializeAuth, inMemoryPersistence, onAuthStateChanged,
@@ -1176,48 +1176,150 @@ function showLoader(on) {
 // ══════════════════════════════════════════
 // LOAD ALL DATA FROM FIRESTORE
 // ══════════════════════════════════════════
-// Loads only what the signed-in role is allowed to read (must match firestore.rules).
-async function loadAllData(profile) {
-  const rows = snap => { const a = []; snap.forEach(d => a.push({ id: d.id, ...d.data() })); return a; };
-  const isStaffRole = profile.role === 'admin' || profile.role === 'manager';
-  const mine = profile.userDocId;
-
-  if (isStaffRole) {
-    // Saved staff passwords: admin only
-    const credQuery = profile.role === 'admin' ? collection(db, 'credentials') : null;
-    const [usersS, attS, advS, reqS, notifS, credS] = await Promise.all([
-      getDocs(collection(db, 'users')),
-      getDocs(collection(db, 'attendance')),
-      getDocs(collection(db, 'advances')),
-      getDocs(collection(db, 'requests')),
-      getDocs(collection(db, 'notifications')),
-      credQuery ? getDocs(credQuery).catch(e => { console.warn('credentials not readable', e); return null; }) : Promise.resolve(null)
-    ]);
-    setCache('users', rows(usersS));
-    const att = {}; attS.forEach(d => { att[d.id] = d.data(); });
-    setCache('attendance', att);
-    setCache('advances', rows(advS));
-    setCache('requests', rows(reqS));
-    setCache('notifications', rows(notifS));
-    const creds = {}; credS?.forEach(d => { creds[d.id] = d.data(); });
-    setCache('credentials', creds);
-  } else {
-    const [meS, attS, advS, reqS, notifS] = await Promise.all([
-      getDoc(doc(db, 'users', mine)),
-      getDoc(doc(db, 'attendance', mine)),
-      getDocs(query(collection(db, 'advances'), where('userId', '==', mine))),
-      getDocs(query(collection(db, 'requests'), where('userId', '==', mine))),
-      getDocs(query(collection(db, 'notifications'), where('for', '==', mine)))
-    ]);
-    setCache('users', meS.exists() ? [{ id: meS.id, ...meS.data() }] : []);
-    setCache('attendance', attS.exists() ? { [mine]: attS.data() } : {});
-    setCache('advances', rows(advS));
-    setCache('requests', rows(reqS));
-    setCache('notifications', rows(notifS));
-    setCache('credentials', {});
-  }
-  getData('notifications', []).sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
+// ══════════════════════════════════════════
+// LIVE DATA — every open device stays in sync via Firestore listeners.
+// Queries are scoped to what the role may read (must match firestore.rules).
+// Listeners update the cache IN PLACE so references held elsewhere stay valid.
+// ══════════════════════════════════════════
+let liveUnsubs = [];
+function stopLiveData() {
+  liveUnsubs.forEach(u => { try { u(); } catch (e) {} });
+  liveUnsubs = [];
 }
+
+function applySnapshot(key, snap) {
+  const isQuery = typeof snap.forEach === 'function';
+  if (key === 'attendance') {
+    const att = getData('attendance', null) || {};
+    Object.keys(att).forEach(k => delete att[k]);
+    if (isQuery) snap.forEach(d => { att[d.id] = d.data(); });
+    else if (snap.exists()) att[snap.id] = snap.data();
+    setCache('attendance', att);
+    return;
+  }
+  const docs = [];
+  if (isQuery) snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+  else if (snap.exists()) docs.push({ id: snap.id, ...snap.data() });
+  if (key === 'notifications') docs.sort((a, b) => b.time?.localeCompare?.(a.time) || 0);
+  const arr = getData(key, null) || [];
+  arr.splice(0, arr.length, ...docs);
+  setCache(key, arr);
+  // Keep the signed-in user's own details fresh (e.g. wage changed by admin)
+  if (key === 'users' && currentUser) {
+    const me = arr.find(x => x.id === currentUser.id);
+    if (me) Object.assign(currentUser, me, { role: currentUser.role });
+  }
+}
+
+async function forceLogout(msg) {
+  await doLogout();
+  showLoginError(msg);
+}
+
+function startLiveData(profile) {
+  stopLiveData();
+  const staffRole = isStaffRole(profile);
+  const mine = profile.userDocId;
+  const sources = staffRole ? [
+    ['users',         collection(db, 'users')],
+    ['attendance',    collection(db, 'attendance')],
+    ['advances',      collection(db, 'advances')],
+    ['requests',      collection(db, 'requests')],
+    ['notifications', collection(db, 'notifications')]
+  ] : [
+    ['users',         doc(db, 'users', mine)],
+    ['attendance',    doc(db, 'attendance', mine)],
+    ['advances',      query(collection(db, 'advances'),      where('userId', '==', mine))],
+    ['requests',      query(collection(db, 'requests'),      where('userId', '==', mine))],
+    ['notifications', query(collection(db, 'notifications'), where('for', '==', mine))]
+  ];
+  const firstLoads = sources.map(([key, ref]) => new Promise((resolve, reject) => {
+    let first = true;
+    liveUnsubs.push(onSnapshot(ref, snap => {
+      applySnapshot(key, snap);
+      if (first) { first = false; resolve(); }
+      else scheduleRefresh();
+    }, err => {
+      console.error('Live listener error', key, err);
+      if (first) { first = false; reject(err); }
+      else if (err.code === 'permission-denied') forceLogout('Your session has ended. Please log in again.');
+    }));
+  }));
+
+  // Watch our own login record: deactivated / role changed on another device → sign out
+  const uid = auth.currentUser?.uid;
+  if (uid) {
+    liveUnsubs.push(onSnapshot(doc(db, 'uidMap', uid), snap => {
+      const p = snap.data();
+      if (!snap.exists()) forceLogout('This login has been removed. Please contact admin.');
+      else if (p.active === false) forceLogout('Your account has been deactivated. Please contact admin.');
+      else if (p.role !== profile.role) forceLogout('Your role was changed — please log in again.');
+    }, () => {}));
+  }
+  return Promise.all(firstLoads);
+}
+
+async function loadAllData(profile) {
+  await startLiveData(profile);
+  // Saved staff passwords: admin only, loaded once (only admin changes them)
+  const creds = {};
+  if (profile.role === 'admin') {
+    try { (await getDocs(collection(db, 'credentials'))).forEach(d => { creds[d.id] = d.data(); }); }
+    catch (e) { console.warn('credentials not readable', e); }
+  }
+  setCache('credentials', creds);
+}
+
+// ── Redraw the visible screen after a change from another device ──
+let currentPage = 'home';
+let hisabDetailOpen = null;     // { userId, ym } while the month detail is shown
+let pendingRefresh = false;
+let refreshTimer = null;
+
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refreshCurrentPage, 250);
+}
+
+// True while redrawing would destroy something the user is in the middle of
+function isUserBusy() {
+  if (document.querySelector('.modal-overlay.open')) return true;
+  const a = document.activeElement;
+  if (a && a.closest && a.closest('#appScreen') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+  const dailyList = document.getElementById('dailyAttList');
+  if (currentPage === 'attendance' && document.getElementById('attTabDaily').style.display !== 'none' && dailyList) {
+    for (const el of dailyList.querySelectorAll('input')) {
+      if (el.id.startsWith('remark_') ? el.value !== (el.dataset.orig || '') : el.value !== '') return true;
+    }
+  }
+  if (Object.keys(hisabWageOverrides).length) return true;
+  return false;
+}
+
+function refreshCurrentPage() {
+  if (!currentUser) return;
+  updateNotifBadge();
+  if (isUserBusy()) { pendingRefresh = true; return; }
+  pendingRefresh = false;
+  switch (currentPage) {
+    case 'home':     renderHome(); break;
+    case 'requests': renderRequests(); break;
+    case 'staff':    renderStaff(); break;
+    case 'profile':  renderProfile(); break;
+    case 'calendar': renderEmpCalendar(); break;
+    case 'attendance':
+      if (document.getElementById('attTabDaily').style.display !== 'none') renderDailyAtt();
+      else if (document.getElementById('attTabCalendar').style.display !== 'none') {
+        if (document.getElementById('calEmpSelect').value) renderCalendar();
+      } else if (hisabDetailOpen) openHisabDetail(hisabDetailOpen.userId, hisabDetailOpen.ym);
+      else renderReport();
+      break;
+  }
+}
+// Catch up on a deferred redraw as soon as the user finishes
+function refreshIfPending() { if (pendingRefresh) setTimeout(refreshCurrentPage, 50); }
+document.addEventListener('focusout', refreshIfPending);
+document.addEventListener('input', () => { if (pendingRefresh) scheduleRefresh(); });
 
 // ══════════════════════════════════════════
 // FIRESTORE WRITE HELPERS
@@ -1263,13 +1365,13 @@ async function saveRemark(userId, date, remark) {
 async function addAdvance(data) {
   const ref = await addDoc(collection(db, 'advances'), data);
   const advances = getData('advances', []);
-  advances.push({ id: ref.id, ...data });
+  if (!advances.some(a => a.id === ref.id)) advances.push({ id: ref.id, ...data });
   setCache('advances', advances);
 }
 async function addRequestDoc(data) {
   const ref = await addDoc(collection(db, 'requests'), data);
   const requests = getData('requests', []);
-  requests.push({ id: ref.id, ...data });
+  if (!requests.some(r => r.id === ref.id)) requests.push({ id: ref.id, ...data });
   setCache('requests', requests);
 }
 async function updateRequestDoc(reqId, data) {
@@ -1282,7 +1384,7 @@ async function updateRequestDoc(reqId, data) {
 async function addNotifDoc(data) {
   const ref = await addDoc(collection(db, 'notifications'), data);
   const notifs = getData('notifications', []);
-  notifs.unshift({ id: ref.id, ...data });
+  if (!notifs.some(n => n.id === ref.id)) notifs.unshift({ id: ref.id, ...data });
   setCache('notifications', notifs);
 }
 async function markNotifsRead() {
@@ -1444,7 +1546,9 @@ async function enterApp(fbUser) {
 }
 
 async function doLogout() {
+  stopLiveData();
   currentUser = null;
+  pendingRefresh = false; hisabDetailOpen = null; hisabWageOverrides = {};
   Object.keys(_cache).forEach(k => delete _cache[k]);
   await signOut(auth).catch(() => {});
   document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
@@ -1538,6 +1642,7 @@ function switchPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
   if (currentUser.role === 'employee' && page === 'attendance') page = 'calendar';
+  currentPage = page;
 
   const pageMap = { home:'pageHome', attendance:'pageAttendance', requests:'pageRequests', staff:'pageStaff', profile:'pageProfile', calendar:'pageCalendar' };
   const navMap  = { home:'nav-home', attendance:'nav-attendance', requests:'nav-requests', staff:'nav-staff', calendar:'nav-attendance' };
@@ -1709,7 +1814,11 @@ async function confirmAttendance() {
 // ══════════════════════════════════════════
 // DAILY ATTENDANCE (Admin)
 // ══════════════════════════════════════════
+// Rows the user tapped in Daily Mark since it was last drawn (Save All only writes these)
+let dailyTouched = new Set();
+
 function renderDailyAtt() {
+  dailyTouched = new Set();
   const users    = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const att      = getData('attendance', {});
   const advances = getData('advances', []);
@@ -1766,7 +1875,7 @@ function renderDailyAtt() {
         <div class="daily-remark-row">
           <input type="text" id="remark_${u.id}"
             placeholder="📝 Remarks (e.g. No work, came late, village visit...)"
-            value="${esc(att[u.id]?.[date + '_remark'] || '')}"
+            value="${esc(att[u.id]?.[date + '_remark'] || '')}" data-orig="${esc(att[u.id]?.[date + '_remark'] || '')}"
             onkeydown="remarkKeydown(event,${jsArg(u.id)})">
         </div>
       </div>
@@ -1775,6 +1884,7 @@ function renderDailyAtt() {
 }
 
 async function setDailyAtt(userId, val) {
+  dailyTouched.add(userId);
   await saveAttendance(userId, dailySelectedDate, val);
   // Update ONLY this employee's button UI — no full re-render so typed fields are preserved
   const row = document.getElementById('attrow_' + userId);
@@ -1854,8 +1964,9 @@ async function saveAllAttendance() {
         if (btn.classList.contains(classes[i])) { selectedVal = v; break; }
       }
     }
-    if (selectedVal !== undefined) {
-      await saveAttendance(u.id, date, selectedVal);
+    // Only rows tapped on this device — never overwrite a value changed on another device
+    if (selectedVal !== undefined && dailyTouched.has(u.id)) {
+      if (att[u.id]?.[date] !== selectedVal) await saveAttendance(u.id, date, selectedVal);
       attSaved++;
     }
 
@@ -2243,6 +2354,7 @@ async function saveHisabWages(userId) {
 }
 
 function openHisabDetail(userId, ym) {
+  hisabDetailOpen = { userId, ym };
   const users = getData('users',[]);
   const u = users.find(x=>x.id===userId);
   if(!u) return;
@@ -2353,6 +2465,8 @@ function openHisabDetail(userId, ym) {
 }
 
 function closeHisabDetail() {
+  hisabDetailOpen = null;
+  refreshIfPending();
   document.getElementById('reportDetailView').style.display='none';
   document.getElementById('reportSummaryView').style.display='block';
 }
@@ -3331,10 +3445,10 @@ async function saveNewPassword() {
 // MODAL HELPERS
 // ══════════════════════════════════════════
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); refreshIfPending(); }
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => { if (e.target===overlay) overlay.classList.remove('open'); });
+  overlay.addEventListener('click', e => { if (e.target===overlay) { overlay.classList.remove('open'); refreshIfPending(); } });
 });
 
 // ══════════════════════════════════════════

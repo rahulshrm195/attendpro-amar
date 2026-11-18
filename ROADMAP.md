@@ -48,10 +48,10 @@ Done:
 - [x] #9 Employee screens use wage history (per-day wage)
 - [x] #13 Managers can edit attendance and see admin notifications; staff passwords are admin-only
 - [x] Deactivated staff can no longer log in (enforced in rules too)
+- [x] #15 Live sync between devices (Firestore listeners); Save All only writes rows tapped on this device
 - [x] #10 Delete staff warns what will be lost and suggests Deactivate; "Delete everything" really removes all records
 
 Open:
-- [ ] #15 No live sync between devices (one-time load; concurrent edits can overwrite)
 - [ ] #16 Small items: dead `checkNightSummary`, `.text-yellow` missing, Shift+Tab uses inactive staff
 - [ ] Service worker `notificationclick` uses `event.data` (should be `event.notification.data`)
 - [ ] Manifest: separate `any` / `maskable` icons; allow pinch-zoom
