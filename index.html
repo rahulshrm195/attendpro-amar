@@ -1432,6 +1432,7 @@ async function doLogout() {
   currentUser = null;
   Object.keys(_cache).forEach(k => delete _cache[k]);
   await signOut(auth).catch(() => {});
+  document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
   showLoginScreen();
   document.getElementById('loginId').value = '';
   document.getElementById('loginPass').value = '';
@@ -1622,7 +1623,7 @@ function renderEmpHome() {
   const empAtt = att[currentUser.id] || {};
   let totalDays = 0, earned = 0;
   Object.entries(empAtt).forEach(([d, v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * Number(currentUser.wage || 0); }
+    if (isDayKey(d) && d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
   });
 
   const advBalance = getAdvanceBalance(currentUser.id);
@@ -1635,10 +1636,11 @@ function renderEmpHome() {
 function getAdvanceBalance(userId) {
   const advances = getData('advances', []);
   let balance = 0;
+  // Outstanding advance = advances given − advances recovered from salary (deductions).
+  // Settlements (salary paid out) and "Opening Balance (Pending Salary)" don't repay advances.
   advances.filter(a => a.userId === userId).forEach(a => {
-    if (a.type === 'advance')    balance += Number(a.amount);
-    if (a.type === 'deduction')  balance -= Number(a.amount);
-    if (a.type === 'settlement') balance -= Number(a.amount);
+    if (a.type === 'advance')                       balance += Number(a.amount) || 0;
+    if (a.type === 'deduction' && !isOpeningBal(a)) balance -= Number(a.amount) || 0;
   });
   return Math.max(0, balance);
 }
@@ -2018,7 +2020,7 @@ function renderEmpMonthSummary() {
   const month  = monthStr(empCalYear, empCalMonth);
   let total = 0, earned = 0;
   Object.entries(empAtt).forEach(([d,v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { total += Number(v); earned += Number(v) * Number(currentUser.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { total += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   document.getElementById('empMonthSummary').innerHTML = `
@@ -2067,46 +2069,8 @@ function renderHisabSummary() {
   const users    = getData('users', []);
   const u        = users.find(x => x.id === userId);
   if (!u) return;
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
   hisabWageOverrides = {};
-
-  const startDate = u.joinDate || todayStr();
-  const startYM   = startDate.substring(0,7);
-  const todayYM   = todayStr().substring(0,7);
-  const months = [];
-  let [sy,sm] = startYM.split('-').map(Number);
-  const [ty,tm] = todayYM.split('-').map(Number);
-  while (sy<ty||(sy===ty&&sm<=tm)) {
-    months.push(`${sy}-${String(sm).padStart(2,'0')}`);
-    sm++; if(sm>12){sm=1;sy++;}
-  }
-
-  // Opening balance from advance records tagged Opening Balance
-  let openingBalance = 0;
-  advances.filter(a => a.note && a.note.includes('Opening Balance')).forEach(a => {
-    if (a.type === 'advance')   openingBalance -= Number(a.amount);
-    if (a.type === 'deduction') openingBalance += Number(a.amount);
-  });
-
-  let totalDays=0, totalEarned=0, totalAdvances=0, totalSettlements=0;
-  const monthRows = months.map(ym => {
-    let days = 0;
-    Object.entries(att).forEach(([d,v]) => { if(d.startsWith(ym)&&!d.includes('_')) days+=Number(v)||0; });
-    const wage = hisabWageOverrides[ym]!==undefined ? hisabWageOverrides[ym] : getWageForDate(u, ym+'-15');
-    const earned = days * wage;
-    let monthAdv=0, monthSettle=0;
-    advances.forEach(a => {
-      if(!a.date||!a.date.startsWith(ym)) return;
-      if(a.note&&a.note.includes('Opening Balance')) return;
-      if(a.type==='advance')    monthAdv    += Number(a.amount);
-      if(a.type==='settlement') monthSettle += Number(a.amount);
-    });
-    totalDays+=days; totalEarned+=earned; totalAdvances+=monthAdv; totalSettlements+=monthSettle;
-    return { ym, days, wage, earned, adv:monthAdv, settle:monthSettle };
-  });
-
-  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const { monthRows, openingBalance, totalDays, totalEarned, totalAdvances, totalSettlements, closingBalance } = computeHisab(u, hisabWageOverrides);
   const balColor = closingBalance>=0 ? 'var(--green)' : 'var(--red)';
   const balLabel = closingBalance>=0 ? `You owe ${u.name}` : `${u.name} owes you`;
 
@@ -2168,6 +2132,9 @@ function renderHisabSummary() {
         <div style="font-size:16px;font-weight:800;color:var(--red)">${fmtMoney(totalAdvances)}</div>
       </div>
     </div>
+    ${totalSettlements > 0 ? `<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;font-weight:700;color:var(--text2)">
+      <span>💵 Salary paid (settlements)</span><span style="color:var(--purple)">−${fmtMoney(totalSettlements)}</span>
+    </div>` : ''}
   </div>`;
 
   html += `<div id="hisabBalanceCard" style="background:${closingBalance>=0?'linear-gradient(135deg,#16a34a,#15803d)':'linear-gradient(135deg,#dc2626,#b91c1c)'};border-radius:16px;padding:20px;text-align:center;color:#fff;margin-bottom:12px">
@@ -2201,43 +2168,9 @@ function updateHisabWage(userId, ym, val) {
 }
 
 function recalcHisabTotals(userId) {
-  const users = getData('users', []);
-  const u = users.find(x => x.id === userId);
+  const u = getData('users', []).find(x => x.id === userId);
   if (!u) return;
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
-
-  const startYM = (u.joinDate || todayStr()).substring(0,7);
-  const todayYM = todayStr().substring(0,7);
-  const months  = [];
-  let [sy,sm] = startYM.split('-').map(Number);
-  const [ty,tm] = todayYM.split('-').map(Number);
-  while(sy<ty||(sy===ty&&sm<=tm)){
-    months.push(`${sy}-${String(sm).padStart(2,'0')}`);
-    sm++; if(sm>12){sm=1;sy++;}
-  }
-
-  let totalEarned=0, totalAdvances=0, totalSettlements=0;
-  let openingBalance = 0;
-  advances.filter(a=>a.note&&a.note.includes('Opening Balance')).forEach(a=>{
-    if(a.type==='advance')   openingBalance -= Number(a.amount);
-    if(a.type==='deduction') openingBalance += Number(a.amount);
-  });
-
-  months.forEach(ym => {
-    let days=0;
-    Object.entries(att).forEach(([d,v])=>{ if(d.startsWith(ym)&&!d.includes('_')) days+=Number(v)||0; });
-    const wage = hisabWageOverrides[ym]!==undefined ? hisabWageOverrides[ym] : getWageForDate(u, ym+'-15');
-    totalEarned += days * wage;
-    advances.forEach(a=>{
-      if(!a.date||!a.date.startsWith(ym)) return;
-      if(a.note&&a.note.includes('Opening Balance')) return;
-      if(a.type==='advance')    totalAdvances    += Number(a.amount);
-      if(a.type==='settlement') totalSettlements += Number(a.amount);
-    });
-  });
-
-  const closing = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const { totalEarned, closingBalance: closing } = computeHisab(u, hisabWageOverrides);
   const balEl = document.getElementById('hisabFinalBalance');
   const balLabelEl = document.getElementById('hisabFinalLabel');
   if (balEl) balEl.textContent = `${closing>=0?'+':''}${fmtMoney(Math.abs(closing))}`;
@@ -2300,17 +2233,16 @@ function openHisabDetail(userId, ym) {
     ${dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('')}`;
   for(let i=0;i<firstDay;i++) calHtml+='<div class="cal-day empty"></div>';
 
-  let fullD=0,otD=0,halfD=0,absentD=0,unmarked=0,totalEarned=0;
+  let fullD=0,otD=0,halfD=0,absentD=0,unmarked=0;
   for(let d=1;d<=daysInMonth;d++){
     const ds=`${ym}-${String(d).padStart(2,'0')}`;
     const v=att[ds];
-    const dayWage=getWageForDate(u,ds);
     let cls='cal-day', lbl=String(d);
     if(v===0){cls+=' att-0';absentD++;}
-    else if(v===0.5){cls+=' att-half';halfD++;lbl=`${d}`;}
-    else if(v===1){cls+=' att-1';fullD++;totalEarned+=dayWage;}
-    else if(v===1.5){cls+=' att-ot';otD++;totalEarned+=1.5*dayWage;}
-    else if(v===2){cls+=' att-double';otD++;totalEarned+=2*dayWage;}
+    else if(v===0.5){cls+=' att-half';halfD++;}
+    else if(v===1){cls+=' att-1';fullD++;}
+    else if(v===1.5){cls+=' att-ot';otD++;}
+    else if(v===2){cls+=' att-double';otD++;}
     else unmarked++;
     const remark=att[ds+'_remark']||'';
     calHtml+=`<div class="${cls}" title="${esc(remark)}" style="position:relative">
@@ -2320,7 +2252,8 @@ function openHisabDetail(userId, ym) {
   }
   calHtml+=`</div>`;
 
-  const totalDays=fullD+(otD*1)+halfD*0.5;
+  // Same numbers as the Hisab summary row (shared calculation)
+  const { days: totalDays, earned: totalEarned } = monthWork(u, ym, hisabWageOverrides);
   calHtml+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
     <span style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">Full: ${fullD}</span>
     <span style="background:#ede9fe;color:#7c3aed;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">OT: ${otD}</span>
@@ -2346,17 +2279,19 @@ function openHisabDetail(userId, ym) {
     ledgerHtml+=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">No entries for this month</div>`;
   } else {
     monthEntries.forEach(a=>{
-      const isCredit=a.type==='deduction'||a.type==='settlement';
+      const eff=entryEffect(a);
       const icon=a.type==='advance'?'💸':a.type==='settlement'?'💵':'✂️';
+      const amtHtml = eff===0
+        ? `<span style="font-weight:600;font-size:12px;color:var(--text2)">${fmtMoney(a.amount)} · info only</span>`
+        : `<span style="color:${eff>0?'var(--green)':'var(--red)'}">${eff>0?'+':'-'}${fmtMoney(a.amount)}</span>`;
       ledgerHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
         <div><div style="font-weight:700;font-size:13px">${icon} ${esc(a.note||a.type)}</div>
         <div style="font-size:11px;color:var(--text2)">${fmtDate(a.date)}</div></div>
-        <div style="font-weight:800;font-size:14px;color:${isCredit?'var(--green)':'var(--red)'}">${isCredit?'+':'-'}${fmtMoney(a.amount)}</div>
+        <div style="font-weight:800;font-size:14px">${amtHtml}</div>
       </div>`;
     });
   }
-  const monthAdv=monthEntries.filter(a=>a.type==='advance').reduce((s,a)=>s+Number(a.amount),0);
-  const monthNet=totalEarned-monthAdv;
+  const monthNet=totalEarned+monthEntries.reduce((s,a)=>s+entryEffect(a),0);
   ledgerHtml+=`<div style="display:flex;justify-content:space-between;padding:12px 0 0;margin-top:4px">
     <div style="font-weight:800;color:var(--text2)">Month Net</div>
     <div style="font-weight:800;font-size:16px;color:${monthNet>=0?'var(--green)':'var(--red)'}">${monthNet>=0?'+':''}${fmtMoney(monthNet)}</div>
@@ -2421,44 +2356,40 @@ async function exportHisabPDF(userId) {
   doc.text('Earned',margin+85,y+5);doc.text('Advance',margin+120,y+5);doc.text('Net',margin+158,y+5);
   y+=9;
 
-  const att=getData('attendance',{})[userId]||{};
-  const advances=getData('advances',[]).filter(a=>a.userId===userId);
-  const startYM=(u.joinDate||todayStr()).substring(0,7);
-  const todayYM=todayStr().substring(0,7);
-  const months=[];
-  let [sy,sm]=startYM.split('-').map(Number);
-  const [ty,tm]=todayYM.split('-').map(Number);
-  while(sy<ty||(sy===ty&&sm<=tm)){months.push(`${sy}-${String(sm).padStart(2,'0')}`);sm++;if(sm>12){sm=1;sy++;}}
-
-  let tD=0,tE=0,tA=0;
-  months.forEach((ym,i)=>{
+  const h = computeHisab(u, hisabWageOverrides);
+  h.monthRows.forEach((row,i)=>{
     if(y>270){doc.addPage();y=20;}
-    const [my,mm]=ym.split('-').map(Number);
+    const [my,mm]=row.ym.split('-').map(Number);
     const mLabel=new Date(my,mm-1,1).toLocaleString('en-IN',{month:'short',year:'2-digit'});
-    let days=0;
-    Object.entries(att).forEach(([d,v])=>{if(d.startsWith(ym)&&!d.includes('_'))days+=Number(v)||0;});
-    const wage=hisabWageOverrides[ym]!==undefined?hisabWageOverrides[ym]:getWageForDate(u,ym+'-15');
-    const earned=days*wage;
-    let adv=0;
-    advances.forEach(a=>{if(a.date&&a.date.startsWith(ym)&&a.type==='advance'&&!(a.note&&a.note.includes('Opening Balance')))adv+=Number(a.amount);});
-    const net=earned-adv;
-    tD+=days;tE+=earned;tA+=adv;
+    const net=row.earned-row.adv-row.settle;
     if(i%2===0){doc.setFillColor(248,250,255);doc.rect(margin,y-2,180,7,'F');}
     doc.setTextColor(30,30,46);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
-    doc.text(mLabel,margin+2,y+3.5);doc.text(String(days),margin+38,y+3.5);doc.text(pdfMoney(wage),margin+55,y+3.5);
-    doc.setTextColor(22,163,74);doc.text(pdfMoney(earned),margin+85,y+3.5);
-    doc.setTextColor(220,38,38);doc.text(adv>0?pdfMoney(adv):'-',margin+120,y+3.5);
-    doc.setTextColor(net>=0?22:220,net>=0?163:38,net>=0?74:38);doc.text(pdfMoney(Math.abs(net)),margin+158,y+3.5);
+    doc.text(mLabel,margin+2,y+3.5);doc.text(String(row.days),margin+38,y+3.5);doc.text(pdfMoney(row.wage),margin+55,y+3.5);
+    doc.setTextColor(22,163,74);doc.text(pdfMoney(row.earned),margin+85,y+3.5);
+    doc.setTextColor(220,38,38);doc.text(row.adv>0?pdfMoney(row.adv):'-',margin+120,y+3.5);
+    doc.setTextColor(net>=0?22:220,net>=0?163:38,net>=0?74:38);doc.text(`${net<0?'-':''}${pdfMoney(Math.abs(net))}`,margin+158,y+3.5);
     y+=7;
   });
   y+=4;
+  if(y>250){doc.addPage();y=20;}
   doc.setFillColor(238,242,255);doc.roundedRect(margin,y,180,12,3,3,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(30,30,46);
-  doc.text(`Total: ${tD} days`,margin+2,y+8);
-  doc.setTextColor(22,163,74);doc.text(pdfMoney(tE),margin+85,y+8);
-  doc.setTextColor(220,38,38);doc.text(pdfMoney(tA),margin+120,y+8);
-  y+=18;
-  const closing=tE-tA;
+  doc.text(`Total: ${h.totalDays} days`,margin+2,y+8);
+  doc.setTextColor(22,163,74);doc.text(pdfMoney(h.totalEarned),margin+85,y+8);
+  doc.setTextColor(220,38,38);doc.text(pdfMoney(h.totalAdvances),margin+120,y+8);
+  y+=16;
+  // Other items that make up the final balance (same as the Hisab screen)
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(30,30,46);
+  if(h.openingBalance!==0){
+    doc.text(`Opening balance (${h.openingBalance>=0?'pending salary':'advance'})`,margin+2,y);
+    doc.text(`${h.openingBalance>=0?'+':'-'}${pdfMoney(Math.abs(h.openingBalance))}`,margin+177,y,{align:'right'});y+=6;
+  }
+  if(h.totalSettlements>0){
+    doc.text('Salary paid (settlements)',margin+2,y);
+    doc.text(`-${pdfMoney(h.totalSettlements)}`,margin+177,y,{align:'right'});y+=6;
+  }
+  y+=2;
+  const closing=h.closingBalance;
   doc.setFillColor(...(closing>=0?[22,163,74]:[220,38,38]));
   doc.roundedRect(margin,y,180,14,4,4,'F');
   doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
@@ -3112,7 +3043,7 @@ function renderEmpSalary() {
   const att    = getData('attendance', {})[currentUser.id] || {};
   let days = 0, earned = 0;
   Object.entries(att).forEach(([d,v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { days += Number(v); earned += Number(v)*Number(currentUser.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { days += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   const net = Math.max(0, earned-adv);
@@ -3151,7 +3082,7 @@ function renderSalaryView() {
   const att   = getData('attendance', {})[userId] || {};
   let days=0, earned=0;
   Object.entries(att).forEach(([d,v])=>{
-    if (isDayKey(d) && d.startsWith(month)) { days+=Number(v); earned+=Number(v)*Number(u.wage||0); }
+    if (isDayKey(d) && d.startsWith(month)) { days+=Number(v); earned+=Number(v) * getWageForDate(u, d); }
   });
   const adv = getAdvanceBalance(userId);
   const net = Math.max(0, earned-adv);
@@ -3410,55 +3341,7 @@ function renderLedger() {
   const u       = users.find(x => x.id === userId);
   if (!u) return;
 
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
-  const wage     = Number(u.wage || 0);
-
-  // ── Build all entries sorted by date ──
-  const allEntries = [];
-
-  // Attendance entries (earned) — use wage applicable on that date
-  Object.entries(att).forEach(([dateKey, val]) => {
-    if (dateKey.includes('_')) return; // skip remark keys
-    const v = Number(val);
-    if (isNaN(v) || v === 0) return; // skip absent / zero
-    const dayWage = getWageForDate(u, dateKey);
-    allEntries.push({ date: dateKey, type: 'earned', amount: v * dayWage, days: v, note: `${ATT_LABELS[String(v)] || String(v)} @ ${fmtMoney(dayWage)}/day` });
-  });
-
-  // Advance / deduction / settlement entries
-  advances.forEach(a => {
-    allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
-  });
-
-  allEntries.sort((a, b) => a.date.localeCompare(b.date));
-
-  // ── Calculate opening balance (everything before fromVal) ──
-  let openingBalance = 0;
-  allEntries.forEach(e => {
-    if (e.date >= fromVal) return;
-    if (e.type === 'earned')    openingBalance += e.amount;
-    if (e.type === 'advance')   openingBalance -= e.amount;
-    if (e.type === 'deduction') openingBalance += e.amount; // deduction reduces advance balance = increases net
-    if (e.type === 'settlement') openingBalance -= e.amount;
-  });
-
-  // ── Entries within range ──
-  const rangeEntries = allEntries.filter(e => e.date >= fromVal && e.date <= toVal);
-
-  let totalEarned     = 0;
-  let totalAdvances   = 0;
-  let totalSettlements = 0;
-  let totalDeductions = 0;
-
-  rangeEntries.forEach(e => {
-    if (e.type === 'earned')     totalEarned      += e.amount;
-    if (e.type === 'advance')    totalAdvances    += e.amount;
-    if (e.type === 'settlement') totalSettlements += e.amount;
-    if (e.type === 'deduction')  totalDeductions  += e.amount;
-  });
-
-  const closingBalance = openingBalance + totalEarned - totalAdvances + totalDeductions - totalSettlements;
+  const { rangeEntries, openingBalance, closingBalance, totalEarned, totalAdvances, totalSettlements } = buildLedger(u, fromVal, toVal);
 
   // ── Render ──
   const balColor = (bal) => bal >= 0 ? 'var(--green)' : 'var(--red)';
@@ -3496,12 +3379,15 @@ function renderLedger() {
 
       if (e.type === 'earned')     { credit = fmtMoney(e.amount); typeIcon = '💼'; }
       if (e.type === 'advance')    { debit  = fmtMoney(e.amount); typeIcon = '💸'; }
-      if (e.type === 'deduction')  { credit = fmtMoney(e.amount); typeIcon = '✂️'; }
+      if (e.type === 'deduction')  { typeIcon = '✂️'; if (e.effect > 0) credit = fmtMoney(e.amount); }
       if (e.type === 'settlement') { debit  = fmtMoney(e.amount); typeIcon = '💵'; }
+      // Regular deduction = advance recovered from salary: shown for the record, no effect on balance
+      const infoOnly = e.type === 'deduction' && e.effect === 0
+        ? ` <span style="color:var(--text2);font-weight:500;font-size:11px">· ${fmtMoney(e.amount)} recovered from salary (info only)</span>` : '';
 
       html += `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px;gap:4px;padding:9px 12px;background:${bg};border-bottom:1px solid var(--border);font-size:12px">
         <div style="color:var(--text2);font-size:11px">${fmtDate(e.date)}</div>
-        <div style="font-weight:600">${typeIcon} ${esc(e.note || '')}</div>
+        <div style="font-weight:600">${typeIcon} ${esc(e.note || '')}${infoOnly}</div>
         <div style="text-align:right;color:var(--green);font-weight:700">${credit}</div>
         <div style="text-align:right;color:var(--red);font-weight:700">${debit}</div>
       </div>`;
@@ -3587,40 +3473,8 @@ async function exportLedgerPDF() {
   const { jsPDF: JSPDF } = window.jspdf;
   const doc = new JSPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  const att      = getData('attendance', {})[userId] || {};
-  const advances = getData('advances', []).filter(a => a.userId === userId);
-  const wage     = Number(u.wage || 0);
-
-  const allEntries = [];
-  Object.entries(att).forEach(([dateKey, val]) => {
-    if (dateKey.includes('_')) return;
-    const v = Number(val);
-    if (isNaN(v) || v === 0) return;
-    const dayWage = getWageForDate(u, dateKey);
-    allEntries.push({ date: dateKey, type: 'earned', amount: v * dayWage, note: `${ATT_LABELS[String(v)] || String(v)} @ ${fmtMoney(dayWage)}/day` });
-  });
-  advances.forEach(a => {
-    allEntries.push({ date: a.date, type: a.type, amount: Number(a.amount), note: a.note || '' });
-  });
-  allEntries.sort((a, b) => a.date.localeCompare(b.date));
-
-  let openingBalance = 0;
-  allEntries.forEach(e => {
-    if (e.date >= fromVal) return;
-    if (e.type === 'earned')     openingBalance += e.amount;
-    if (e.type === 'advance')    openingBalance -= e.amount;
-    if (e.type === 'deduction')  openingBalance += e.amount;
-    if (e.type === 'settlement') openingBalance -= e.amount;
-  });
-
-  const rangeEntries = allEntries.filter(e => e.date >= fromVal && e.date <= toVal);
-  let totalEarned = 0, totalAdvances = 0, totalSettlements = 0;
-  rangeEntries.forEach(e => {
-    if (e.type === 'earned')     totalEarned      += e.amount;
-    if (e.type === 'advance')    totalAdvances    += e.amount;
-    if (e.type === 'settlement') totalSettlements += e.amount;
-  });
-  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  const { rangeEntries, openingBalance, closingBalance, totalEarned, totalAdvances, totalSettlements } = buildLedger(u, fromVal, toVal);
+  const wage = getWageForDate(u, toVal);
 
   const margin = 15;
   let y = margin;
@@ -3675,7 +3529,11 @@ async function exportLedgerPDF() {
     const typeLabel = e.type==='earned'?'Earned':e.type==='advance'?'Advance':e.type==='settlement'?'Settlement':'Deduction';
     const desc = (e.note && e.note.trim()) ? e.note.trim() : typeLabel;
      doc.text(doc.splitTextToSize(desc, 95)[0], margin + 28, y + 4);
-    if (e.type === 'earned' || e.type === 'deduction') {
+    if (e.type === 'deduction' && e.effect === 0) {
+      // record only — recovered from salary, no effect on balance
+      doc.setTextColor(107, 114, 128);
+      doc.text(`(${pdfMoney(e.amount)} info)`, margin + 130, y + 4);
+    } else if (e.type === 'earned' || e.type === 'deduction') {
       doc.setTextColor(22, 163, 74);
       doc.text(pdfMoney(e.amount), margin + 130, y + 4);
     } else {
@@ -3689,8 +3547,9 @@ async function exportLedgerPDF() {
   y += 6;
 
   // Totals
+  if (y > 240) { doc.addPage(); y = 20; }
   doc.setFillColor(238, 242, 255);
-  doc.roundedRect(margin, y, 180, 22, 3, 3, 'F');
+  doc.roundedRect(margin, y, 180, totalSettlements > 0 ? 30 : 22, 3, 3, 'F');
   doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30,30,46);
   doc.text(`Total Earned:`, margin + 3, y + 8);
   doc.setTextColor(22, 163, 74);
@@ -3699,6 +3558,13 @@ async function exportLedgerPDF() {
   doc.text(`Total Advances:`, margin + 3, y + 16);
   doc.setTextColor(220, 38, 38);
   doc.text(pdfMoney(totalAdvances), margin + 177, y + 16, { align: 'right' });
+  if (totalSettlements > 0) {
+    doc.setTextColor(30,30,46);
+    doc.text(`Salary Paid (Settlements):`, margin + 3, y + 24);
+    doc.setTextColor(108, 99, 255);
+    doc.text(pdfMoney(totalSettlements), margin + 177, y + 24, { align: 'right' });
+    y += 8;
+  }
   y += 28;
 
   // Closing balance
@@ -3719,6 +3585,119 @@ async function exportLedgerPDF() {
 // ══════════════════════════════════════════
 // WAGE HISTORY
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// MONEY — the ONE balance calculation used by every screen and PDF
+// Balance = what the company owes the employee (+) / employee owes (−)
+//   earned (attendance × wage for that day)      → +
+//   advance (incl. "Opening Balance (Advance)")   → −
+//   settlement (salary paid out)                   → −
+//   "Opening Balance (Pending Salary)"            → +
+//   regular deduction ("advance recovered from salary") → 0, record only
+// ══════════════════════════════════════════
+function isOpeningBal(a) { return !!(a.note && a.note.includes('Opening Balance')); }
+
+function entryEffect(a) {
+  const amt = Number(a.amount) || 0;
+  if (a.type === 'advance')    return -amt;
+  if (a.type === 'settlement') return -amt;
+  if (a.type === 'deduction')  return isOpeningBal(a) ? amt : 0;
+  return 0;
+}
+
+// Wage for one day; a per-month override (unsaved Hisab edit) wins over wage history
+function wageOn(u, dateKey, overrides) {
+  const ov = overrides?.[dateKey.slice(0, 7)];
+  return ov !== undefined ? Number(ov) || 0 : getWageForDate(u, dateKey);
+}
+
+// Days worked + earned for one month (ym = 'YYYY-MM')
+function monthWork(u, ym, overrides) {
+  const att = getData('attendance', {})[u.id] || {};
+  let days = 0, earned = 0;
+  Object.entries(att).forEach(([k, v]) => {
+    if (!isDayKey(k) || !k.startsWith(ym)) return;
+    const n = Number(v) || 0;
+    days += n;
+    earned += n * wageOn(u, k, overrides);
+  });
+  return { days, earned };
+}
+
+function addMonths(ym, n) {
+  let [y, m] = ym.split('-').map(Number);
+  m += n; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; }
+  return `${y}-${String(m).padStart(2, '0')}`;
+}
+
+// Month-by-month hisab from the first activity (or join date) up to this month
+function computeHisab(u, overrides = {}) {
+  const att      = getData('attendance', {})[u.id] || {};
+  const advances = getData('advances', []).filter(a => a.userId === u.id);
+  const todayYM  = todayStr().slice(0, 7);
+
+  const starts = [ (u.joinDate || todayStr()).slice(0, 7) ];
+  Object.keys(att).forEach(k => { if (isDayKey(k)) starts.push(k.slice(0, 7)); });
+  advances.forEach(a => { if (a.date && !isOpeningBal(a)) starts.push(a.date.slice(0, 7)); });
+  let ym = starts.filter(s => /^\d{4}-\d{2}$/.test(s)).sort()[0] || todayYM;
+  if (ym > todayYM) ym = todayYM;
+
+  let openingBalance = 0;
+  advances.filter(isOpeningBal).forEach(a => { openingBalance += entryEffect(a); });
+
+  const monthRows = [];
+  let totalDays = 0, totalEarned = 0, totalAdvances = 0, totalSettlements = 0, totalDeductions = 0;
+  for (; ym <= todayYM; ym = addMonths(ym, 1)) {
+    const { days, earned } = monthWork(u, ym, overrides);
+    let adv = 0, settle = 0, deduct = 0;
+    advances.forEach(a => {
+      if (!a.date || !a.date.startsWith(ym) || isOpeningBal(a)) return;
+      if (a.type === 'advance')    adv    += Number(a.amount) || 0;
+      if (a.type === 'settlement') settle += Number(a.amount) || 0;
+      if (a.type === 'deduction')  deduct += Number(a.amount) || 0;
+    });
+    const wage = overrides[ym] !== undefined ? Number(overrides[ym]) || 0 : getWageForDate(u, ym + '-15');
+    monthRows.push({ ym, days, wage, earned, adv, settle, deduct });
+    totalDays += days; totalEarned += earned; totalAdvances += adv; totalSettlements += settle; totalDeductions += deduct;
+  }
+  const closingBalance = openingBalance + totalEarned - totalAdvances - totalSettlements;
+  return { monthRows, openingBalance, totalDays, totalEarned, totalAdvances, totalSettlements, totalDeductions, closingBalance };
+}
+
+// Dated ledger for a From–To range (opening = everything before From)
+function buildLedger(u, fromVal, toVal) {
+  const att      = getData('attendance', {})[u.id] || {};
+  const advances = getData('advances', []).filter(a => a.userId === u.id);
+  const all = [];
+  Object.entries(att).forEach(([k, v]) => {
+    if (!isDayKey(k)) return;
+    const n = Number(v);
+    if (isNaN(n) || n === 0) return;
+    const w = getWageForDate(u, k);
+    all.push({ date: k, type: 'earned', amount: n * w, effect: n * w, days: n,
+               note: `${ATT_LABELS[String(n)] || String(n)} @ ${fmtMoney(w)}/day` });
+  });
+  advances.forEach(a => {
+    all.push({ date: a.date || '', type: a.type, amount: Number(a.amount) || 0, effect: entryEffect(a),
+               note: a.note || '', opening: isOpeningBal(a) });
+  });
+  all.sort((a, b) => a.date.localeCompare(b.date));
+
+  let openingBalance = 0;
+  all.forEach(e => { if (e.date < fromVal) openingBalance += e.effect; });
+  const rangeEntries = all.filter(e => e.date >= fromVal && e.date <= toVal);
+  const t = { earned: 0, advances: 0, settlements: 0, deductions: 0, credits: 0 };
+  rangeEntries.forEach(e => {
+    if (e.type === 'earned')     t.earned      += e.amount;
+    if (e.type === 'advance')    t.advances    += e.amount;
+    if (e.type === 'settlement') t.settlements += e.amount;
+    if (e.type === 'deduction')  { if (e.effect > 0) t.credits += e.amount; else t.deductions += e.amount; }
+  });
+  const closingBalance = openingBalance + rangeEntries.reduce((s, e) => s + e.effect, 0);
+  return { rangeEntries, openingBalance, closingBalance,
+           totalEarned: t.earned, totalAdvances: t.advances, totalSettlements: t.settlements,
+           totalDeductions: t.deductions, totalCredits: t.credits };
+}
 
 // Get applicable wage for a specific date for a user
 function getWageForDate(user, dateStr) {

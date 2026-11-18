@@ -43,10 +43,11 @@ Done:
 - [x] #5 Employee home crash · #12 admin profile crash · Home "✕" clear button
 - [x] #6 Daily Mark remarks now saved by "Save All" (clearing the box removes the remark)
 - [x] #7 Remark keys no longer make day counts show `NaN`
+- [x] #8 One shared balance calculation for Hisab screen, Hisab PDF, month detail, Ledger and Ledger PDF
+      (regular "Deduct" = record only; "Opening Balance (Pending Salary)" still counts in employee's favour)
+- [x] #9 Employee screens use wage history (per-day wage)
 
 Open:
-- [ ] #8 Four different balance calculations (Hisab screen, Hisab PDF, Ledger, Ledger PDF) — unify
-- [ ] #9 Employee screens use current wage instead of wage history
 - [ ] #10 Deleting staff leaves attendance/advances behind (dialog says they are removed)
 - [ ] #13 Manager role: can't edit attendance from calendar, doesn't see admin notifications
 - [ ] #15 No live sync between devices (one-time load; concurrent edits can overwrite)
