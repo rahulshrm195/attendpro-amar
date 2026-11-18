@@ -75,6 +75,9 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 - Dialogs (v1.2.5): `openModal` moves focus in (`[data-autofocus]`, else a form's first box on a computer,
   else the sheet), Tab is trapped in `topModal()`, `closeModal` / Esc restore it (`modalReturn`). Buttons with
   `data-key="x"` are pressed by that letter while the dialog is open (person details: A / D / L / E).
+- Add advance's Employee box is a combobox (`advCombo*`, owner: "like the DispatchPro customer field"): list of
+  `dailyMarkUsers()` on focus, filters as you type, ↑ ↓ / Enter / Tab pick, Esc closes the list; `#advEmpSelect` is
+  the hidden id. No native `<select>` for picking people.
 
 ## Data + logic (don't duplicate)
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,

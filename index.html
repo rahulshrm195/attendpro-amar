@@ -179,6 +179,8 @@ svg.i{flex:0 0 auto}
 .sr-it small{margin-left:auto;color:var(--ink3);font-size:11.5px}
 .sr-h{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:8px 10px 4px}
 .sr-empty{padding:14px;text-align:center;color:var(--ink3);font-size:13px}
+.combo{position:relative}
+.combo-list{top:calc(100% + 4px);max-height:264px;z-index:30}
 .clock-chip{height:40px;display:flex;align-items:center;gap:7px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .icon-btn{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;position:relative}
 .notif-badge{position:absolute;top:7px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid var(--surface)}
@@ -1295,13 +1297,19 @@ button.set-row:hover{background:var(--row-hover)}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-head"><div class="modal-title">Add advance / expense</div><button class="x-btn" onclick="closeModal('addAdvanceModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
-    <div class="form-row"><label>Employee</label><select id="advEmpSelect"></select></div>
+    <div class="form-row combo"><label for="advEmpInput">Employee</label>
+      <input type="text" id="advEmpInput" placeholder="Type a name…" autocomplete="off" spellcheck="false"
+        role="combobox" aria-autocomplete="list" aria-controls="advEmpList" aria-expanded="false"
+        onfocus="advComboOpen()" oninput="advComboInput()" onkeydown="advComboKey(event)" onblur="advComboBlur()">
+      <input type="hidden" id="advEmpSelect">
+      <div class="search-res combo-list" id="advEmpList" role="listbox"></div>
+    </div>
     <div class="grid-f2">
       <div class="form-row"><label>Amount (₹)</label><input type="number" id="advAmount" placeholder="e.g. 500"></div>
       <div class="form-row"><label>Note</label><input type="text" id="advNote" placeholder="e.g. Food, festival advance…"></div>
     </div>
     <div class="form-row"><label>Date</label><input type="date" id="advDate"></div>
-    <div class="hint" style="margin:-6px 0 12px">Type the name · <kbd>Tab</kbd> amount · <kbd>Tab</kbd> note · <kbd>Enter</kbd> saves</div>
+    <div class="hint" style="margin:-6px 0 12px">Type a name · <kbd>↑</kbd> <kbd>↓</kbd> choose · <kbd>Tab</kbd> amount · <kbd>Tab</kbd> note · <kbd>Enter</kbd> saves</div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('addAdvanceModal')">Cancel</button>
       <button class="btn-primary" onclick="saveAdvance()">Save advance</button>
@@ -1790,6 +1798,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>Give an advance</h3>
 <ul>
   <li>Fastest: <kbd>⌘K</kbd> → <kbd>A</kbd> → <kbd>Enter</kbd>, type the name, <kbd>Tab</kbd>, amount, <kbd>Tab</kbd>, note, <kbd>Enter</kbd>.</li>
+  <li>The <b>Employee</b> box lists your active staff as soon as you're in it and narrows with every letter you type (first name or surname). <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> or <kbd>Tab</kbd> picks, <kbd>Esc</kbd> closes the list. Deactivated staff aren't listed.</li>
   <li>For a specific person: <kbd>⌘K</kbd>, type their name, <kbd>⇧ Enter</kbd>.</li>
   <li>Also: the <b>+ Advance</b> button in the top bar, Today, Requests, the person's card in Staff, or the Advance box in Daily Mark (saved with Save all).</li>
 </ul>
@@ -4463,30 +4472,102 @@ async function doDeleteStaff(userId) {
 // ══════════════════════════════════════════
 // ADVANCES
 // ══════════════════════════════════════════
-function populateAdvEmpSelect() {
-  const users = getData('users', []).filter(u => u.role !== 'admin').sort((a, b) => (a.active === false) - (b.active === false));
-  document.getElementById('advEmpSelect').innerHTML = '<option value="">Choose employee… (type a name)</option>' +
-    users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}${u.active === false ? ' (inactive)' : ''}</option>`).join('');
+// Employee box (no drop-down): it lists the active staff as soon as it gets the cursor and narrows
+// with every letter typed. ↑ ↓ move, Enter or Tab picks, Esc closes the list. #advEmpSelect keeps the id.
+let advComboSel = 0, advComboItems = [];
+function advComboUsers(q) {
+  q = (q || '').trim().toLowerCase();
+  const users = dailyMarkUsers();                       // active staff, same order as Daily Mark
+  if (!q) return users;
+  const score = u => { const n = (u.name || '').toLowerCase();
+    return n.startsWith(q) ? 0 : n.split(/\s+/).some(w => w.startsWith(q)) ? 1 : n.includes(q) ? 2 : 9; };
+  return users.map(u => [score(u), u]).filter(x => x[0] < 9).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+}
+function advComboRender(all) {
+  const inp = document.getElementById('advEmpInput'), list = document.getElementById('advEmpList');
+  const cur = document.getElementById('advEmpSelect').value;
+  advComboItems = advComboUsers(all ? '' : inp.value);
+  advComboSel = Math.min(Math.max(advComboSel, 0), Math.max(advComboItems.length - 1, 0));
+  list.innerHTML = advComboItems.length
+    ? advComboItems.map((u, i) => `<div class="sr-it ${i === advComboSel ? 'on' : ''}" role="option" aria-selected="${i === advComboSel}"
+        onmousedown="event.preventDefault();advComboPick(${i},true)">${avatarHtml(u)}<span>${esc(u.name)}</span><small>${u.id === cur ? '✓ ' : ''}${esc(u.role)}</small></div>`).join('')
+    : '<div class="sr-empty">No one with that name</div>';
+  list.classList.add('open');
+  inp.setAttribute('aria-expanded', 'true');
+  list.querySelector('.sr-it.on')?.scrollIntoView({ block: 'nearest' });
+}
+function advComboClose() {
+  document.getElementById('advEmpList').classList.remove('open');
+  document.getElementById('advEmpInput').setAttribute('aria-expanded', 'false');
+}
+function advComboOpen() {
+  const cur = document.getElementById('advEmpSelect').value;
+  advComboSel = Math.max(0, dailyMarkUsers().findIndex(u => u.id === cur));
+  advComboRender(true);
+  document.getElementById('advEmpInput').select();      // typing replaces the name
+}
+function advComboInput() {
+  const inp = document.getElementById('advEmpInput'), hid = document.getElementById('advEmpSelect');
+  const picked = getData('users', []).find(u => u.id === hid.value);
+  if (!picked || picked.name !== inp.value) hid.value = '';
+  advComboSel = 0;
+  advComboRender(false);
+}
+function advComboPick(i, moveOn) {
+  const u = advComboItems[i];
+  if (!u) return false;
+  document.getElementById('advEmpSelect').value = u.id;
+  document.getElementById('advEmpInput').value = u.name;
+  advComboClose();
+  if (moveOn) document.getElementById('advAmount').focus();
+  return true;
+}
+function advComboKey(e) {
+  const list = document.getElementById('advEmpList'), isOpen = list.classList.contains('open');
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!isOpen) { advComboOpen(); return; }
+    advComboSel += e.key === 'ArrowDown' ? 1 : -1;
+    if (advComboSel < 0) advComboSel = advComboItems.length - 1;
+    if (advComboSel >= advComboItems.length) advComboSel = 0;
+    advComboRender(!document.getElementById('advEmpInput').value.trim() || !!document.getElementById('advEmpSelect').value);
+  } else if (e.key === 'Enter' && isOpen && advComboItems.length) {
+    e.preventDefault(); e.stopPropagation();              // picks — doesn't save yet
+    advComboPick(advComboSel, true);
+  } else if (e.key === 'Tab' && !e.shiftKey && isOpen && e.target.value.trim() && !document.getElementById('advEmpSelect').value) {
+    advComboPick(advComboSel, false);                     // Tab carries on to the amount
+  } else if (e.key === 'Escape' && isOpen) {
+    e.preventDefault(); e.stopPropagation();              // closes the list, not the dialog
+    advComboClose();
+  }
+}
+function advComboBlur() {
+  advComboClose();
+  const u = getData('users', []).find(x => x.id === document.getElementById('advEmpSelect').value);
+  if (u) document.getElementById('advEmpInput').value = u.name;
+}
+function advComboSet(userId) {
+  const u = getData('users', []).find(x => x.id === userId);
+  document.getElementById('advEmpSelect').value = u ? u.id : '';
+  document.getElementById('advEmpInput').value  = u ? u.name : '';
+  advComboClose();
 }
 
 function openAddAdvanceModalFor(userId) {
-  populateAdvEmpSelect();
-  document.getElementById('advEmpSelect').value = userId;
+  advComboSet(userId);
   document.getElementById('advAmount').value = '';
   document.getElementById('advNote').value   = '';
   document.getElementById('advDate').value   = todayStr();
-  openModal('addAdvanceModal');
-  setTimeout(() => document.getElementById('advAmount').focus(), 50);
+  openModal('addAdvanceModal', 'advAmount');
 }
 
 function openAddAdvanceModal() {
-  populateAdvEmpSelect();
+  advComboSet('');
   document.getElementById('advAmount').value = '';
   document.getElementById('advNote').value   = '';
   document.getElementById('advDate').value   = todayStr();
-  openModal('addAdvanceModal');
   // Keyboard: type a name → Tab → amount → Tab → note → Enter saves
-  setTimeout(() => document.getElementById('advEmpSelect').focus(), 50);
+  openModal('addAdvanceModal', 'advEmpInput');
 }
 
 async function saveAdvance() {
@@ -4494,7 +4575,7 @@ async function saveAdvance() {
   const amount = document.getElementById('advAmount').value;
   const note   = document.getElementById('advNote').value;
   const date   = document.getElementById('advDate').value;
-  if (!userId) { showToast('Choose the employee'); document.getElementById('advEmpSelect').focus(); return; }
+  if (!userId) { showToast('Choose the employee'); document.getElementById('advEmpInput').focus(); return; }
   if (!amount || Number(amount) <= 0) { showToast('Enter the amount'); document.getElementById('advAmount').focus(); return; }
   if (!date) { showToast('Choose the date'); return; }
   showLoader(true);
@@ -4766,17 +4847,18 @@ function modalFocusables(m) {
     .filter(el => el.tabIndex >= 0 && !el.disabled && el.type !== 'hidden' && el.getClientRects().length);
 }
 function topModal() { const o = document.querySelectorAll('.modal-overlay.open'); return o[o.length - 1] || null; }
-function openModal(id) {
+function openModal(id, focusId) {
   const m = document.getElementById(id);
+  const wasOpen = m.classList.contains('open');
   const ae = document.activeElement;
   const inDlg = ae?.closest?.('.modal-overlay');
-  modalReturn[id] = inDlg ? (inDlg.id !== id ? modalReturn[inDlg.id] : modalReturn[id]) || null
-                          : (ae && ae !== document.body && ae.id !== 'searchInput' ? ae : null);
+  if (!wasOpen) modalReturn[id] = inDlg ? (inDlg.id !== id ? modalReturn[inDlg.id] : null) || null
+                                        : (ae && ae !== document.body && ae.id !== 'searchInput' ? ae : null);
   m.classList.add('open');
-  if (m.contains(document.activeElement)) return;
+  if (!focusId && wasOpen && m.contains(document.activeElement)) return;
   // [data-autofocus] (e.g. + Advance in a person's details), else a form's first box, else the dialog itself
   const first = modalFocusables(m).find(el => !el.classList.contains('x-btn'));
-  let target = m.querySelector('[data-autofocus]');
+  let target = (focusId && document.getElementById(focusId)) || m.querySelector('[data-autofocus]');
   // (on phones never a box: that would pop up the keyboard)
   if (!target && first?.matches('input:not([type=date]):not([type=checkbox]):not([type=radio]),select,textarea')
       && matchMedia('(hover:hover) and (pointer:fine)').matches) target = first;
@@ -4788,7 +4870,10 @@ function closeModal(id) {
   const had = m.classList.contains('open') && m.contains(document.activeElement);
   m.classList.remove('open');
   const back = modalReturn[id]; modalReturn[id] = null;
-  if (had && !topModal() && back?.isConnected && back.getClientRects().length) back.focus({ preventScroll: true });
+  if (had && !topModal()) {
+    if (back?.isConnected && back.getClientRects().length) back.focus({ preventScroll: true });
+    else document.activeElement?.blur();                 // never leave the cursor in a closed dialog
+  }
   refreshIfPending();
 }
 
@@ -5604,6 +5689,7 @@ window.attBtnKeydown = attBtnKeydown;
 window.remarkKeydown = remarkKeydown;
 window.dmQuickKey = dmQuickKey;
 window.updateDailyTotal = updateDailyTotal;
+Object.assign(window, { advComboOpen, advComboInput, advComboKey, advComboBlur, advComboPick });
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
@@ -5637,6 +5723,7 @@ onAuthStateChanged(auth, async fbUser => {
       <ul>
         <li>⌨️ <b>The cursor moves into a dialog when it opens</b> — Enter / Space press the highlighted button, Tab stays inside, Esc closes and returns the cursor</li>
         <li>👤 <b>A person's details open on + Advance</b> — or press <kbd>A</kbd> advance, <kbd>D</kbd> deduct, <kbd>L</kbd> ledger, <kbd>E</kbd> edit</li>
+        <li>🔎 <b>Add advance: type to find the person</b> — the list opens straight away and narrows as you type (no drop-down); deactivated staff are no longer listed</li>
       </ul>
     </div>
     <div class="wn-entry">
