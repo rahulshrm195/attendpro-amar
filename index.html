@@ -353,6 +353,7 @@ select.inp,.form-row select{appearance:none;background-image:url("data:image/svg
 .bulk-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid rgba(26,24,18,.07)}
 .bulk-lbl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-right:4px}
 .bulk-btn b{font-family:var(--mono);font-weight:800;margin-right:2px}
+.bulk-hint{color:var(--ink3);margin-left:2px}
 .dm-find{position:relative}
 .dm-find svg.i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none}
 .dm-find input{width:190px;height:40px;padding:0 34px 0 36px;border-radius:999px;border:1px solid var(--field-border);background:var(--field-bg);box-shadow:var(--field-inset);color:var(--ink);font-size:13px;outline:none}
@@ -698,7 +699,7 @@ body:not(.role-emp) .emp-only{display:none!important}
 [data-theme="dark"] body{background:#16130F}
 [data-theme="dark"] ::-webkit-scrollbar-thumb{background:#4A4237}
 [data-theme="dark"] :is(.pill,.icon-btn,.btn-secondary,.btn-ghost,.admin-att-btn,.att-btn,.month-nav-btn):hover{background:rgba(70,62,50,.75)}
-[data-theme="dark"] :is(.form-row,.field) :is(input,select,textarea):focus,[data-theme="dark"] .inp:focus,[data-theme="dark"] .search input:focus{background:rgba(0,0,0,.35)}
+[data-theme="dark"] :is(.form-row,.field) :is(input,select,textarea):focus,[data-theme="dark"] .inp:focus,[data-theme="dark"] .search input:focus,[data-theme="dark"] :is(.daily-adv-inputs,.daily-remark-row) input:focus{background:rgba(0,0,0,.35)}
 [data-theme="dark"] .seg button.on,[data-theme="dark"] .seg .tab.active{background:rgba(255,255,255,.14);color:var(--ink)}
 [data-theme="dark"] .brand-ver{background:rgba(255,255,255,.08)}
 [data-theme="dark"] :is(.lrow,.lhead,.card-h,.dm-head,.admin-att-row,.req-card,.mini-list .mi,.set-row,.kv,.adv-line,.notif-item,.dm-foot){border-color:rgba(255,255,255,.07)}
@@ -972,20 +973,21 @@ button.set-row:hover{background:var(--row-hover)}
           <div class="card">
             <div class="bulk-bar" id="bulkBar">
               <span class="bulk-lbl">Mark everyone not marked yet</span>
-              <button class="pill sm bulk-btn" onclick="bulkMark(1)"><b>1</b>Full</button>
-              <button class="pill sm bulk-btn" onclick="bulkMark(0.5)"><b>½</b>Half</button>
-              <button class="pill sm bulk-btn" onclick="bulkMark(1.5)"><b>1.5</b>OT</button>
-              <button class="pill sm bulk-btn" onclick="bulkMark(0)"><b>0</b>Absent</button>
-              <button class="pill sm bulk-btn" onclick="bulkMark(2)"><b>2</b>Double</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(1)" title="⇧1 or ⇧P"><b>1</b>Full</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(0.5)" title="⇧H"><b>½</b>Half</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(1.5)" title="⇧O"><b>1.5</b>OT</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(0)" title="⇧0 or ⇧A"><b>0</b>Absent</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark(2)" title="⇧2 or ⇧D"><b>2</b>Double</button>
+              <span class="text-xs only-desk bulk-hint"><kbd>⇧</kbd> + key</span>
               <div class="sp"></div>
               <span class="text-xs" id="bulkCount"></span>
-              <button class="pill sm" style="color:var(--red)" onclick="clearAllDay()">Clear all</button>
+              <button class="pill sm" style="color:var(--red)" onclick="clearAllDay()" title="⇧ Backspace">Clear all</button>
             </div>
             <div class="dm-head"><span>Staff</span><span>Attendance</span><span>Advance (₹ · note)</span><span>Remark</span></div>
             <div id="dailyAttList"></div>
             <div class="dm-foot only-desk">
-              <span><kbd>Tab</kbd> next field</span><span><kbd>Space</kbd> / <kbd>Enter</kbd> choose</span><span><kbd>⇧ Tab</kbd> back</span>
-              <span><kbd>[</kbd> <kbd>]</kbd> day · <kbd>T</kbd> today</span><span><kbd>/</kbd> find</span><span><kbd>⌘Z</kbd> undo</span><span><kbd>⌘S</kbd> save all</span>
+              <span><kbd>1</kbd> <kbd>H</kbd> <kbd>O</kbd> <kbd>D</kbd> <kbd>0</kbd> mark &amp; next</span><span><kbd>⇧</kbd> + key everyone</span><span><kbd>←</kbd> <kbd>→</kbd> value · <kbd>Space</kbd> choose</span>
+              <span><kbd>Tab</kbd> next field</span><span><kbd>↑</kbd> <kbd>↓</kbd> person</span><span><kbd>[</kbd> <kbd>]</kbd> day</span><span><kbd>/</kbd> find</span><span><kbd>⌘Z</kbd> undo</span><span><kbd>⌘S</kbd> save all</span>
               <button class="link-btn" onclick="openModal('shortcutsModal')">All shortcuts <kbd>?</kbd></button>
             </div>
           </div>
@@ -1409,11 +1411,15 @@ button.set-row:hover{background:var(--row-hover)}
       <div>
         <div class="sec-h" style="margin-top:0">Daily Mark</div>
         <div class="kv"><span>Opens on the first person not marked yet</span><span></span></div>
-        <div class="kv"><span>Next field: 0 → ½ → 1 → 1.5 → 2 → Advance ₹ → Note → Remark → next person</span><span><kbd>Tab</kbd></span></div>
+        <div class="kv"><span>Mark &amp; go to the next person: Full · Half · OT 1.5 · Double · Absent</span><span class="sc-keys"><kbd>1</kbd>/<kbd>P</kbd> <kbd>H</kbd>/<kbd>.</kbd> <kbd>O</kbd> <kbd>D</kbd>/<kbd>2</kbd> <kbd>0</kbd>/<kbd>A</kbd></span></div>
+        <div class="kv"><span>Clear this person</span><span><kbd>Backspace</kbd></span></div>
+        <div class="kv"><span>Mark everyone not marked yet</span><span><kbd>⇧</kbd> + the same key</span></div>
+        <div class="kv"><span>Clear the whole day</span><span><kbd>⇧ Backspace</kbd></span></div>
+        <div class="kv"><span>Move between values · choose it</span><span><kbd>←</kbd> <kbd>→</kbd> · <kbd>Space</kbd></span></div>
+        <div class="kv"><span>Previous / next person (no change)</span><span><kbd>↑</kbd> <kbd>↓</kbd></span></div>
+        <div class="kv"><span>Next field: values → ✕ → Advance ₹ → Note → Remark → next person</span><span><kbd>Tab</kbd></span></div>
         <div class="kv"><span>Back one field</span><span><kbd>⇧ Tab</kbd></span></div>
-        <div class="kv"><span>Choose the value you're on</span><span><kbd>Space</kbd> <kbd>Enter</kbd></span></div>
-        <div class="kv"><span>"Mark everyone" bar (from the first person)</span><span><kbd>⇧ Tab</kbd></span></div>
-        <div class="kv"><span>After the last person</span><span><kbd>Tab</kbd> → Save all</span></div>
+        <div class="kv"><span>After the last person</span><span>→ Save all</span></div>
         <div class="kv"><span>Previous / next day · today</span><span><kbd>[</kbd> <kbd>]</kbd> · <kbd>T</kbd></span></div>
         <div class="kv"><span>Find a person</span><span><kbd>/</kbd> then <kbd>Enter</kbd></span></div>
         <div class="kv"><span>Save all advances &amp; remarks</span><span><kbd>⌘S</kbd> <kbd>Ctrl S</kbd></span></div>
@@ -1669,13 +1675,13 @@ on a computer, a phone or both — and every change shows up on all devices with
 <ol class="doc-steps">
   <li>Open Daily Mark for the day (today by default).</li>
   <li>In <b>Mark everyone not marked yet</b>, click <b>1 Full</b>, <b>½ Half</b>, <b>1.5 OT</b>, <b>0 Absent</b> or <b>2 Double</b>.
-      Keyboard: from the first person press <kbd>⇧ Tab</kbd> to reach the bar, <kbd>Tab</kbd> / <kbd>⇧ Tab</kbd> to the value, then <kbd>Space</kbd>.</li>
+      Keyboard: hold <kbd>⇧ Shift</kbd> and press the value's key — <kbd>⇧1</kbd> Full, <kbd>⇧H</kbd> Half, <kbd>⇧O</kbd> OT, <kbd>⇧0</kbd> Absent, <kbd>⇧2</kbd> Double.</li>
   <li>Everyone who wasn't marked yet gets that value; people already marked keep theirs. The count on the right shows how many are left.</li>
   <li>Fix the exceptions — e.g. mark the one absent person 0.</li>
 </ol>
 <ul>
   <li><b>Everyone already marked?</b> The button asks "Change everyone to …?" — say OK to set the whole team to that value.</li>
-  <li><b>Clear all</b> removes the whole day's attendance (remarks and advances stay).</li>
+  <li><b>Clear all</b> (<kbd>⇧ Backspace</kbd>) removes the whole day's attendance (remarks and advances stay).</li>
   <li><b>Changed your mind?</b> Press <b>Undo</b> on the message or <kbd>⌘Z</kbd> — everyone goes back to exactly what they had (including "not marked").</li>
 </ul>
 <h3>Undo</h3>
@@ -1687,18 +1693,35 @@ on a computer, a phone or both — and every change shows up on all devices with
 <p class="doc-note">Deactivated staff don't appear in Daily Mark. Reactivate them from Staff to mark them again.</p>
 `},
 { id:'keyboard-marking', group:'Daily work', title:'Fast marking with the keyboard', roles:'staff', body:`
-<p>On a computer you can mark the whole team with just <kbd>Tab</kbd>, <kbd>Space</kbd> and <kbd>Enter</kbd>. The path is the same for every person, so it quickly becomes a habit and nothing gets skipped.</p>
+<p>On a computer you can mark the whole team without touching the mouse. Open Daily Mark (<kbd>⌘K</kbd> → <kbd>D</kbd> → <kbd>Enter</kbd>) — the cursor starts on the <b>first person not marked yet</b> and their row is highlighted.</p>
+<h3>Quickest: one key per person</h3>
+<p>Press the value's key — it's saved and the cursor jumps to the next person:</p>
+<table class="doc-t">
+  <thead><tr><th>Key</th><th>Marks</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>1</kbd> or <kbd>P</kbd></td><td>Full day</td></tr>
+    <tr><td><kbd>H</kbd> or <kbd>.</kbd></td><td>Half day</td></tr>
+    <tr><td><kbd>O</kbd></td><td>Overtime 1.5</td></tr>
+    <tr><td><kbd>D</kbd> or <kbd>2</kbd></td><td>Double</td></tr>
+    <tr><td><kbd>0</kbd> or <kbd>A</kbd></td><td>Absent</td></tr>
+    <tr><td><kbd>Backspace</kbd></td><td>Clear (the cursor stays on the person)</td></tr>
+  </tbody>
+</table>
+<p>So a day where everyone came is just <kbd>1</kbd> <kbd>1</kbd> <kbd>1</kbd>… down the list. <kbd>↑</kbd> / <kbd>↓</kbd> move to the previous / next person without changing anything. The number-pad keys work too.</p>
+<h3>Everyone at once: ⇧ + the same key</h3>
+<p>Hold <kbd>⇧ Shift</kbd> with a value key to mark <b>everyone not marked yet</b> — e.g. <kbd>⇧1</kbd> marks the whole team Full, then fix the few exceptions with single keys. <kbd>⇧ Backspace</kbd> clears the whole day. See <a data-help="daily-mark">Daily Mark</a> for how it works.</p>
+<h3>Advances and remarks: Tab</h3>
 <ol class="doc-steps">
-  <li>Open Daily Mark (<kbd>⌘K</kbd> → <kbd>D</kbd> → <kbd>Enter</kbd>). The cursor starts on the <b>first person not marked yet</b>; their row is highlighted.</li>
-  <li><kbd>Tab</kbd> moves through <b>0 → ½ → 1 → 1.5 → 2 → Advance ₹ → Note → Remark</b>, then on to the next person.</li>
-  <li>On the right value press <kbd>Space</kbd> (or <kbd>Enter</kbd>) — it saves immediately and the cursor stays there; keep pressing <kbd>Tab</kbd>.</li>
+  <li>A person's five value buttons are <b>one stop</b> for <kbd>Tab</kbd>: you land on their current value (or 0). Use <kbd>←</kbd> / <kbd>→</kbd> to move between values and <kbd>Space</kbd> (or <kbd>Enter</kbd>) to choose — it saves and the cursor stays.</li>
+  <li><kbd>Tab</kbd> then goes <b>✕ clear → Advance ₹ → Note → Remark</b> and on to the next person's values. (The ✕ is only there once the person is marked; it asks before clearing.)</li>
   <li>Type an advance or remark when you reach those boxes, or just <kbd>Tab</kbd> past them.</li>
-  <li>After the last person, <kbd>Tab</kbd> lands on <b>Save all</b> — press <kbd>Enter</kbd> to save advances and remarks.</li>
+  <li>After the last person the cursor lands on <b>Save all</b> — press <kbd>Enter</kbd> to save advances and remarks.</li>
 </ol>
 <ul>
   <li><kbd>⇧ Tab</kbd> goes back one field. From the first person it reaches the <b>Mark everyone</b> bar.</li>
   <li><kbd>/</kbd> then a few letters of a name, then <kbd>Enter</kbd>, jumps to that person.</li>
-  <li>The clear <b>✕</b> buttons are skipped by <kbd>Tab</kbd> so you can't clear someone by accident.</li>
+  <li>Value keys only work on the value buttons, never while you're typing in a box — typing 1 in the Advance box just types 1.</li>
+  <li>Every mark and clear can be undone with <kbd>⌘Z</kbd>.</li>
 </ul>
 `},
 { id:'register', group:'Daily work', title:'Register (whole month)', roles:'staff', body:`
@@ -1833,10 +1856,15 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>Daily Mark</h3>
 <table class="doc-t">
   <tbody>
-    <tr><td><kbd>Tab</kbd> / <kbd>⇧ Tab</kbd></td><td>Next / previous field: 0 → ½ → 1 → 1.5 → 2 → Advance ₹ → Note → Remark → next person</td></tr>
-    <tr><td><kbd>Space</kbd> / <kbd>Enter</kbd></td><td>Choose the value you're on (saves immediately)</td></tr>
+    <tr><td><kbd>1</kbd>/<kbd>P</kbd> · <kbd>H</kbd>/<kbd>.</kbd> · <kbd>O</kbd> · <kbd>D</kbd>/<kbd>2</kbd> · <kbd>0</kbd>/<kbd>A</kbd></td><td>Mark Full · Half · OT 1.5 · Double · Absent and go to the next person</td></tr>
+    <tr><td><kbd>Backspace</kbd></td><td>Clear this person</td></tr>
+    <tr><td><kbd>⇧</kbd> + a value key</td><td>Mark everyone not marked yet with that value</td></tr>
+    <tr><td><kbd>⇧ Backspace</kbd></td><td>Clear the whole day</td></tr>
+    <tr><td><kbd>←</kbd> / <kbd>→</kbd> · <kbd>Space</kbd> / <kbd>Enter</kbd></td><td>Move between a person's values · choose the one you're on (saves, cursor stays)</td></tr>
+    <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Previous / next person without changing anything</td></tr>
+    <tr><td><kbd>Tab</kbd> / <kbd>⇧ Tab</kbd></td><td>Next / previous field: values → ✕ → Advance ₹ → Note → Remark → next person</td></tr>
     <tr><td><kbd>⇧ Tab</kbd> from the first person</td><td>The "Mark everyone" bar</td></tr>
-    <tr><td><kbd>Tab</kbd> after the last person</td><td>Save all</td></tr>
+    <tr><td>After the last person</td><td>Save all</td></tr>
     <tr><td><kbd>[</kbd> / <kbd>]</kbd> · <kbd>T</kbd></td><td>Previous / next day · today</td></tr>
     <tr><td><kbd>/</kbd></td><td>Find a person (type, then <kbd>Enter</kbd>)</td></tr>
     <tr><td><kbd>⌘S</kbd> / <kbd>Ctrl S</kbd></td><td>Save all advances and remarks</td></tr>
@@ -1869,7 +1897,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>A balance looks different from what I expected</h3>
 <p>Check the opening balance, settlements (salary paid) and the wage history. Remember a <b>Deduct</b> doesn't change the final balance. The Ledger shows every line that makes up the balance.</p>
 <h3>How do I record a holiday?</h3>
-<p>Use <b>Mark everyone not marked yet → Absent</b> and add a remark like "Holiday" where useful.</p>
+<p>Use <b>Mark everyone not marked yet → Absent</b> (<kbd>⇧0</kbd> on a computer) and add a remark like "Holiday" where useful.</p>
 </div>
 <h3>Still stuck?</h3>
 <p>Contact your AttendPro administrator<span class="staff-only"> or support</span>.</p>
@@ -2921,6 +2949,7 @@ function renderDailyAtt() {
   const keepFocus = ae && ae.id && ae.closest && ae.closest('#dailyAttList') ? ae.id : null;
   list.innerHTML = users.map(u => {
     const cur    = att[u.id]?.[date];
+    const stopV  = vals.includes(cur) ? cur : 0;   // the one value Tab lands on
     const remark = att[u.id]?.[date + '_remark'] || '';
     // Existing advances for this user on this date
     const chipsHtml = advances.filter(a => a.userId === u.id && a.date === date && a.type === 'advance').map(a =>
@@ -2931,13 +2960,13 @@ function renderDailyAtt() {
       <div class="admin-att-top who">${avatarHtml(u)}<div class="x"><b class="staff-name">${esc(u.name)}</b><small>${esc(u.role)}</small></div></div>
       <div class="admin-att-options" id="attopts_${u.id}">
         ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}"
-          tabindex="0"
+          tabindex="${v === stopV ? 0 : -1}"
           data-userid="${u.id}" data-val="${v}" data-idx="${i}"
           onclick="setDailyAtt(${jsArg(u.id)},${v})"
           onkeydown="attBtnKeydown(event,${jsArg(u.id)},${v},${i})">
           <span>${v===0.5?'½':v}</span><small>${names[i]}</small>
         </div>`).join('')}
-        ${cur !== undefined ? `<button class="att-clear-btn" tabindex="-1" title="Clear" onclick="confirmClearAtt(${jsArg(u.id)})">✕</button>` : ''}
+        ${cur !== undefined ? `<button class="att-clear-btn" title="Clear (Backspace)" onclick="confirmClearAtt(${jsArg(u.id)})" onkeydown="dmQuickKey(event,${jsArg(u.id)})">✕</button>` : ''}
       </div>
       <div class="daily-adv-inputs">
         <input type="number" class="daily-adv-amount" id="adv_amt_${u.id}" placeholder="₹ Advance" min="1">
@@ -2952,7 +2981,11 @@ function renderDailyAtt() {
       ${chipsHtml ? `<div class="daily-adv-chips">${chipsHtml}</div>` : ''}
     </div>`;
   }).join('');
-  if (keepFocus) document.getElementById(keepFocus)?.focus({ preventScroll: true });
+  if (keepFocus) {
+    const el = document.getElementById(keepFocus);
+    if (el?.classList.contains('admin-att-btn')) dmSetStop(el.dataset.userid, Number(el.dataset.val));
+    el?.focus({ preventScroll: true });
+  }
   updateBulkCount();
 }
 
@@ -2960,14 +2993,23 @@ async function setDailyAtt(userId, val) {
   dailyTouched.add(userId);
   const date = dailySelectedDate;
   const prev = getData('attendance', {})[userId]?.[date];
-  await saveAttendance(userId, date, val);
+  const saving = saveAttendance(userId, date, val);   // the local copy changes at once
+  // Show it straight away (only this person's row — typed fields elsewhere stay)
+  updateBulkCount();
+  syncDailyRow(userId);
   if (prev !== val) {
     const name = getData('users', []).find(x => x.id === userId)?.name || 'Staff';
     pushUndo(`${name} → ${ATT_LABELS[String(val)]}`, [{ userId, date, prev }]);
   }
-  updateBulkCount();
-  // Update ONLY this employee's buttons — no full re-render so typed fields are preserved
-  syncDailyRow(userId);
+  try { await saving; }
+  catch (e) {
+    console.error('Mark failed', e);
+    const att = getData('attendance', {});
+    if (att[userId]) { if (prev === undefined) delete att[userId][date]; else att[userId][date] = prev; setCache('attendance', att); }
+    if (date === dailySelectedDate) syncDailyRow(userId);
+    updateBulkCount();
+    showToast('⚠️ Could not save — check internet and try again');
+  }
 }
 
 // Show a person's current value in their Daily Mark row without redrawing it (typed boxes stay)
@@ -2979,16 +3021,22 @@ function syncDailyRow(userId) {
   row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
   const idx = vals.indexOf(v);
   if (idx >= 0) document.getElementById(`attbtn_${userId}_${v}`)?.classList.add(classes[idx]);
+  // Tab stop: the value the keyboard is on (arrows), else the person's value, else 0
+  const ae = document.activeElement;
+  dmSetStop(userId, ae?.classList?.contains('admin-att-btn') && row.contains(ae) ? Number(ae.dataset.val) : (idx >= 0 ? v : 0));
   const attOpts = row.querySelector('.admin-att-options');
   const clearBtn = attOpts?.querySelector('.att-clear-btn');
-  if (v === undefined) { clearBtn?.remove(); return; }
+  if (v === undefined) {
+    if (clearBtn) { const had = clearBtn === ae; clearBtn.remove(); if (had) dmStop(userId)?.focus({ preventScroll: true }); }
+    return;
+  }
   if (attOpts && !clearBtn) {
     const b = document.createElement('button');
     b.className = 'att-clear-btn';
-    b.title = 'Clear';
-    b.tabIndex = -1;        // keyboard path: values → Advance, never the ✕
-    b.textContent = '✕';
+    b.title = 'Clear (Backspace)';
+    b.textContent = '✕';    // Tab path: value → ✕ → Advance ₹ → Note → Remark
     b.onclick = () => confirmClearAtt(userId);
+    b.onkeydown = e => dmQuickKey(e, userId);
     attOpts.appendChild(b);
   }
 }
@@ -2996,7 +3044,7 @@ function syncDailyRow(userId) {
 function confirmClearAtt(userId, date = dailySelectedDate) {
   const u = getData('users', []).find(x => x.id === userId);
   const userName = u ? u.name : 'this employee';
-  if (!confirm(`Clear ${userName}'s attendance for ${fmtDate(date)}?\nThis cannot be undone.`)) return;
+  if (!confirm(`Clear ${userName}'s attendance for ${fmtDate(date)}?\n(You can undo this.)`)) return;
   doClearAtt(userId, date);
 }
 // ✕ button on the Home "Today's Attendance" list
@@ -3020,13 +3068,8 @@ async function doClearAtt(userId, date = dailySelectedDate) {
   } else showToast('✅ Attendance cleared!');
   updateBulkCount();
 
-  // Surgically reset only this employee's row buttons — preserve other rows' typed fields
-  const row = date === dailySelectedDate ? document.getElementById('attrow_' + userId) : null;
-  if (row) {
-    row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
-    const clearBtn = row.querySelector('.att-clear-btn');
-    if (clearBtn) clearBtn.remove();
-  }
+  // Reset only this employee's row — other rows keep their typed fields
+  if (date === dailySelectedDate) syncDailyRow(userId);
   renderHome();
 }
 
@@ -3112,10 +3155,7 @@ function focusFirstUnmarked() {
   const att = getData('attendance', {});
   const users = dailyMarkUsers();
   const u = users.find(x => att[x.id]?.[dailySelectedDate] === undefined) || users[0];
-  const el = u && document.getElementById(`attbtn_${u.id}_0`);
-  if (!el) return;
-  el.focus({ preventScroll: true });
-  el.closest('.admin-att-row')?.scrollIntoView({ block: 'center' });
+  if (u) dmFocusPerson(u.id);
 }
 function updateBulkCount() {
   const el = document.getElementById('bulkCount');
@@ -3200,8 +3240,7 @@ async function bulkMark(val) {
   changes.forEach(c => dailyTouched.add(c.userId));
   pushUndo(`Marked ${changes.length} ${changes.length === 1 ? 'person' : 'people'} ${ATT_LABELS[String(val)]}`, changes);
   // Straight on to fixing exceptions: first person in the list
-  const first = users[0] && document.getElementById(`attbtn_${users[0].id}_0`);
-  if (first && matchMedia('(hover:hover) and (pointer:fine)').matches) first.focus({ preventScroll: true });
+  if (matchMedia('(hover:hover) and (pointer:fine)').matches) dmFocusPerson(users[0].id);
 }
 async function clearAllDay() {
   const date = dailySelectedDate;
@@ -3236,7 +3275,7 @@ function dmFindKey(e) {
     const box = document.getElementById('dmFind');
     if (!u) { showToast('No one with that name'); return; }
     box.value = ''; dmFindInput();
-    document.getElementById(`attbtn_${u.id}_0`)?.focus();
+    dmFocusPerson(u.id);
   } else if (e.key === 'Escape') {
     e.target.value = ''; dmFindInput(); e.target.blur(); focusFirstUnmarked();
   }
@@ -4689,47 +4728,89 @@ initData();
 // KEYBOARD NAVIGATION — Daily Mark
 // ══════════════════════════════════════════
 
-// Called on keydown inside any attendance button
+// The five value buttons of a row are one Tab stop (like radio buttons): Tab lands on the
+// person's value (else 0), ← → move between values, Tab goes on to ✕ → Advance ₹ → Note → Remark.
+const DM_VALS = [0, 0.5, 1, 1.5, 2];
+function dmSetStop(userId, val) {
+  document.querySelectorAll(`#attopts_${CSS.escape(userId)} .admin-att-btn`).forEach(b => { b.tabIndex = Number(b.dataset.val) === val ? 0 : -1; });
+}
+function dmStop(userId) {
+  const opts = document.getElementById('attopts_' + userId);
+  return opts?.querySelector('.admin-att-btn[tabindex="0"]') || opts?.querySelector('.admin-att-btn');
+}
+function dmFocusPerson(userId) {
+  const el = dmStop(userId);
+  if (!el) return;
+  el.focus({ preventScroll: true });
+  el.closest('.admin-att-row')?.scrollIntoView({ block: 'center' });   // the next people stay in view
+}
+function dmNeighbour(userId, step) {
+  const users = dailyMarkUsers();
+  return users[users.findIndex(u => u.id === userId) + step] || null;
+}
+// One key per value: 1/P full · H/. half · O 1.5 · D/2 double · 0/A absent (digits by key position,
+// so ⇧ + the same key works for "everyone")
+function dmKeyValue(e) {
+  const c = e.code || '';
+  const k = /^(Digit|Numpad)[0-9]$/.test(c) ? c.slice(-1)
+          : (c === 'Period' || c === 'NumpadDecimal') ? '.'
+          : (e.key || '').toLowerCase();
+  return { '1': 1, p: 1, h: 0.5, '.': 0.5, o: 1.5, d: 2, '2': 2, '0': 0, a: 0 }[k];
+}
+// A value key marks this person and moves to the next one; Backspace clears (both undoable)
+function dmQuickKey(e, userId) {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return false;   // ⇧ + key = everyone (initKeyboardShortcuts)
+  const v = dmKeyValue(e);
+  if (v !== undefined) {
+    e.preventDefault(); e.stopPropagation();
+    setDailyAtt(userId, v);             // saved in the background: the keyboard never waits for the network
+    dmSetStop(userId, v);
+    const next = dmNeighbour(userId, 1);
+    if (next) dmFocusPerson(next.id); else document.getElementById('saveAllBtn')?.focus();
+    return true;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault(); e.stopPropagation();
+    if (getData('attendance', {})[userId]?.[dailySelectedDate] !== undefined) {
+      dailyTouched.add(userId);
+      doClearAtt(userId);
+    }
+    return true;
+  }
+  return false;
+}
+
+// Called on keydown inside any attendance value button
 function attBtnKeydown(e, userId, val, idx) {
-  const vals = [0, 0.5, 1, 1.5, 2];
+  if (dmQuickKey(e, userId)) return;
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault();
     setDailyAtt(userId, val);
     return;
   }
-  // Arrow left/right — move between values in the same row (optional)
+  // ← → move between the values of this row (the Tab stop follows)
   if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
     e.preventDefault();
-    const newIdx = e.key === 'ArrowRight' ? Math.min(idx + 1, vals.length - 1) : Math.max(idx - 1, 0);
-    document.getElementById(`attbtn_${userId}_${vals[newIdx]}`)?.focus();
+    const newIdx = e.key === 'ArrowRight' ? Math.min(idx + 1, DM_VALS.length - 1) : Math.max(idx - 1, 0);
+    dmSetStop(userId, DM_VALS[newIdx]);
+    document.getElementById(`attbtn_${userId}_${DM_VALS[newIdx]}`)?.focus();
     return;
   }
-  // Tab from the last value → Advance ₹ (never the ✕ clear button)
-  if (e.key === 'Tab' && !e.shiftKey && idx === vals.length - 1) {
+  // ↑ ↓ skip to the previous / next person without marking
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
-    document.getElementById(`adv_amt_${userId}`)?.focus();
-    return;
-  }
-  // ⇧Tab from the first value → previous person's Remark (first person: on to the "Mark everyone" bar)
-  if (e.key === 'Tab' && e.shiftKey && idx === 0) {
-    const users = dailyMarkUsers();
-    const curIdx = users.findIndex(u => u.id === userId);
-    if (curIdx > 0) {
-      e.preventDefault();
-      document.getElementById(`remark_${users[curIdx - 1].id}`)?.focus();
-    }
+    const n = dmNeighbour(userId, e.key === 'ArrowDown' ? 1 : -1);
+    if (n) dmFocusPerson(n.id);
   }
 }
 
-// Tab from remarks → jump to next employee's first att button
-// Handled via keydown on remarks input
+// Tab from the Remark → next person's values (after the last person: Save all)
 function remarkKeydown(e, userId) {
   if (e.key === 'Tab' && !e.shiftKey) {
-    const users = dailyMarkUsers();
-    const curIdx = users.findIndex(u => u.id === userId);
+    const next = dmNeighbour(userId, 1);
     e.preventDefault();
-    if (curIdx < users.length - 1) document.getElementById(`attbtn_${users[curIdx + 1].id}_0`)?.focus();
-    else document.getElementById('saveAllBtn')?.focus();    // after the last person: Save all
+    if (next) dmStop(next.id)?.focus();
+    else document.getElementById('saveAllBtn')?.focus();
   }
 }
 
@@ -4763,6 +4844,12 @@ function initKeyboardShortcuts() {
     if (typing || mod || e.altKey || openDlg) return;
     if (e.key === '?') { e.preventDefault(); openModal('shortcutsModal'); return; }
     if (!inDaily) return;
+    // ⇧ + a value key → "Mark everyone not marked yet"; ⇧ Backspace → Clear all
+    if (e.shiftKey && isStaffRole(currentUser)) {
+      const v = dmKeyValue(e);
+      if (v !== undefined) { e.preventDefault(); bulkMark(v); return; }
+      if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); clearAllDay(); return; }
+    }
     if (e.key === '[')                    { e.preventDefault(); dailyPrevDay(); }
     else if (e.key === ']')               { e.preventDefault(); dailyNextDay(); }
     else if (e.key.toLowerCase() === 't') { e.preventDefault(); dailyToday(); }
@@ -5402,6 +5489,7 @@ window.dailyNextDay = dailyNextDay;
 window.onDailyDateChange = onDailyDateChange;
 window.attBtnKeydown = attBtnKeydown;
 window.remarkKeydown = remarkKeydown;
+window.dmQuickKey = dmQuickKey;
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
@@ -5431,8 +5519,12 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
-      <div class="wn-top"><span class="wn-ver">v1.2.3</span><span class="wn-date">November 2026 — Help &amp; guide</span></div>
+      <div class="wn-top"><span class="wn-ver">v1.2.3</span><span class="wn-date">November 2026 — Help &amp; guide, one-key marking</span></div>
       <ul>
+        <li>⚡ <b>One key per person</b> in Daily Mark — <kbd>1</kbd>/<kbd>P</kbd> Full, <kbd>H</kbd> Half, <kbd>O</kbd> OT, <kbd>D</kbd>/<kbd>2</kbd> Double, <kbd>0</kbd>/<kbd>A</kbd> Absent marks and jumps to the next person; <kbd>Backspace</kbd> clears</li>
+        <li>👥 <b>⇧ + the same key marks everyone</b> not marked yet (⇧1 = all Full); ⇧ Backspace clears the day</li>
+        <li>↔️ <b>Values are one Tab stop</b> — ← → pick a value, Tab goes straight to ✕ → Advance → Note → Remark; ↑ ↓ move between people</li>
+        <li>🌙 Night mode: the Advance / Remark box no longer hides what you type</li>
         <li>📖 <b>Help &amp; guide</b> — a full guide to every page, feature and shortcut, inside the app (menu → Help &amp; guide, Settings, or ⌘K → ? → Enter)</li>
         <li>🔎 <b>Search the guide</b> — or type a word in ⌘K ("undo", "settlement"…) to jump to the right topic</li>
         <li>🖨️ <b>Print / Save as PDF</b> — the whole guide as a document, e.g. to share with new staff</li>
