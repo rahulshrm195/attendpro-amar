@@ -12,6 +12,7 @@
   1/P · H/. · O · D/2 · 0/A mark and jump to the next person, Backspace clears, ⇧ + key marks everyone not marked yet,
   ⇧Backspace clears the day; the five values are one Tab stop (← → inside, ↑ ↓ between people), Tab → ✕ → Advance → Note → Remark.
   Night mode fix: the focused Advance / Remark box no longer hides typed text.
+- **v1.2.4** — Daily Mark "Total advances" line (saved + typed, live); [ ] change the day from the Advance / Note / Remark boxes too; changing the day with unsaved advances / remarks asks, then saves them first.
 
 ## Planned features
 

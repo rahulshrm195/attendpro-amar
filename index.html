@@ -394,6 +394,14 @@ kbd{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink2);b
 .daily-adv-chips{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}
 .daily-adv-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--red-soft);color:var(--red);font-family:var(--mono)}
 .daily-adv-chip button{border:0;background:rgba(255,255,255,.6);width:20px;height:20px;border-radius:50%;color:var(--red);font-size:11px;font-weight:800}
+.dm-total{display:grid;grid-template-columns:minmax(170px,1.1fr) 300px minmax(220px,1.2fr) minmax(180px,1fr);gap:14px;align-items:center;padding:14px 18px;border-top:1px solid rgba(26,24,18,.12)}
+.dm-total:empty{display:none}
+.dm-total .lbl b{display:block;white-space:nowrap;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.dm-total .lbl small{font-family:var(--mono);font-size:11.5px;color:var(--ink3)}
+.dm-total-amt{grid-column:3;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-left:12px}
+.dm-total-amt b{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--red)}
+.dm-total-amt b.unsaved{color:var(--amber)}
+.dm-total-amt small{font-size:12px;color:var(--ink2)}
 .dm-foot{display:flex;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid rgba(26,24,18,.07);font-size:12px;color:var(--ink2);flex-wrap:wrap}
 .dm-foot kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--border);border-radius:6px;padding:1px 6px;background:var(--surface)}
 
@@ -620,6 +628,8 @@ table.reg{border-collapse:separate;border-spacing:0;font-size:11px;min-width:100
   .cell-l{display:inline}
   .admin-att-row{grid-template-columns:minmax(0,1fr);gap:9px;padding:14px}
   .daily-adv-chips{grid-column:1/-1;margin:0}
+  .dm-total{display:flex;justify-content:space-between;align-items:center;padding:14px}
+  .dm-total-amt{flex-direction:column;align-items:flex-end;gap:0;padding-left:0;text-align:right}
   .req-card{grid-template-columns:minmax(0,1fr);padding:14px}
   .req-detail{padding-left:45px}
   .req-actions{grid-column:1;grid-row:auto;padding-left:45px}
@@ -703,6 +713,7 @@ body:not(.role-emp) .emp-only{display:none!important}
 [data-theme="dark"] .seg button.on,[data-theme="dark"] .seg .tab.active{background:rgba(255,255,255,.14);color:var(--ink)}
 [data-theme="dark"] .brand-ver{background:rgba(255,255,255,.08)}
 [data-theme="dark"] :is(.lrow,.lhead,.card-h,.dm-head,.admin-att-row,.req-card,.mini-list .mi,.set-row,.kv,.adv-line,.notif-item,.dm-foot){border-color:rgba(255,255,255,.07)}
+[data-theme="dark"] .dm-total{border-color:rgba(255,255,255,.12)}
 [data-theme="dark"] .reg :is(th,td){border-color:rgba(255,255,255,.07)!important}
 [data-theme="dark"] .reg tbody tr:hover td{background:rgba(255,255,255,.04)}
 [data-theme="dark"] .rt:not([class*="rt-"]),[data-theme="dark"] .reg-legend i.rt-empty{box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
@@ -786,7 +797,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.3</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.4</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -812,7 +823,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.3</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.4</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -985,6 +996,7 @@ button.set-row:hover{background:var(--row-hover)}
             </div>
             <div class="dm-head"><span>Staff</span><span>Attendance</span><span>Advance (₹ · note)</span><span>Remark</span></div>
             <div id="dailyAttList"></div>
+            <div class="dm-total" id="dmTotal" aria-live="polite"></div>
             <div class="dm-foot only-desk">
               <span><kbd>1</kbd> <kbd>H</kbd> <kbd>O</kbd> <kbd>D</kbd> <kbd>0</kbd> mark &amp; next</span><span><kbd>⇧</kbd> + key everyone</span><span><kbd>←</kbd> <kbd>→</kbd> value · <kbd>Space</kbd> choose</span>
               <span><kbd>Tab</kbd> next field</span><span><kbd>↑</kbd> <kbd>↓</kbd> person</span><span><kbd>[</kbd> <kbd>]</kbd> day</span><span><kbd>/</kbd> find</span><span><kbd>⌘Z</kbd> undo</span><span><kbd>⌘S</kbd> save all</span>
@@ -1420,7 +1432,7 @@ button.set-row:hover{background:var(--row-hover)}
         <div class="kv"><span>Next field: values → ✕ → Advance ₹ → Note → Remark → next person</span><span><kbd>Tab</kbd></span></div>
         <div class="kv"><span>Back one field</span><span><kbd>⇧ Tab</kbd></span></div>
         <div class="kv"><span>After the last person</span><span>→ Save all</span></div>
-        <div class="kv"><span>Previous / next day · today</span><span><kbd>[</kbd> <kbd>]</kbd> · <kbd>T</kbd></span></div>
+        <div class="kv"><span>Previous / next day (also from the Advance / Note / Remark boxes) · today</span><span><kbd>[</kbd> <kbd>]</kbd> · <kbd>T</kbd></span></div>
         <div class="kv"><span>Find a person</span><span><kbd>/</kbd> then <kbd>Enter</kbd></span></div>
         <div class="kv"><span>Save all advances &amp; remarks</span><span><kbd>⌘S</kbd> <kbd>Ctrl S</kbd></span></div>
       </div>
@@ -1437,7 +1449,7 @@ button.set-row:hover{background:var(--row-hover)}
 // VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
 // The self-update below compares this with the live index.html.
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.2.3';
+const APP_VERSION = 'v1.2.4';
 document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
 
 // ══════════════════════════════════════════
@@ -1669,6 +1681,7 @@ on a computer, a phone or both — and every change shows up on all devices with
   <li><b>Attendance saves the moment you choose a value</b> — no need to press anything else.</li>
   <li><b>Advance ₹ + note</b> and <b>Remark</b> are saved when you press <b>Save all</b> (or <kbd>⌘S</kbd> / <kbd>Ctrl S</kbd>). Emptying a remark box and saving removes that remark.</li>
   <li>Advances already given that day show as red chips under the person; <b>✕</b> on a chip deletes it.</li>
+  <li><b>Total advances</b> at the bottom of the list adds up the day's advances: the ones already saved plus anything typed in the boxes (shown in amber until you press Save all).</li>
 </ul>
 <h3>Mark everyone at once (all to 1, ½, 1.5, 0 or 2)</h3>
 <p>Most days most people have the same value. The bar at the top of the list does it in one go:</p>
@@ -1688,6 +1701,10 @@ on a computer, a phone or both — and every change shows up on all devices with
 <p>Every mark, clear, "Mark everyone" and "Clear all" shows a message with <b>Undo</b>. You can also press <kbd>⌘Z</kbd> / <kbd>Ctrl Z</kbd> — undoing a "Mark everyone" puts each person back to exactly what they had.</p>
 <h3>Other days</h3>
 <p>Use the ‹ › buttons or the date box (or <kbd>[</kbd> <kbd>]</kbd>, <kbd>T</kbd> for today). Future days can't be marked.</p>
+<ul>
+  <li><kbd>[</kbd> and <kbd>]</kbd> work even while you're in an Advance, Note or Remark box (the bracket isn't typed).</li>
+  <li>If you typed an advance or remark and haven't saved it yet, changing the day asks first: <b>OK</b> (or <kbd>Enter</kbd>) saves it and then changes the day; <b>Cancel</b> (or <kbd>Esc</kbd>) stays on the day. Nothing you typed is lost.</li>
+</ul>
 <h3>Working on several devices</h3>
 <p>If someone else marks on another device, their changes appear here straight away. <b>Save all</b> only saves the rows you changed on <i>your</i> device, so it never undoes someone else's work.</p>
 <p class="doc-note">Deactivated staff don't appear in Daily Mark. Reactivate them from Staff to mark them again.</p>
@@ -1720,6 +1737,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <ul>
   <li><kbd>⇧ Tab</kbd> goes back one field. From the first person it reaches the <b>Mark everyone</b> bar.</li>
   <li><kbd>/</kbd> then a few letters of a name, then <kbd>Enter</kbd>, jumps to that person.</li>
+  <li><kbd>[</kbd> / <kbd>]</kbd> change the day from anywhere on the list, including the Advance, Note and Remark boxes. Anything typed but not saved is saved first (it asks).</li>
   <li>Value keys only work on the value buttons, never while you're typing in a box — typing 1 in the Advance box just types 1.</li>
   <li>Every mark and clear can be undone with <kbd>⌘Z</kbd>.</li>
 </ul>
@@ -1865,7 +1883,7 @@ on a computer, a phone or both — and every change shows up on all devices with
     <tr><td><kbd>Tab</kbd> / <kbd>⇧ Tab</kbd></td><td>Next / previous field: values → ✕ → Advance ₹ → Note → Remark → next person</td></tr>
     <tr><td><kbd>⇧ Tab</kbd> from the first person</td><td>The "Mark everyone" bar</td></tr>
     <tr><td>After the last person</td><td>Save all</td></tr>
-    <tr><td><kbd>[</kbd> / <kbd>]</kbd> · <kbd>T</kbd></td><td>Previous / next day · today</td></tr>
+    <tr><td><kbd>[</kbd> / <kbd>]</kbd> · <kbd>T</kbd></td><td>Previous / next day (also from the Advance / Note / Remark boxes; unsaved typing is saved first, after asking) · today</td></tr>
     <tr><td><kbd>/</kbd></td><td>Find a person (type, then <kbd>Enter</kbd>)</td></tr>
     <tr><td><kbd>⌘S</kbd> / <kbd>Ctrl S</kbd></td><td>Save all advances and remarks</td></tr>
   </tbody>
@@ -2938,6 +2956,7 @@ function renderDailyAtt() {
 
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p></div>';
+    const tot = document.getElementById('dmTotal'); if (tot) tot.innerHTML = '';
     return;
   }
 
@@ -2969,7 +2988,7 @@ function renderDailyAtt() {
         ${cur !== undefined ? `<button class="att-clear-btn" title="Clear (Backspace)" onclick="confirmClearAtt(${jsArg(u.id)})" onkeydown="dmQuickKey(event,${jsArg(u.id)})">✕</button>` : ''}
       </div>
       <div class="daily-adv-inputs">
-        <input type="number" class="daily-adv-amount" id="adv_amt_${u.id}" placeholder="₹ Advance" min="1">
+        <input type="number" class="daily-adv-amount" id="adv_amt_${u.id}" placeholder="₹ Advance" min="1" oninput="updateDailyTotal()">
         <input type="text"   class="daily-adv-note"   id="adv_note_${u.id}" placeholder="Note (optional)">
       </div>
       <div class="daily-remark-row">
@@ -2987,6 +3006,7 @@ function renderDailyAtt() {
     el?.focus({ preventScroll: true });
   }
   updateBulkCount();
+  updateDailyTotal();
 }
 
 async function setDailyAtt(userId, val) {
@@ -3129,7 +3149,7 @@ async function saveAllAttendance() {
     console.error('Save all error:', e);
     showLoader(false);
     showToast('⚠️ Could not save everything — check internet and try again');
-    return;
+    return false;
   }
   showLoader(false);
 
@@ -3144,6 +3164,7 @@ async function saveAllAttendance() {
   }
   renderDailyAtt();
   renderHome();
+  return true;
 }
 
 // ══════════════════════════════════════════
@@ -3164,6 +3185,29 @@ function updateBulkCount() {
   const users = dailyMarkUsers();
   const left = users.filter(u => att[u.id]?.[dailySelectedDate] === undefined).length;
   el.textContent = left ? `${left} of ${users.length} not marked` : `Everyone marked for ${fmtDate(dailySelectedDate)}`;
+}
+
+// Bottom line of Daily Mark: the day's advances — already saved + typed but not saved yet
+function updateDailyTotal() {
+  const el = document.getElementById('dmTotal');
+  if (!el) return;
+  const date = dailySelectedDate;
+  const ids = new Set(dailyMarkUsers().map(u => u.id));
+  const people = new Set();
+  let saved = 0, typed = 0;
+  getData('advances', []).forEach(a => {
+    if (a.type === 'advance' && a.date === date && ids.has(a.userId)) { saved += Number(a.amount) || 0; people.add(a.userId); }
+  });
+  ids.forEach(id => {
+    const v = Number(document.getElementById(`adv_amt_${id}`)?.value || 0);
+    if (v > 0) { typed += v; people.add(id); }
+  });
+  const total = saved + typed, n = people.size;
+  const sub = !total ? 'None given on this day'
+    : `${n} ${n === 1 ? 'person' : 'people'}` + (typed && saved ? ` · ${fmtMoney(saved)} saved + ${fmtMoney(typed)} not saved yet`
+                                                 : typed ? ' · not saved yet — Save all' : '');
+  el.innerHTML = `<div class="lbl"><b>Total advances</b><small>${fmtDate(date)}</small></div>
+    <div class="dm-total-amt"><b class="${typed ? 'unsaved' : ''}">${fmtMoney(total)}</b><small>${esc(sub)}</small></div>`;
 }
 
 // Undo: each entry is a list of { userId, date, prev } (prev undefined = was not marked)
@@ -3310,41 +3354,43 @@ function dateAddDays(dateStr, days) {
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
 }
 
-function dailyPrevDay() {
-  dailySelectedDate = dateAddDays(dailySelectedDate, -1);
-  const picker = document.getElementById('dailyDatePicker');
-  if (picker) picker.value = dailySelectedDate;
-  renderDailyAtt();
-  focusFirstUnmarked();
+// Advances / remarks typed on this day but not saved yet (changing the day would lose them)
+function dailyUnsavedCount() {
+  let n = 0;
+  dailyMarkUsers().forEach(u => {
+    const amt = Number(document.getElementById(`adv_amt_${u.id}`)?.value || 0);
+    const rem = document.getElementById(`remark_${u.id}`);
+    if (amt > 0 || (rem && rem.value.trim() !== (rem.dataset.orig || '').trim())) n++;
+  });
+  return n;
 }
-function dailyToday() {
-  dailySelectedDate = todayStr();
-  const picker = document.getElementById('dailyDatePicker');
-  if (picker) picker.value = dailySelectedDate;
-  renderDailyAtt();
-  focusFirstUnmarked();
-}
-
-function dailyNextDay() {
-  const next = dateAddDays(dailySelectedDate, 1);
+// Every way of changing the Daily Mark day goes through here
+let dailyMoving = false;
+async function dailyGoTo(date) {
   const today = todayStr();
-  if (next > today) return; // No future dates
-  dailySelectedDate = next;
+  if (date > today) date = today;                     // no future days
   const picker = document.getElementById('dailyDatePicker');
+  if (!date || date === dailySelectedDate || dailyMoving) { if (picker) picker.value = dailySelectedDate; return; }
+  const n = dailyUnsavedCount();
+  if (n) {
+    if (!confirm(`You typed advances / remarks for ${n === 1 ? '1 person' : n + ' people'} on ${fmtDate(dailySelectedDate)} that aren't saved yet.\n\nOK — save them, then go to ${fmtDate(date)}\nCancel — stay on ${fmtDate(dailySelectedDate)}`)) {
+      if (picker) picker.value = dailySelectedDate;
+      return;
+    }
+    dailyMoving = true;
+    const ok = await saveAllAttendance();
+    dailyMoving = false;
+    if (!ok) { if (picker) picker.value = dailySelectedDate; return; }
+  }
+  dailySelectedDate = date;
   if (picker) picker.value = dailySelectedDate;
   renderDailyAtt();
   focusFirstUnmarked();
 }
-
-function onDailyDateChange(val) {
-  if (!val) return;
-  // Clamp to today max
-  const today = todayStr();
-  if (val > today) val = today;
-  dailySelectedDate = val;
-  renderDailyAtt();
-  focusFirstUnmarked();
-}
+function dailyPrevDay() { dailyGoTo(dateAddDays(dailySelectedDate, -1)); }
+function dailyNextDay() { dailyGoTo(dateAddDays(dailySelectedDate, 1)); }
+function dailyToday()   { dailyGoTo(todayStr()); }
+function onDailyDateChange(val) { dailyGoTo(val); }
 
 let currentAttTab = 'daily';
 function switchAttTab(tab) {
@@ -4841,6 +4887,12 @@ function initKeyboardShortcuts() {
     if (mod && !e.shiftKey && e.key.toLowerCase() === 'z' && !typing && isStaffRole(currentUser) && undoStack.length) {
       e.preventDefault(); undoLast(); return;
     }
+    // [ ] change the day even from Daily Mark's Advance / Note / Remark boxes (the bracket isn't typed)
+    if (typing && inDaily && !mod && !e.altKey && !openDlg && (e.key === '[' || e.key === ']') && e.target.closest?.('#dailyAttList')) {
+      e.preventDefault();
+      if (e.key === '[') dailyPrevDay(); else dailyNextDay();
+      return;
+    }
     if (typing || mod || e.altKey || openDlg) return;
     if (e.key === '?') { e.preventDefault(); openModal('shortcutsModal'); return; }
     if (!inDaily) return;
@@ -5490,6 +5542,7 @@ window.onDailyDateChange = onDailyDateChange;
 window.attBtnKeydown = attBtnKeydown;
 window.remarkKeydown = remarkKeydown;
 window.dmQuickKey = dmQuickKey;
+window.updateDailyTotal = updateDailyTotal;
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
 
@@ -5519,6 +5572,14 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.4</span><span class="wn-date">November 2026 — day total, day keys everywhere</span></div>
+      <ul>
+        <li>🧮 <b>Total advances for the day</b> at the bottom of Daily Mark — saved + typed, updates as you type</li>
+        <li>📅 <b>[ ] change the day from the Advance, Note and Remark boxes too</b></li>
+        <li>🛟 <b>Nothing typed is lost</b> — changing the day (keys, ‹ › or the date box) with an unsaved advance or remark asks first, then saves it</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.3</span><span class="wn-date">November 2026 — Help &amp; guide, one-key marking</span></div>
       <ul>
         <li>⚡ <b>One key per person</b> in Daily Mark — <kbd>1</kbd>/<kbd>P</kbd> Full, <kbd>H</kbd> Half, <kbd>O</kbd> OT, <kbd>D</kbd>/<kbd>2</kbd> Double, <kbd>0</kbd>/<kbd>A</kbd> Absent marks and jumps to the next person; <kbd>Backspace</kbd> clears</li>

@@ -60,6 +60,8 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   on the person's value (else 0), ← → move between values, Space/Enter chooses (cursor stays), ↑ ↓ previous /
   next person. Tab path: values → ✕ (only when marked) → Advance ₹ → Note → Remark → next person
   (`remarkKeydown`); chip ✕ buttons are `tabindex="-1"`. After the last person → `#saveAllBtn`.
+- `[` `]` also work inside Daily Mark's own boxes (Advance / Note / Remark). Every day change goes through
+  `dailyGoTo(date)`, which asks and runs `saveAllAttendance()` first if `dailyUnsavedCount()` > 0.
 - `setDailyAtt` updates the row before the network write finishes (fast typing never waits) and rolls back
   with a toast if the write fails.
 - Opens on the first unmarked person (`focusFirstUnmarked`, computer only); redraws keep focus.
