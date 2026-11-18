@@ -72,6 +72,9 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 - Keys (not while typing in a box): `[` `]` `T` day, `/` find person, `?` help (`#shortcutsModal`),
   ⌘S save all, ⌘Z undo. ⌘K palette: one letter per page (`PAGE_KEYS`), ⇧Enter on a person = add advance.
   Dialogs with `data-enter="fn"` save on Enter in an input.
+- Dialogs (v1.2.5): `openModal` moves focus in (`[data-autofocus]`, else a form's first box on a computer,
+  else the sheet), Tab is trapped in `topModal()`, `closeModal` / Esc restore it (`modalReturn`). Buttons with
+  `data-key="x"` are pressed by that letter while the dialog is open (person details: A / D / L / E).
 
 ## Data + logic (don't duplicate)
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,
