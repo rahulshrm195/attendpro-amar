@@ -11,7 +11,7 @@
 
 ## Planned features
 
-### Monthly attendance register (grid view)
+### ✅ Monthly attendance register (grid view) — built (Attendance → Register tab)
 A single-screen month register for admin/manager, replacing the need to open
 each employee's calendar one by one.
 

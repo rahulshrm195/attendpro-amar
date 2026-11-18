@@ -254,6 +254,52 @@
   .admin-att-btn span { font-size:12px; font-weight:700; display:block; }
   .admin-att-btn small { font-size:9px; color:var(--text2); display:block; }
 
+  /* ── MONTHLY REGISTER ── */
+  .reg-legend { display:flex; flex-wrap:wrap; gap:6px 12px; margin-bottom:10px; font-size:11px; color:var(--text2); font-weight:600; }
+  .reg-legend span { display:inline-flex; align-items:center; gap:5px; }
+  .reg-legend i { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:5px; font-style:normal; font-size:9px; font-weight:800; }
+  .reg-wrap { overflow-x:auto; background:#fff; border-radius:16px; box-shadow:var(--shadow); -webkit-overflow-scrolling:touch; }
+  table.reg { border-collapse:separate; border-spacing:0; font-size:11px; min-width:100%; }
+  .reg th, .reg td { padding:3px 1px; text-align:center; white-space:nowrap; }
+  .reg thead th { position:sticky; top:0; background:#f8faff; z-index:1; padding:8px 1px 6px; border-bottom:1px solid var(--border); }
+  .reg .rd-dow { display:block; font-size:9px; font-weight:700; color:var(--text2); }
+  .reg .rd-num { display:block; font-size:12px; font-weight:800; color:var(--text); }
+  .reg th.rd-sun .rd-dow, .reg th.rd-sun .rd-num { color:var(--orange); }
+  .reg th.rd-today .rd-num { color:#fff; background:var(--purple); border-radius:6px; padding:0 3px; }
+  .reg tbody tr + tr td { border-top:1px solid #f1f3f9; }
+  .reg .reg-name { position:sticky; left:0; z-index:2; background:#fff; text-align:left; padding:6px 8px 6px 10px; min-width:128px; max-width:150px; border-right:1px solid var(--border); }
+  .reg thead .reg-name { z-index:3; background:#f8faff; font-size:10px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.4px; vertical-align:bottom; }
+  .reg-person { display:flex; align-items:center; gap:7px; }
+  .reg-person .staff-avatar { width:28px; height:28px; font-size:11px; }
+  .reg-person b { display:block; font-size:12px; font-weight:800; overflow:hidden; text-overflow:ellipsis; max-width:104px; }
+  .reg-person small { display:block; font-size:10px; color:var(--text2); font-weight:600; }
+  .reg .reg-tot { position:sticky; right:0; z-index:2; background:#fff; padding:4px 10px 4px 8px; border-left:1px solid var(--border); text-align:right; min-width:74px; }
+  .reg thead .reg-tot { z-index:3; background:#f8faff; font-size:10px; font-weight:800; color:var(--text2); text-transform:uppercase; vertical-align:bottom; }
+  .reg-tot b { display:block; font-size:13px; font-weight:800; color:var(--purple); }
+  .reg-tot small { display:block; font-size:10px; font-weight:700; }
+  .rt { position:relative; display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:7px; font-size:10px; font-weight:800; background:#f1f3f9; color:#94a3b8; cursor:pointer; user-select:none; }
+  .rt:hover { box-shadow:0 0 0 2px var(--purple-light); }
+  .rt.rt-future { background:transparent; cursor:default; box-shadow:none; }
+  .rt.rt-0      { background:#fee2e2; color:#dc2626; }
+  .rt.rt-half   { background:#ffedd5; color:#ea580c; }
+  .rt.rt-1      { background:#dcfce7; color:#16a34a; }
+  .rt.rt-ot     { background:#ede9fe; color:#7c3aed; }
+  .rt.rt-double { background:#fce7f3; color:#be185d; }
+  .rt.rt-today  { box-shadow:0 0 0 2px var(--purple); }
+  .rt .rt-dot   { position:absolute; top:2px; right:2px; width:5px; height:5px; border-radius:50%; background:var(--yellow); }
+  .reg tfoot td { background:#f8faff; border-top:1px solid var(--border); font-size:11px; font-weight:800; color:var(--green); padding:6px 1px; }
+  .reg tfoot .reg-name, .reg tfoot .reg-tot { background:#f8faff; color:var(--text2); font-size:10px; text-transform:uppercase; }
+  .reg tr.reg-inactive .reg-person { opacity:0.55; }
+  .rt:not([class*="rt-"]), .reg-legend i.rt-empty { box-shadow:inset 0 0 0 1px #e2e8f0; }
+  @media (max-width: 480px) {
+    .reg .reg-name { min-width:96px; max-width:104px; padding:6px 6px 6px 8px; }
+    .reg-person .staff-avatar { display:none; }
+    .reg-person b { max-width:92px; font-size:11px; }
+    .reg .reg-tot { min-width:56px; padding:4px 8px 4px 6px; }
+    .reg-tot b { font-size:12px; }
+    .rt { width:24px; height:24px; }
+  }
+
   /* ── PROFILE ── */
   .profile-header { background:linear-gradient(135deg,var(--navy),var(--navy2)); border-radius:20px; padding:24px; text-align:center; color:#fff; margin-bottom:16px; }
   .profile-avatar-big { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:#fff; margin:0 auto 12px; border:3px solid rgba(255,255,255,0.3); }
@@ -698,6 +744,7 @@
     <div class="page" id="pageAttendance">
       <div class="tabs" id="attTabs">
         <div class="tab active" onclick="switchAttTab('daily')">Daily Mark</div>
+        <div class="tab" onclick="switchAttTab('register')">Register</div>
         <div class="tab" onclick="switchAttTab('calendar')">Calendar</div>
         <div class="tab" onclick="switchAttTab('report')">Report</div>
       </div>
@@ -715,6 +762,26 @@
           <button class="btn-sm btn-sm-purple" onclick="saveAllAttendance()">Save All</button>
         </div>
         <div id="dailyAttList"></div>
+      </div>
+
+      <!-- Register Tab — whole month, all staff -->
+      <div id="attTabRegister" style="display:none">
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="changeRegMonth(-1)" title="Previous month">‹</button>
+          <h3 id="regMonthLabel"></h3>
+          <button class="month-nav-btn" id="regNextBtn" onclick="changeRegMonth(1)" title="Next month">›</button>
+        </div>
+        <div class="reg-legend">
+          <span><i class="rt-1" style="background:#dcfce7;color:#16a34a">P</i>Full day</span>
+          <span><i style="background:#ffedd5;color:#ea580c">½</i>Half day</span>
+          <span><i style="background:#ede9fe;color:#7c3aed">OT</i>Overtime 1.5</span>
+          <span><i style="background:#fce7f3;color:#be185d">D</i>Double</span>
+          <span><i style="background:#fee2e2;color:#dc2626">A</i>Absent</span>
+          <span><i class="rt-empty" style="background:#f1f3f9"></i>Not marked</span>
+          <span><i class="rt-empty" style="background:#f1f3f9;position:relative"><b style="position:absolute;top:2px;right:2px;width:5px;height:5px;border-radius:50%;background:var(--yellow)"></b></i>Remark</span>
+        </div>
+        <div class="reg-wrap" id="registerGrid"></div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;text-align:center">Tap a day to mark or fix attendance · scroll sideways for more days</div>
       </div>
 
       <!-- Calendar Tab -->
@@ -1310,6 +1377,7 @@ function refreshCurrentPage() {
     case 'calendar': renderEmpCalendar(); break;
     case 'attendance':
       if (document.getElementById('attTabDaily').style.display !== 'none') renderDailyAtt();
+      else if (document.getElementById('attTabRegister').style.display !== 'none') renderRegister();
       else if (document.getElementById('attTabCalendar').style.display !== 'none') {
         if (document.getElementById('calEmpSelect').value) renderCalendar();
       } else if (hisabDetailOpen) openHisabDetail(hisabDetailOpen.userId, hisabDetailOpen.ym);
@@ -2078,9 +2146,10 @@ function onDailyDateChange(val) {
 
 function switchAttTab(tab) {
   document.querySelectorAll('#attTabs .tab').forEach((t,i) => {
-    t.classList.toggle('active', ['daily','calendar','report'][i] === tab);
+    t.classList.toggle('active', ['daily','register','calendar','report'][i] === tab);
   });
   document.getElementById('attTabDaily').style.display    = tab==='daily'    ? 'block':'none';
+  document.getElementById('attTabRegister').style.display = tab==='register' ? 'block':'none';
   document.getElementById('attTabCalendar').style.display = tab==='calendar' ? 'block':'none';
   document.getElementById('attTabReport').style.display   = tab==='report'   ? 'block':'none';
   if (tab==='daily') {
@@ -2089,8 +2158,100 @@ function switchAttTab(tab) {
     if (picker) { picker.value = dailySelectedDate; picker.max = dailySelectedDate; }
     renderDailyAtt();
   }
+  if (tab==='register') renderRegister();
   if (tab==='calendar') populateCalEmpSelect();
   if (tab==='report')   { renderReport(); }
+}
+
+// ══════════════════════════════════════════
+// MONTHLY REGISTER — all staff × all days of a month
+// ══════════════════════════════════════════
+let regYear  = new Date().getFullYear();
+let regMonth = new Date().getMonth();
+const REG_CODES = {
+  '0':   { code:'A',  cls:'rt-0',      label:'Absent' },
+  '0.5': { code:'½',  cls:'rt-half',   label:'Half day' },
+  '1':   { code:'P',  cls:'rt-1',      label:'Full day' },
+  '1.5': { code:'OT', cls:'rt-ot',     label:'Overtime (1.5)' },
+  '2':   { code:'D',  cls:'rt-double', label:'Double (2)' }
+};
+
+function changeRegMonth(dir) {
+  const next = new Date(regYear, regMonth + dir, 1);
+  const now = new Date();
+  if (next > new Date(now.getFullYear(), now.getMonth(), 1)) return; // no future months
+  regYear = next.getFullYear(); regMonth = next.getMonth();
+  renderRegister();
+}
+
+function renderRegister() {
+  const grid = document.getElementById('registerGrid');
+  if (!grid) return;
+  const ym      = monthStr(regYear, regMonth);
+  const today   = todayStr();
+  const daysIn  = new Date(regYear, regMonth + 1, 0).getDate();
+  const att     = getData('attendance', {});
+  document.getElementById('regMonthLabel').textContent =
+    new Date(regYear, regMonth, 1).toLocaleString('en-IN', { month:'long', year:'numeric' });
+  document.getElementById('regNextBtn').style.opacity = ym >= today.slice(0, 7) ? '0.3' : '1';
+
+  // Active staff, plus inactive staff who have attendance in this month
+  const hasMonthData = u => Object.keys(att[u.id] || {}).some(k => isDayKey(k) && k.startsWith(ym));
+  const staff = getData('users', []).filter(u => u.role !== 'admin');
+  const users = [...staff.filter(u => u.active !== false), ...staff.filter(u => u.active === false && hasMonthData(u))];
+  if (users.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff for this month</p></div>';
+    return;
+  }
+
+  const DOW = ['S','M','T','W','T','F','S'];
+  const days = [];
+  for (let d = 1; d <= daysIn; d++) {
+    const ds = `${ym}-${String(d).padStart(2, '0')}`;
+    days.push({ d, ds, dow: new Date(regYear, regMonth, d).getDay() });
+  }
+  const presentPerDay = days.map(() => 0);
+
+  let html = '<table class="reg"><thead><tr><th class="reg-name">Staff</th>';
+  days.forEach(({ d, ds, dow }) => {
+    html += `<th class="${dow === 0 ? 'rd-sun' : ''} ${ds === today ? 'rd-today' : ''}"><span class="rd-dow">${DOW[dow]}</span><span class="rd-num">${d}</span></th>`;
+  });
+  html += '<th class="reg-tot">Total</th></tr></thead><tbody>';
+
+  users.forEach(u => {
+    const ua = att[u.id] || {};
+    const inactive = u.active === false;
+    html += `<tr class="${inactive ? 'reg-inactive' : ''}"><td class="reg-name"><div class="reg-person">
+      <div class="staff-avatar" style="background:${esc(u.color || '#6c63ff')}">${esc((u.name || '?')[0].toUpperCase())}</div>
+      <div><b title="${esc(u.name)}">${esc(u.name)}</b><small>${inactive ? 'Inactive · ' : ''}${fmtMoney(getWageForDate(u, ym + '-15'))}/day</small></div>
+    </div></td>`;
+    let absent = 0;
+    days.forEach(({ ds }, i) => {
+      const v = ua[ds];
+      const remark = ua[ds + '_remark'] || '';
+      const info = v !== undefined ? REG_CODES[String(v)] : null;
+      if (v === 0) absent++;
+      if (Number(v) > 0) presentPerDay[i]++;
+      if (ds > today) { html += '<td><span class="rt rt-future"></span></td>'; return; }
+      const tip = `${u.name} · ${fmtDate(ds)} · ${info ? info.label : 'Not marked'}${remark ? ' · ' + remark : ''}`;
+      html += `<td><span class="rt ${info ? info.cls : ''} ${ds === today ? 'rt-today' : ''}" title="${esc(tip)}"
+        onclick="openEditAttModal(${jsArg(u.id)},${jsArg(ds)})">${info ? info.code : ''}${remark ? '<i class="rt-dot"></i>' : ''}</span></td>`;
+    });
+    const { days: worked, earned } = monthWork(u, ym);
+    html += `<td class="reg-tot"><b>${worked} d</b><small style="color:var(--green)">${fmtMoney(earned)}</small>${absent ? `<small style="color:var(--red)">${absent} A</small>` : ''}</td></tr>`;
+  });
+
+  html += '</tbody><tfoot><tr><td class="reg-name">Present</td>';
+  days.forEach(({ ds }, i) => { html += `<td>${ds > today ? '' : presentPerDay[i]}</td>`; });
+  html += '<td class="reg-tot"></td></tr></tfoot></table>';
+  grid.innerHTML = html;
+
+  // Current month: open with today as the last visible day (shows the past week, not empty future days)
+  if (ym === today.slice(0, 7)) {
+    const todayTh = grid.querySelector('th.rd-today');
+    const totTh   = grid.querySelector('thead .reg-tot');
+    if (todayTh && totTh) grid.scrollLeft = Math.max(0, todayTh.offsetLeft + todayTh.offsetWidth + 6 - (grid.clientWidth - totTh.offsetWidth));
+  }
 }
 
 // ══════════════════════════════════════════
@@ -3264,6 +3425,7 @@ async function saveEditedAttendance() {
   renderHome();
   renderDailyAtt();
   if (document.getElementById('calendarCard').style.display!=='none') renderCalendar();
+  if (document.getElementById('attTabRegister').style.display!=='none') renderRegister();
 }
 
 // ══════════════════════════════════════════
@@ -4119,6 +4281,7 @@ window.selectAtt = selectAtt;
 window.confirmAttendance = confirmAttendance;
 window.saveAllAttendance = saveAllAttendance;
 window.switchAttTab = switchAttTab;
+window.changeRegMonth = changeRegMonth;
 window.renderCalendar = renderCalendar;
 window.changeCalMonth = changeCalMonth;
 window.changeEmpCalMonth = changeEmpCalMonth;
