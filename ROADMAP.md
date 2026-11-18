@@ -7,7 +7,7 @@
 4. Firestore → Rules → paste `firestore.rules` → Publish
 5. Test one employee + admin login; change the admin password
 6. Spot-check 2–3 employees' Hisab/Ledger balances (deduction / settlement / pre-join work now counted consistently)
-7. Optional: bump the version label (v1.0.16 in header/login) and add a What's New entry
+7. ~~Bump the version label and add a What's New entry~~ — done (v1.1.0)
 
 ## Planned features
 

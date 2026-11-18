@@ -604,7 +604,7 @@
 <div id="loginScreen" class="screen active">
   <div class="login-logo">
     <img src="icon-192x192.png" style="width:72px;height:72px;border-radius:20px;margin-bottom:4px;" alt="AttendPro">
-    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.16</span></h1>
+    <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.1.0</span></h1>
     <p>Amar Furniture · Bhiwandi</p>
   </div>
   <div class="login-card">
@@ -629,7 +629,7 @@
   <div class="app-header">
     <img src="icon-192x192.png" style="width:36px;height:36px;border-radius:10px;" alt="AttendPro">
     <div class="header-title">
-      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.0.16</span></h1>
+      <h1>AttendPro <span style="font-size:10px;font-weight:500;opacity:0.6;letter-spacing:0">v1.1.0</span></h1>
       <p id="headerSub">Amar Furniture</p>
     </div>
     <div class="header-notif" onclick="openNotifPanel()" id="notifBtn">
@@ -4605,6 +4605,25 @@ onAuthStateChanged(auth, async fbUser => {
         📝 <strong>Remarks in detail view</strong> — Days with remarks show a dot indicator on calendar + full remarks section below<br>
         💸 <strong>Advances for inactive staff</strong> — Record advances from the Inactive section in Staff tab<br>
         🔧 Fixed ledger entry credit/debit signs in detail view
+      </div>
+    </div>
+
+    <!-- v1.1.0 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="background:var(--purple);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px">v1.1.0</div>
+        <div style="font-size:11px;color:var(--text2)">November 2026 — Security &amp; Major Update</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;line-height:1.8;color:var(--text)">
+        🔐 <strong>Secure login</strong> — Firebase Authentication; same User ID &amp; password; data protected by security rules<br>
+        📊 <strong>Monthly Register</strong> — Attendance → Register: whole month for all staff on one screen, tap a day to fix<br>
+        🔄 <strong>Live sync</strong> — changes on one phone appear on all others within seconds<br>
+        💰 <strong>One balance everywhere</strong> — Hisab, Ledger and both PDFs now always match; "Deduct" is record-only<br>
+        📅 <strong>Wage history</strong> used on employee screens; half days counted correctly in month detail<br>
+        📝 <strong>Remarks</strong> in Daily Mark now saved by Save All; no more "NaN" day counts<br>
+        👔 <strong>Managers</strong> can edit attendance and see requests; staff passwords are admin-only<br>
+        ⏸ <strong>Deactivated staff</strong> can't log in; Delete warns and suggests Deactivate<br>
+        🛡️ Safer handling of names/notes (e.g. D'Souza) · 🌙 Night summary after 11 PM · 📱 Better Android app icon
       </div>
     </div>
 
