@@ -38,7 +38,7 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   `--red`, `--blue`, `--plum`, `--glass-*`, `--btn-dark`…), Fraunces headings + Public Sans text,
   monospace for numbers/dates/IDs, 24px round-stroke icons via `svgi(name, size)` (add new ones to `IC`).
   Don't introduce a new visual style or hard-coded colours.
-- **Attendance colours:** `--a-full` / `--a-half` / `--a-ot` / `--a-dbl` / `--a-abs` (+ `-bg`), used by
+- **Attendance colours:** `--a-full` / `--a-half` / `--a-ot` / `--a-dbl` / `--a-abs` / `--a-pl` (+ `-bg`), used by
   chips (`attChip()`), Daily Mark buttons (`sel-*`), calendars (`att-*`) and the register (`rt-*`).
 - **Night mode:** `:root[data-theme="dark"]` block at the end of `<style>`. Every new colour needs a
   night value there. The head script sets the theme from `localStorage ap-theme` (auto / light / dark).
@@ -53,7 +53,7 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 
 ## Keyboard (v1.2.3 — the owner asked for one-key marking on top of the Tab path)
 - Daily Mark value keys on a person's value buttons / ✕ (`dmQuickKey`, `dmKeyValue`): `1`/`P` full, `H`/`.` half,
-  `O` 1.5, `D`/`2` double, `0`/`A` absent → marks and moves to the next person; `Backspace` clears (stays).
+  `O` 1.5, `D`/`2` double, `0`/`A` absent, `L` paid leave → marks and moves to the next person; `Backspace` clears (stays).
   Digits are read from `e.code`, so ⇧ + the same key = `bulkMark(v)` and ⇧Backspace = `clearAllDay()`
   (in `initKeyboardShortcuts`). Never active while typing in a box.
 - The five value buttons are one Tab stop (roving tabindex: `dmSetStop` / `dmStop` / `dmFocusPerson`): Tab lands
@@ -80,6 +80,9 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   the hidden id. No native `<select>` for picking people.
 
 ## Data + logic (don't duplicate)
+- Attendance values: numbers `0 0.5 1 1.5 2`, or the string `'PL'` (paid leave, v1.2.7: no work, paid as one day,
+  never present or absent). Pay with `attPay(v)`, parse UI strings with `attVal(s)`; Daily Mark order `DM_VALS` /
+  `DM_CLASSES`; key `L`. Employees can't mark PL (rules allow only 0–1.5 for them).
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,
   `buildLedger`. A regular "Deduct" is record-only; "Opening Balance (Pending Salary)" counts.
 - Opening balance (v1.2.6): an advances doc whose note contains "Opening Balance" (`isOpeningBal`, `OB_NOTE`):

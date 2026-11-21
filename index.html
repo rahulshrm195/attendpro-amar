@@ -41,6 +41,7 @@
   --red:#A82C1F; --red-soft:#FBE5E0;
   --blue:#2F5F8F; --blue-soft:#E1EAF3;
   --plum:#6B3FA0; --plum-soft:#EEE4F7;
+  --teal:#1C6E68; --teal-soft:#DDEFEC;
   --slate:#17160F;
   --serif:'Fraunces',Georgia,serif; --sans:'Public Sans',system-ui,sans-serif;
   --mono:ui-monospace,'SF Mono','Roboto Mono',Menlo,Consolas,monospace;
@@ -50,6 +51,7 @@
   --a-ot:var(--blue);     --a-ot-bg:var(--blue-soft);
   --a-dbl:var(--plum);    --a-dbl-bg:var(--plum-soft);
   --a-abs:var(--red);     --a-abs-bg:var(--red-soft);
+  --a-pl:var(--teal);     --a-pl-bg:var(--teal-soft);       /* paid leave */
   --a-none-bg:rgba(26,24,18,.06);
   /* liquid glass */
   --glass-bg:rgba(255,255,255,.45);
@@ -259,6 +261,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .chip-ot{background:var(--a-ot-bg);color:var(--a-ot)}
 .chip-dbl{background:var(--a-dbl-bg);color:var(--a-dbl)}
 .chip-abs{background:var(--a-abs-bg);color:var(--a-abs)}
+.chip-pl{background:var(--a-pl-bg);color:var(--a-pl)}
 .chip-none{background:var(--a-none-bg);color:var(--ink2)}
 .chip-pending{background:var(--amber-soft);color:var(--amber)}
 .chip-approved{background:var(--green-soft);color:var(--green)}
@@ -354,7 +357,7 @@ select.inp,.form-row select{appearance:none;background-image:url("data:image/svg
 /* ── Daily Mark ── */
 .dm-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .dm-bar input[type=date]{height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--field-border);background:var(--field-bg);box-shadow:var(--field-inset);color:var(--ink);font-weight:700;font-size:13.5px;outline:none}
-.dm-head,.admin-att-row{display:grid;grid-template-columns:minmax(170px,1.1fr) 300px minmax(220px,1.2fr) minmax(180px,1fr);gap:14px;align-items:center;padding:0 18px}
+.dm-head,.admin-att-row{display:grid;grid-template-columns:minmax(170px,1.1fr) 352px minmax(220px,1.2fr) minmax(180px,1fr);gap:14px;align-items:center;padding:0 18px}
 .dm-head{min-height:38px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid rgba(26,24,18,.07)}
 .admin-att-row{padding-top:12px;padding-bottom:12px;border-bottom:1px solid rgba(26,24,18,.06)}
 .admin-att-row:last-child{border-bottom:0}
@@ -384,10 +387,11 @@ kbd{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink2);b
 .admin-att-btn{flex:1;min-width:0;height:44px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;
   background:var(--glass-bg);border:1px solid var(--glass-border);box-shadow:var(--glass-highlight);transition:transform .35s var(--spring),background .15s}
 .admin-att-btn span{font-size:14px;font-weight:800;line-height:1}
-.admin-att-btn small{font-size:9.5px;font-weight:700;color:var(--ink3);margin-top:2px}
+.admin-att-btn small{font-size:9.5px;font-weight:700;color:var(--ink3);margin-top:2px;white-space:nowrap}
 .admin-att-btn:hover{background:rgba(255,255,255,.8)}
 .admin-att-btn:focus-visible{outline:2px solid var(--clay-fill);outline-offset:2px}
 .admin-att-btn.sel-0{background:var(--a-abs-bg);border-color:var(--a-abs);color:var(--a-abs)}
+.admin-att-btn.sel-pl{background:var(--a-pl-bg);border-color:var(--a-pl);color:var(--a-pl)}
 .admin-att-btn.sel-half{background:var(--a-half-bg);border-color:var(--a-half);color:var(--a-half)}
 .admin-att-btn.sel-1{background:var(--a-full-bg);border-color:var(--a-full);color:var(--a-full)}
 .admin-att-btn.sel-ot{background:var(--a-ot-bg);border-color:var(--a-ot);color:var(--a-ot)}
@@ -404,7 +408,7 @@ kbd{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink2);b
 .daily-adv-chips{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}
 .daily-adv-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--red-soft);color:var(--red);font-family:var(--mono)}
 .daily-adv-chip button{border:0;background:rgba(255,255,255,.6);width:20px;height:20px;border-radius:50%;color:var(--red);font-size:11px;font-weight:800}
-.dm-total{display:grid;grid-template-columns:minmax(170px,1.1fr) 300px minmax(220px,1.2fr) minmax(180px,1fr);gap:14px;align-items:center;padding:14px 18px;border-top:1px solid rgba(26,24,18,.12)}
+.dm-total{display:grid;grid-template-columns:minmax(170px,1.1fr) 352px minmax(220px,1.2fr) minmax(180px,1fr);gap:14px;align-items:center;padding:14px 18px;border-top:1px solid rgba(26,24,18,.12)}
 .dm-total:empty{display:none}
 .dm-total .lbl b{display:block;white-space:nowrap;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
 .dm-total .lbl small{font-family:var(--mono);font-size:11.5px;color:var(--ink3)}
@@ -427,6 +431,7 @@ kbd{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink2);b
 .cal-day.att-1{background:var(--a-full-bg);color:var(--a-full)}
 .cal-day.att-ot{background:var(--a-ot-bg);color:var(--a-ot)}
 .cal-day.att-double{background:var(--a-dbl-bg);color:var(--a-dbl)}
+.cal-day.att-pl{background:var(--a-pl-bg);color:var(--a-pl)}
 .cal-day.today{box-shadow:0 0 0 2px var(--clay-fill)}
 .cal-day.future{opacity:.35}
 .cal-day .rdot{position:absolute;top:5px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--amber)}
@@ -471,6 +476,7 @@ table.reg{border-collapse:separate;border-spacing:0;font-size:11px;min-width:100
 .rt:hover{box-shadow:0 0 0 2px var(--clay-fill)}
 .rt.rt-future{background:transparent;cursor:default;box-shadow:none}
 .rt.rt-0{background:var(--a-abs-bg);color:var(--a-abs)}
+.rt.rt-pl{background:var(--a-pl-bg);color:var(--a-pl);font-size:9px}
 .rt.rt-half{background:var(--a-half-bg);color:var(--a-half)}
 .rt.rt-1{background:var(--a-full-bg);color:var(--a-full)}
 .rt.rt-ot{background:var(--a-ot-bg);color:var(--a-ot)}
@@ -703,6 +709,7 @@ body:not(.role-emp) .emp-only{display:none!important}
   --red:#FF8B79; --red-soft:rgba(255,139,121,.15);
   --blue:#A9C8F0; --blue-soft:rgba(120,165,220,.18);
   --plum:#D4B6EE; --plum-soft:rgba(180,140,215,.18);
+  --teal:#7FD3C8; --teal-soft:rgba(110,200,190,.16);
   --slate:#0F0D0A;
   --a-none-bg:rgba(255,255,255,.06);
   --glass-bg:rgba(48,42,34,.55);
@@ -789,7 +796,7 @@ body:not(.role-emp) .emp-only{display:none!important}
 /* Print / Save as PDF: just the guide, always light */
 @media print{
   :root,:root[data-theme="dark"]{--ink:#1A1812;--ink2:#554D3D;--ink3:#6B6352;--surface:#fff;--clay:#9A4920;--clay-soft:#F5E3D5;--blue-soft:#E1EAF3;--amber-soft:#F8E9D2;
-    --green:#1A6B3B;--green-soft:#E2F1E5;--amber:#8F5100;--red:#A82C1F;--red-soft:#FBE5E0;--blue:#2F5F8F;--plum:#6B3FA0;--plum-soft:#EEE4F7;--a-none-bg:rgba(26,24,18,.06);color-scheme:light}
+    --green:#1A6B3B;--green-soft:#E2F1E5;--amber:#8F5100;--red:#A82C1F;--red-soft:#FBE5E0;--blue:#2F5F8F;--plum:#6B3FA0;--plum-soft:#EEE4F7;--teal:#1C6E68;--teal-soft:#DDEFEC;--a-none-bg:rgba(26,24,18,.06);color-scheme:light}
   body{background:#fff!important;color:#1A1812} body::before{display:none}
   .rail,.cmd,.bottom-nav,.drawer-bg,#toast,.update-bar,#pageHelp .ph .acts,.help-toc,#helpJump,.modal-overlay{display:none!important}
   #appScreen.active{display:block} .page-content{padding:0;max-width:none}
@@ -814,7 +821,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.6</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.7</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -840,7 +847,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.6</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.7</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -1007,6 +1014,7 @@ button.set-row:hover{background:var(--row-hover)}
               <button class="pill sm bulk-btn" onclick="bulkMark(1.5)" title="⇧O"><b>1.5</b>OT</button>
               <button class="pill sm bulk-btn" onclick="bulkMark(0)" title="⇧0 or ⇧A"><b>0</b>Absent</button>
               <button class="pill sm bulk-btn" onclick="bulkMark(2)" title="⇧2 or ⇧D"><b>2</b>Double</button>
+              <button class="pill sm bulk-btn" onclick="bulkMark('PL')" title="Paid leave for everyone — e.g. a festival holiday (⇧L)"><b>PL</b>Paid leave</button>
               <span class="text-xs only-desk bulk-hint"><kbd>⇧</kbd> + key</span>
               <div class="sp"></div>
               <span class="text-xs" id="bulkCount"></span>
@@ -1016,7 +1024,7 @@ button.set-row:hover{background:var(--row-hover)}
             <div id="dailyAttList"></div>
             <div class="dm-total" id="dmTotal" aria-live="polite"></div>
             <div class="dm-foot only-desk">
-              <span><kbd>1</kbd> <kbd>H</kbd> <kbd>O</kbd> <kbd>D</kbd> <kbd>0</kbd> mark &amp; next</span><span><kbd>⇧</kbd> + key everyone</span><span><kbd>←</kbd> <kbd>→</kbd> value · <kbd>Space</kbd> choose</span>
+              <span><kbd>1</kbd> <kbd>H</kbd> <kbd>O</kbd> <kbd>D</kbd> <kbd>0</kbd> <kbd>L</kbd> mark &amp; next</span><span><kbd>⇧</kbd> + key everyone</span><span><kbd>←</kbd> <kbd>→</kbd> value · <kbd>Space</kbd> choose</span>
               <span><kbd>Tab</kbd> next field</span><span><kbd>↑</kbd> <kbd>↓</kbd> person</span><span><kbd>[</kbd> <kbd>]</kbd> day</span><span><kbd>/</kbd> find</span><span><kbd>⌘Z</kbd> undo</span><span><kbd>⌘S</kbd> save all</span>
               <button class="link-btn" onclick="openModal('shortcutsModal')">All shortcuts <kbd>?</kbd></button>
             </div>
@@ -1039,6 +1047,7 @@ button.set-row:hover{background:var(--row-hover)}
             <span><i style="background:var(--a-ot-bg);color:var(--a-ot)">OT</i>Overtime 1.5</span>
             <span><i style="background:var(--a-dbl-bg);color:var(--a-dbl)">D</i>Double</span>
             <span><i style="background:var(--a-abs-bg);color:var(--a-abs)">A</i>Absent</span>
+            <span><i style="background:var(--a-pl-bg);color:var(--a-pl);font-size:8.5px">PL</i>Paid leave</span>
             <span><i class="rt-empty" style="background:var(--a-none-bg)"></i>Not marked</span>
             <span><i class="rt-empty" style="background:var(--a-none-bg)"><b style="position:absolute;top:2px;right:2px;width:5px;height:5px;border-radius:50%;background:var(--amber)"></b></i>Remark</span>
           </div>
@@ -1392,6 +1401,7 @@ button.set-row:hover{background:var(--row-hover)}
           <option value="1">1 — Full day</option>
           <option value="1.5">1.5 — Overtime</option>
           <option value="2">2 — Double</option>
+          <option value="PL">PL — Paid leave (no work, paid as a full day)</option>
         </select>
       </div>
     </div>
@@ -1449,7 +1459,7 @@ button.set-row:hover{background:var(--row-hover)}
       <div>
         <div class="sec-h" style="margin-top:0">Daily Mark</div>
         <div class="kv"><span>Opens on the first person not marked yet</span><span></span></div>
-        <div class="kv"><span>Mark &amp; go to the next person: Full · Half · OT 1.5 · Double · Absent</span><span class="sc-keys"><kbd>1</kbd>/<kbd>P</kbd> <kbd>H</kbd>/<kbd>.</kbd> <kbd>O</kbd> <kbd>D</kbd>/<kbd>2</kbd> <kbd>0</kbd>/<kbd>A</kbd></span></div>
+        <div class="kv"><span>Mark &amp; go to the next person: Full · Half · OT 1.5 · Double · Absent · Paid leave</span><span class="sc-keys"><kbd>1</kbd>/<kbd>P</kbd> <kbd>H</kbd>/<kbd>.</kbd> <kbd>O</kbd> <kbd>D</kbd>/<kbd>2</kbd> <kbd>0</kbd>/<kbd>A</kbd> <kbd>L</kbd></span></div>
         <div class="kv"><span>Clear this person</span><span><kbd>Backspace</kbd></span></div>
         <div class="kv"><span>Mark everyone not marked yet</span><span><kbd>⇧</kbd> + the same key</span></div>
         <div class="kv"><span>Clear the whole day</span><span><kbd>⇧ Backspace</kbd></span></div>
@@ -1475,7 +1485,7 @@ button.set-row:hover{background:var(--row-hover)}
 // VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
 // The self-update below compares this with the live index.html.
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.2.6';
+const APP_VERSION = 'v1.2.7';
 document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
 
 // ══════════════════════════════════════════
@@ -1700,6 +1710,7 @@ on a computer, a phone or both — and every change shows up on all devices with
     <tr><td><span class="chip chip-full">1</span></td><td>Full day</td><td>1 day</td></tr>
     <tr><td><span class="chip chip-ot">1.5</span></td><td>Overtime</td><td>1.5 days</td></tr>
     <tr><td><span class="chip chip-dbl">2</span></td><td>Double</td><td>2 days</td></tr>
+    <tr><td><span class="chip chip-pl">PL</span></td><td>Paid leave — no work that day, but paid (e.g. a festival holiday given by you)</td><td>1 day's pay · not present, not absent</td></tr>
   </tbody>
 </table>
 <h3>How saving works</h3>
@@ -1713,8 +1724,8 @@ on a computer, a phone or both — and every change shows up on all devices with
 <p>Most days most people have the same value. The bar at the top of the list does it in one go:</p>
 <ol class="doc-steps">
   <li>Open Daily Mark for the day (today by default).</li>
-  <li>In <b>Mark everyone not marked yet</b>, click <b>1 Full</b>, <b>½ Half</b>, <b>1.5 OT</b>, <b>0 Absent</b> or <b>2 Double</b>.
-      Keyboard: hold <kbd>⇧ Shift</kbd> and press the value's key — <kbd>⇧1</kbd> Full, <kbd>⇧H</kbd> Half, <kbd>⇧O</kbd> OT, <kbd>⇧0</kbd> Absent, <kbd>⇧2</kbd> Double.</li>
+  <li>In <b>Mark everyone not marked yet</b>, click <b>1 Full</b>, <b>½ Half</b>, <b>1.5 OT</b>, <b>0 Absent</b>, <b>2 Double</b> or <b>PL Paid leave</b>.
+      Keyboard: hold <kbd>⇧ Shift</kbd> and press the value's key — <kbd>⇧1</kbd> Full, <kbd>⇧H</kbd> Half, <kbd>⇧O</kbd> OT, <kbd>⇧0</kbd> Absent, <kbd>⇧2</kbd> Double, <kbd>⇧L</kbd> Paid leave.</li>
   <li>Everyone who wasn't marked yet gets that value; people already marked keep theirs. The count on the right shows how many are left.</li>
   <li>Fix the exceptions — e.g. mark the one absent person 0.</li>
 </ol>
@@ -1746,6 +1757,7 @@ on a computer, a phone or both — and every change shows up on all devices with
     <tr><td><kbd>H</kbd> or <kbd>.</kbd></td><td>Half day</td></tr>
     <tr><td><kbd>O</kbd></td><td>Overtime 1.5</td></tr>
     <tr><td><kbd>D</kbd> or <kbd>2</kbd></td><td>Double</td></tr>
+    <tr><td><kbd>L</kbd></td><td>Paid leave</td></tr>
     <tr><td><kbd>0</kbd> or <kbd>A</kbd></td><td>Absent</td></tr>
     <tr><td><kbd>Backspace</kbd></td><td>Clear (the cursor stays on the person)</td></tr>
   </tbody>
@@ -1771,9 +1783,9 @@ on a computer, a phone or both — and every change shows up on all devices with
 { id:'register', group:'Daily work', title:'Register (whole month)', roles:'staff', body:`
 <p>One row per person, one column per day of the month — the whole month at a glance.</p>
 <ul>
-  <li>Codes: <span class="chip chip-full">P</span> full · <span class="chip chip-half">½</span> half · <span class="chip chip-ot">OT</span> 1.5 · <span class="chip chip-dbl">D</span> double · <span class="chip chip-abs">A</span> absent · empty = not marked. A small dot means the day has a remark (hover to read it).</li>
+  <li>Codes: <span class="chip chip-full">P</span> full · <span class="chip chip-half">½</span> half · <span class="chip chip-ot">OT</span> 1.5 · <span class="chip chip-dbl">D</span> double · <span class="chip chip-abs">A</span> absent · <span class="chip chip-pl">PL</span> paid leave · empty = not marked. A small dot means the day has a remark (hover to read it).</li>
   <li><b>Click any past day</b> to mark or change it (with a remark).</li>
-  <li>The <b>Total</b> column shows days worked, earnings and absences; the bottom row counts how many were present each day.</li>
+  <li>The <b>Total</b> column shows paid days (paid leave included), earnings, absences (A) and paid-leave days (PL); the bottom row counts how many were present each day — people on paid leave aren't counted as present.</li>
   <li>Use ‹ › to change month. Deactivated staff appear only in months where they worked.</li>
   <li>On a phone the names and totals stay put while you scroll the days sideways.</li>
 </ul>
@@ -1916,7 +1928,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>Daily Mark</h3>
 <table class="doc-t">
   <tbody>
-    <tr><td><kbd>1</kbd>/<kbd>P</kbd> · <kbd>H</kbd>/<kbd>.</kbd> · <kbd>O</kbd> · <kbd>D</kbd>/<kbd>2</kbd> · <kbd>0</kbd>/<kbd>A</kbd></td><td>Mark Full · Half · OT 1.5 · Double · Absent and go to the next person</td></tr>
+    <tr><td><kbd>1</kbd>/<kbd>P</kbd> · <kbd>H</kbd>/<kbd>.</kbd> · <kbd>O</kbd> · <kbd>D</kbd>/<kbd>2</kbd> · <kbd>0</kbd>/<kbd>A</kbd> · <kbd>L</kbd></td><td>Mark Full · Half · OT 1.5 · Double · Absent · Paid leave and go to the next person</td></tr>
     <tr><td><kbd>Backspace</kbd></td><td>Clear this person</td></tr>
     <tr><td><kbd>⇧</kbd> + a value key</td><td>Mark everyone not marked yet with that value</td></tr>
     <tr><td><kbd>⇧ Backspace</kbd></td><td>Clear the whole day</td></tr>
@@ -1957,7 +1969,9 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>A balance looks different from what I expected</h3>
 <p>Check the opening balance, settlements (salary paid) and the wage history. Remember a <b>Deduct</b> doesn't change the final balance. The Ledger shows every line that makes up the balance.</p>
 <h3>How do I record a holiday?</h3>
-<p>Use <b>Mark everyone not marked yet → Absent</b> (<kbd>⇧0</kbd> on a computer) and add a remark like "Holiday" where useful.</p>
+<p><b>Paid holiday</b> (e.g. a festival you pay for): <b>Mark everyone not marked yet → PL Paid leave</b> (<kbd>⇧L</kbd> on a computer). Everyone gets a full day's pay, and the register shows <span class="chip chip-pl">PL</span> instead of present.
+If the day is already marked, the same button asks "Change everyone to Paid leave?".</p>
+<p><b>Unpaid holiday:</b> use <b>Absent</b> (<kbd>⇧0</kbd>) instead, with a remark like "Holiday" where useful.</p>
 </div>
 <h3>Still stuck?</h3>
 <p>Contact your AttendPro administrator<span class="staff-only"> or support</span>.</p>
@@ -2298,8 +2312,12 @@ let deductingUserId = null;
 let tempWageHistory = [];
 let dailySelectedDate = todayStr();
 
-const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double' };
-const ATT_COLORS = { '0':'att-0','0.5':'att-half','1':'att-1','1.5':'att-ot','2':'att-double' };
+const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double','PL':'Paid leave' };
+// Paid leave ('PL', v1.2.7): no work that day but paid as one full day. Never counts as present or absent.
+const PL = 'PL';
+function attPay(v) { return v === PL ? 1 : (Number(v) || 0); }   // days paid for a day's value
+function attVal(s) { return s === PL ? PL : Number(s); }          // value from a data-val / <select> string
+const ATT_COLORS = { '0':'att-0','0.5':'att-half','1':'att-1','1.5':'att-ot','2':'att-double','PL':'att-pl' };
 const COLORS = ['#C1602F','#4E7DB5','#5C8A6B','#8A5A2B','#3F6E8C','#9C5B8F','#B08A2E','#6B7F3A'];   // same as NEW_COLORS
 
 function todayStr() {
@@ -2342,13 +2360,13 @@ function avatarHtml(u, size) {
   return `<span class="av ${size || ''}" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</span>`;
 }
 // Status chip for an attendance value (undefined = not marked)
-const ATT_CHIP = { '0':'chip-abs', '0.5':'chip-half', '1':'chip-full', '1.5':'chip-ot', '2':'chip-dbl' };
+const ATT_CHIP = { '0':'chip-abs', '0.5':'chip-half', '1':'chip-full', '1.5':'chip-ot', '2':'chip-dbl', 'PL':'chip-pl' };
 function attChip(v) {
   return v !== undefined
     ? `<span class="chip dot ${ATT_CHIP[String(v)] || 'chip-none'}">${ATT_LABELS[String(v)] || esc(v)}</span>`
     : '<span class="chip chip-none">Not Marked</span>';
 }
-const LEGEND_HTML = ['Full day:var(--a-full-bg)','Half day:var(--a-half-bg)','Overtime:var(--a-ot-bg)','Double:var(--a-dbl-bg)','Absent:var(--a-abs-bg)','Not marked:var(--a-none-bg)']
+const LEGEND_HTML = ['Full day:var(--a-full-bg)','Half day:var(--a-half-bg)','Overtime:var(--a-ot-bg)','Double:var(--a-dbl-bg)','Absent:var(--a-abs-bg)','Paid leave:var(--a-pl-bg)','Not marked:var(--a-none-bg)']
   .map(x => { const [l, c] = x.split(':'); return `<span><i style="background:${c}"></i>${l}</span>`; }).join('') +
   '<span><i style="background:var(--a-none-bg)"><b style="position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--amber)"></b></i>Remark</span>';
 
@@ -2487,11 +2505,13 @@ function checkNightSummary() {
   const present  = users.filter(u => att[u.id]?.[today] > 0);
   const absent   = users.filter(u => att[u.id]?.[today] === 0);
   const unmarked = users.filter(u => att[u.id]?.[today] === undefined);
+  const onLeave  = users.filter(u => att[u.id]?.[today] === PL);
   const lines = [
     `📊 Today's Attendance Summary`,
     `✅ Present: ${present.map(u=>u.name).join(', ') || 'None'}`,
     `❌ Absent: ${absent.map(u=>u.name).join(', ') || 'None'}`,
-    `⚠️ Not Marked: ${unmarked.map(u=>u.name).join(', ') || 'None'}`
+    `⚠️ Not Marked: ${unmarked.map(u=>u.name).join(', ') || 'None'}`,
+    ...(onLeave.length ? [`🌴 Paid leave: ${onLeave.map(u=>u.name).join(', ')}`] : [])
   ].join('\n');
   setTimeout(() => alert(lines), 1000);
 }
@@ -2805,20 +2825,21 @@ function renderAdminHome() {
   const today    = todayStr();
   const nowMonth = monthStr(new Date().getFullYear(), new Date().getMonth());
 
-  let presentToday = 0, absentToday = 0;
+  let presentToday = 0, absentToday = 0, leaveToday = 0, unmarked = 0;
   users.forEach(u => {
     const v = att[u.id]?.[today];
-    if (v > 0) presentToday++;
+    if (v === PL) leaveToday++;
+    else if (v > 0) presentToday++;
     else if (v === 0) absentToday++;
+    else unmarked++;
   });
-  const unmarked = users.length - presentToday - absentToday;
   const pendingReqs = requests.filter(r => r.status === 'pending');
   const monthAdv = advances.filter(a => a.month === nowMonth && a.type === 'advance' && !isOpeningBal(a));
   const advTotal = monthAdv.reduce((s,a) => s + Number(a.amount), 0);
 
   document.getElementById('statTotal').textContent    = users.length;
   document.getElementById('statPresent').textContent  = presentToday;
-  document.getElementById('statPresentSub').textContent = users.length ? `${Math.round(presentToday / users.length * 100)}% of staff` : '—';
+  document.getElementById('statPresentSub').textContent = users.length ? `${Math.round(presentToday / users.length * 100)}% of staff${leaveToday ? ` · ${leaveToday} on paid leave` : ''}` : '—';
   document.getElementById('statAbsent').textContent   = absentToday;
   document.getElementById('statUnmarked').textContent = `${unmarked} not marked yet`;
   document.getElementById('statPending').textContent  = pendingReqs.length;
@@ -2920,7 +2941,7 @@ function renderEmpHome() {
   const empAtt = att[currentUser.id] || {};
   let totalDays = 0, earned = 0;
   Object.entries(empAtt).forEach(([d, v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { totalDays += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
+    if (isDayKey(d) && d.startsWith(month)) { totalDays += attPay(v); earned += attPay(v) * getWageForDate(currentUser, d); }
   });
 
   const advBalance = getAdvanceBalance(currentUser.id);
@@ -2991,6 +3012,10 @@ async function confirmAttendance() {
 // ══════════════════════════════════════════
 // DAILY ATTENDANCE (Admin)
 // ══════════════════════════════════════════
+// Daily Mark values (in button order) and their selected-button classes
+const DM_VALS    = [0, 0.5, 1, 1.5, 2, PL];
+const DM_CLASSES = ['sel-0','sel-half','sel-1','sel-ot','sel-double','sel-pl'];
+
 // Rows the user tapped in Daily Mark since it was last drawn (Save All only writes these)
 let dailyTouched = new Set();
 
@@ -3017,9 +3042,9 @@ function renderDailyAtt() {
     return;
   }
 
-  const vals     = [0, 0.5, 1, 1.5, 2];
-  const btnClass = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
-  const names    = ['Absent','Half','Full','OT','Double'];
+  const vals     = DM_VALS;
+  const btnClass = DM_CLASSES;
+  const names    = ['Absent','Half','Full','OT','Double','Leave'];
   // A redraw (e.g. a change from another device) keeps the keyboard where it was
   const ae = document.activeElement;
   const keepFocus = ae && ae.id && ae.closest && ae.closest('#dailyAttList') ? ae.id : null;
@@ -3037,9 +3062,9 @@ function renderDailyAtt() {
       <div class="admin-att-options" id="attopts_${u.id}">
         ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}"
           tabindex="${v === stopV ? 0 : -1}"
-          data-userid="${u.id}" data-val="${v}" data-idx="${i}"
-          onclick="setDailyAtt(${jsArg(u.id)},${v})"
-          onkeydown="attBtnKeydown(event,${jsArg(u.id)},${v},${i})">
+          data-userid="${u.id}" data-val="${v}" data-idx="${i}" ${v === PL ? 'title="Paid leave — no work, paid as a full day (L)"' : ''}
+          onclick="setDailyAtt(${jsArg(u.id)},${jsArg(v)})"
+          onkeydown="attBtnKeydown(event,${jsArg(u.id)},${jsArg(v)},${i})">
           <span>${v===0.5?'½':v}</span><small>${names[i]}</small>
         </div>`).join('')}
         ${cur !== undefined ? `<button class="att-clear-btn" title="Clear (Backspace)" onclick="confirmClearAtt(${jsArg(u.id)})" onkeydown="dmQuickKey(event,${jsArg(u.id)})">✕</button>` : ''}
@@ -3059,7 +3084,7 @@ function renderDailyAtt() {
   }).join('');
   if (keepFocus) {
     const el = document.getElementById(keepFocus);
-    if (el?.classList.contains('admin-att-btn')) dmSetStop(el.dataset.userid, Number(el.dataset.val));
+    if (el?.classList.contains('admin-att-btn')) dmSetStop(el.dataset.userid, attVal(el.dataset.val));
     el?.focus({ preventScroll: true });
   }
   updateBulkCount();
@@ -3094,13 +3119,13 @@ function syncDailyRow(userId) {
   const row = document.getElementById('attrow_' + userId);
   if (!row) return;
   const v = getData('attendance', {})[userId]?.[dailySelectedDate];
-  const vals = [0,0.5,1,1.5,2], classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+  const vals = DM_VALS, classes = DM_CLASSES;
   row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
   const idx = vals.indexOf(v);
   if (idx >= 0) document.getElementById(`attbtn_${userId}_${v}`)?.classList.add(classes[idx]);
   // Tab stop: the value the keyboard is on (arrows), else the person's value, else 0
   const ae = document.activeElement;
-  dmSetStop(userId, ae?.classList?.contains('admin-att-btn') && row.contains(ae) ? Number(ae.dataset.val) : (idx >= 0 ? v : 0));
+  dmSetStop(userId, ae?.classList?.contains('admin-att-btn') && row.contains(ae) ? attVal(ae.dataset.val) : (idx >= 0 ? v : 0));
   const attOpts = row.querySelector('.admin-att-options');
   const clearBtn = attOpts?.querySelector('.att-clear-btn');
   if (v === undefined) {
@@ -3153,7 +3178,7 @@ async function doClearAtt(userId, date = dailySelectedDate) {
 async function saveAllAttendance() {
   const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
   const date  = dailySelectedDate;
-  const vals  = [0, 0.5, 1, 1.5, 2];
+  const vals  = DM_VALS;
   const att   = getData('attendance', {});
   let attSaved = 0;
   let advSaved = 0;
@@ -3167,7 +3192,7 @@ async function saveAllAttendance() {
     for (const v of vals) {
       const btn = document.getElementById(`attbtn_${u.id}_${v}`);
       if (btn) {
-        const classes = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+        const classes = DM_CLASSES;
         const i = vals.indexOf(v);
         if (btn.classList.contains(classes[i])) { selectedVal = v; break; }
       }
@@ -3478,6 +3503,7 @@ function switchAttTab(tab) {
 let regYear  = new Date().getFullYear();
 let regMonth = new Date().getMonth();
 const REG_CODES = {
+  'PL':  { code:'PL', cls:'rt-pl',     label:'Paid leave' },
   '0':   { code:'A',  cls:'rt-0',      label:'Absent' },
   '0.5': { code:'½',  cls:'rt-half',   label:'Half day' },
   '1':   { code:'P',  cls:'rt-1',      label:'Full day' },
@@ -3534,9 +3560,10 @@ function renderRegister() {
       <div class="staff-avatar" style="background:${esc(staffColor(u))}">${esc((u.name || '?')[0].toUpperCase())}</div>
       <div><b title="${esc(u.name)}">${esc(u.name)}</b><small>${inactive ? 'Inactive · ' : ''}${fmtMoney(getWageForDate(u, ym + '-15'))}/day</small></div>
     </div></td>`;
-    let absent = 0;
+    let absent = 0, paidLeave = 0;
     days.forEach(({ ds }, i) => {
       const v = ua[ds];
+      if (v === PL) paidLeave++;
       const remark = ua[ds + '_remark'] || '';
       const info = v !== undefined ? REG_CODES[String(v)] : null;
       if (v === 0) absent++;
@@ -3547,7 +3574,7 @@ function renderRegister() {
         onclick="openEditAttModal(${jsArg(u.id)},${jsArg(ds)})">${info ? info.code : ''}${remark ? '<i class="rt-dot"></i>' : ''}</span></td>`;
     });
     const { days: worked, earned } = monthWork(u, ym);
-    html += `<td class="reg-tot"><b>${worked} d</b><small style="color:var(--green)">${fmtMoney(earned)}</small>${absent ? `<small style="color:var(--red)">${absent} A</small>` : ''}</td></tr>`;
+    html += `<td class="reg-tot"><b>${worked} d</b><small style="color:var(--green)">${fmtMoney(earned)}</small>${absent || paidLeave ? `<small>${absent ? `<span style="color:var(--red)">${absent} A</span>` : ''}${absent && paidLeave ? ' · ' : ''}${paidLeave ? `<span style="color:var(--a-pl)">${paidLeave} PL</span>` : ''}</small>` : ''}</td></tr>`;
   });
 
   html += '</tbody><tfoot><tr><td class="reg-name">Present</td>';
@@ -3635,9 +3662,9 @@ function renderEmpMonthSummary() {
   const att    = getData('attendance', {});
   const empAtt = att[currentUser.id] || {};
   const month  = monthStr(empCalYear, empCalMonth);
-  let total = 0, earned = 0, absent = 0;
+  let total = 0, earned = 0, absent = 0, paidLeave = 0;
   Object.entries(empAtt).forEach(([d,v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { total += Number(v); earned += Number(v) * getWageForDate(currentUser, d); if (Number(v) === 0) absent++; }
+    if (isDayKey(d) && d.startsWith(month)) { total += attPay(v); earned += attPay(v) * getWageForDate(currentUser, d); if (v === 0) absent++; if (v === PL) paidLeave++; }
   });
   const adv = getAdvanceBalance(currentUser.id);
   document.getElementById('empMonthSummary').innerHTML = `
@@ -3649,6 +3676,7 @@ function renderEmpMonthSummary() {
         <div><div class="sum-v text-red">${fmtMoney(adv)}</div><div class="sum-l">Advance</div></div>
       </div>
       <div class="kv"><span>Absent days</span><b>${absent}</b></div>
+      ${paidLeave ? `<div class="kv"><span>Paid leave days</span><b>${paidLeave}</b></div>` : ''}
       <div class="kv"><span>Wage today</span><b>${fmtMoney(getWageForDate(currentUser, todayStr()))}/day</b></div>
     </div>`;
 }
@@ -3831,7 +3859,7 @@ function openHisabDetail(userId, ym) {
   const firstDay    = (new Date(y,m-1,1).getDay()+6)%7;
   const dayNames    = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  let fullD=0,otD=0,halfD=0,absentD=0,unmarked=0;
+  let fullD=0,otD=0,halfD=0,absentD=0,plD=0,unmarked=0;
   let cal = dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
   for(let i=0;i<firstDay;i++) cal+='<div class="cal-day empty"></div>';
   for(let d=1;d<=daysInMonth;d++){
@@ -3843,6 +3871,7 @@ function openHisabDetail(userId, ym) {
     else if(v===1){cls+=' att-1';fullD++;}
     else if(v===1.5){cls+=' att-ot';otD++;}
     else if(v===2){cls+=' att-double';otD++;}
+    else if(v===PL){cls+=' att-pl';plD++;}
     else if(ds<=todayStr()) unmarked++;
     if(ds>todayStr()) cls+=' future';
     const remark=att[ds+'_remark']||'';
@@ -3853,7 +3882,7 @@ function openHisabDetail(userId, ym) {
 
   const calHtml = `<div class="card">
     <div class="card-h"><h2>Attendance</h2><div class="sp"></div>
-      <span class="chip chip-full">Full: ${fullD}</span><span class="chip chip-ot">OT: ${otD}</span><span class="chip chip-half">Half: ${halfD}</span><span class="chip chip-abs">Absent: ${absentD}</span><span class="chip chip-none">Unmarked: ${unmarked}</span>
+      <span class="chip chip-full">Full: ${fullD}</span><span class="chip chip-ot">OT: ${otD}</span><span class="chip chip-half">Half: ${halfD}</span><span class="chip chip-abs">Absent: ${absentD}</span>${plD ? `<span class="chip chip-pl">Paid leave: ${plD}</span>` : ''}<span class="chip chip-none">Unmarked: ${unmarked}</span>
     </div>
     <div class="card-b stack">
       <div class="calendar-grid">${cal}</div>
@@ -4016,10 +4045,10 @@ async function exportDetailPDF(userId, ym) {
     const v=att[ds];
     const remark=att[ds+'_remark']||'';
     const dayWage=getWageForDate(u,ds);
-    const earned=v!==undefined?Number(v)*dayWage:0;
+    const earned=v!==undefined?attPay(v)*dayWage:0;
     const status=v===undefined?'Not marked':ATT_LABELS[String(v)]||String(v);
     const dayName=new Date(yr,mo-1,d).toLocaleString('en-IN',{weekday:'short'});
-    if(v!==undefined){tDays+=Number(v);tEarned+=earned;}
+    if(v!==undefined){tDays+=attPay(v);tEarned+=earned;}
     if(d%2===0){doc.setFillColor(248,250,255);doc.rect(margin,y-2,180,7,'F');}
     doc.setTextColor(30,30,46);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
     doc.text(`${String(d).padStart(2,'0')} ${new Date(yr,mo-1,1).toLocaleString('en-IN',{month:'short'})}`,margin+2,y+3.5);
@@ -4711,7 +4740,7 @@ function openEditAttModal(userId, date) {
 
 async function saveEditedAttendance() {
   const date   = document.getElementById('editAttDate').value;
-  const val    = Number(document.getElementById('editAttValue').value);
+  const val    = attVal(document.getElementById('editAttValue').value);
   const remark = document.getElementById('editAttRemark').value.trim();
   if (!editAttUserId||!date) return;
   const prevVal = getData('attendance', {})[editAttUserId]?.[date];
@@ -4756,7 +4785,7 @@ function renderEmpSalary() {
   const att    = getData('attendance', {})[currentUser.id] || {};
   let days = 0, earned = 0;
   Object.entries(att).forEach(([d,v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { days += Number(v); earned += Number(v) * getWageForDate(currentUser, d); }
+    if (isDayKey(d) && d.startsWith(month)) { days += attPay(v); earned += attPay(v) * getWageForDate(currentUser, d); }
   });
   const adv = getAdvanceBalance(currentUser.id);
   const net = Math.max(0, earned-adv);
@@ -4955,9 +4984,8 @@ initData();
 
 // The five value buttons of a row are one Tab stop (like radio buttons): Tab lands on the
 // person's value (else 0), ← → move between values, Tab goes on to ✕ → Advance ₹ → Note → Remark.
-const DM_VALS = [0, 0.5, 1, 1.5, 2];
 function dmSetStop(userId, val) {
-  document.querySelectorAll(`#attopts_${CSS.escape(userId)} .admin-att-btn`).forEach(b => { b.tabIndex = Number(b.dataset.val) === val ? 0 : -1; });
+  document.querySelectorAll(`#attopts_${CSS.escape(userId)} .admin-att-btn`).forEach(b => { b.tabIndex = b.dataset.val === String(val) ? 0 : -1; });
 }
 function dmStop(userId) {
   const opts = document.getElementById('attopts_' + userId);
@@ -4980,7 +5008,7 @@ function dmKeyValue(e) {
   const k = /^(Digit|Numpad)[0-9]$/.test(c) ? c.slice(-1)
           : (c === 'Period' || c === 'NumpadDecimal') ? '.'
           : (e.key || '').toLowerCase();
-  return { '1': 1, p: 1, h: 0.5, '.': 0.5, o: 1.5, d: 2, '2': 2, '0': 0, a: 0 }[k];
+  return { '1': 1, p: 1, h: 0.5, '.': 0.5, o: 1.5, d: 2, '2': 2, '0': 0, a: 0, l: PL }[k];
 }
 // A value key marks this person and moves to the next one; Backspace clears (both undoable)
 function dmQuickKey(e, userId) {
@@ -5383,7 +5411,7 @@ function monthWork(u, ym, overrides) {
   let days = 0, earned = 0;
   Object.entries(att).forEach(([k, v]) => {
     if (!isDayKey(k) || !k.startsWith(ym)) return;
-    const n = Number(v) || 0;
+    const n = attPay(v);
     days += n;
     earned += n * wageOn(u, k, overrides);
   });
@@ -5437,11 +5465,11 @@ function buildLedger(u, fromVal, toVal) {
   const all = [];
   Object.entries(att).forEach(([k, v]) => {
     if (!isDayKey(k)) return;
-    const n = Number(v);
-    if (isNaN(n) || n === 0) return;
+    const n = attPay(v);
+    if (!n) return;
     const w = getWageForDate(u, k);
     all.push({ date: k, type: 'earned', amount: n * w, effect: n * w, days: n,
-               note: `${ATT_LABELS[String(n)] || String(n)} @ ${fmtMoney(w)}/day` });
+               note: `${ATT_LABELS[String(v)] || String(n)} @ ${fmtMoney(w)}/day` });
   });
   advances.forEach(a => {
     all.push({ date: a.date || '', type: a.type, amount: Number(a.amount) || 0, effect: entryEffect(a),
@@ -5810,6 +5838,14 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.7</span><span class="wn-date">November 2026 — paid leave</span></div>
+      <ul>
+        <li>🌴 <b>Paid leave (PL)</b> — for days with no work that you still pay, like a festival holiday. Paid as a full day, but never counted as present or absent</li>
+        <li>⌨️ Daily Mark: a <b>PL</b> button, key <kbd>L</kbd>; <b>⇧L marks everyone</b> (or the "Paid leave" button in Mark everyone)</li>
+        <li>📅 Shown in its own colour in the Register (<b>PL</b>, with a PL count in Total), calendars, Hisab month view, Today and the PDFs</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.6</span><span class="wn-date">November 2026 — opening balances, today's advances</span></div>
       <ul>
         <li>💰 <b>Today's attendance shows today's advances</b> — a new Advance column with the note, and the day's total at the bottom</li>
