@@ -14,6 +14,7 @@
   Night mode fix: the focused Advance / Remark box no longer hides typed text.
 - **v1.2.4** — Daily Mark "Total advances" line (saved + typed, live); [ ] change the day from the Advance / Note / Remark boxes too; changing the day with unsaved advances / remarks asks, then saves them first.
 - **v1.2.5** — dialogs take the keyboard (focus moves in, Tab stays inside, Esc returns the cursor); a person's details open on + Advance, keys A / D / L / E; Add advance's Employee box is a type-to-filter list (active staff only) instead of a drop-down.
+- **v1.2.6** — opening balances: add from a person's details (O), dated on the join date (existing ones moved, follow join-date edits unless a custom "as of" date), sign + kind on the Hisab card, label follows the type; Today's attendance gets an Advance column + day total.
 
 ## Planned features
 
