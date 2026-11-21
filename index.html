@@ -391,7 +391,15 @@ kbd{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink2);b
 .admin-att-btn:hover{background:rgba(255,255,255,.8)}
 .admin-att-btn:focus-visible{outline:2px solid var(--clay-fill);outline-offset:2px}
 .admin-att-btn.sel-0{background:var(--a-abs-bg);border-color:var(--a-abs);color:var(--a-abs)}
-.admin-att-btn.sel-pl{background:var(--a-pl-bg);border-color:var(--a-pl);color:var(--a-pl)}
+.admin-att-btn[class*=sel-].pl-on{background:var(--a-pl-bg);border-color:var(--a-pl);color:var(--a-pl)}   /* beats the sel-* colours */
+.pl-tog{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 7px;border-radius:9px;border:1px solid var(--glass-border);background:transparent;color:var(--ink3);font-size:10.5px;font-weight:800;cursor:pointer;margin-left:2px;font-family:var(--mono)}
+.pl-tog::before{content:'';width:11px;height:11px;border-radius:3px;border:1.5px solid currentColor;box-sizing:border-box}
+.pl-tog:hover{color:var(--a-pl);border-color:var(--a-pl)}
+.pl-tog.on{background:var(--a-pl-bg);border-color:var(--a-pl);color:var(--a-pl)}
+.pl-tog.on::before{background:currentColor;box-shadow:inset 0 0 0 2px var(--a-pl-bg)}
+.pl-check{display:flex;align-items:flex-start;gap:9px;margin:-4px 0 14px;font-size:13px;color:var(--ink2);cursor:pointer}
+.pl-check input{width:16px;height:16px;margin-top:1px;accent-color:var(--a-pl);flex:0 0 auto}
+.pl-check b{color:var(--a-pl)}
 .admin-att-btn.sel-half{background:var(--a-half-bg);border-color:var(--a-half);color:var(--a-half)}
 .admin-att-btn.sel-1{background:var(--a-full-bg);border-color:var(--a-full);color:var(--a-full)}
 .admin-att-btn.sel-ot{background:var(--a-ot-bg);border-color:var(--a-ot);color:var(--a-ot)}
@@ -821,7 +829,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.7</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.8</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -847,7 +855,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.7</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.8</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -1014,7 +1022,7 @@ button.set-row:hover{background:var(--row-hover)}
               <button class="pill sm bulk-btn" onclick="bulkMark(1.5)" title="⇧O"><b>1.5</b>OT</button>
               <button class="pill sm bulk-btn" onclick="bulkMark(0)" title="⇧0 or ⇧A"><b>0</b>Absent</button>
               <button class="pill sm bulk-btn" onclick="bulkMark(2)" title="⇧2 or ⇧D"><b>2</b>Double</button>
-              <button class="pill sm bulk-btn" onclick="bulkMark('PL')" title="Paid leave for everyone — e.g. a festival holiday (⇧L)"><b>PL</b>Paid leave</button>
+              <button class="pill sm bulk-btn" onclick="bulkPaidLeave()" title="Paid leave for everyone — e.g. a festival holiday (⇧L)"><b>PL</b>Paid leave</button>
               <span class="text-xs only-desk bulk-hint"><kbd>⇧</kbd> + key</span>
               <div class="sp"></div>
               <span class="text-xs" id="bulkCount"></span>
@@ -1395,16 +1403,16 @@ button.set-row:hover{background:var(--row-hover)}
     <div class="grid-f2">
       <div class="form-row"><label>Date</label><input type="date" id="editAttDate"></div>
       <div class="form-row"><label>Attendance</label>
-        <select id="editAttValue">
+        <select id="editAttValue" onchange="editAttPlShow()">
           <option value="0">0 — Absent / holiday</option>
           <option value="0.5">½ — Half day</option>
           <option value="1">1 — Full day</option>
           <option value="1.5">1.5 — Overtime</option>
           <option value="2">2 — Double</option>
-          <option value="PL">PL — Paid leave (no work, paid as a full day)</option>
         </select>
       </div>
     </div>
+    <label class="pl-check" id="editAttPlRow"><input type="checkbox" id="editAttPl"><span><b>Paid leave</b> — no work that day, paid at the value above</span></label>
     <div class="form-row"><label>Remark</label><input type="text" id="editAttRemark" placeholder="e.g. No work, came late, village visit…"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('editAttModal')">Cancel</button>
@@ -1459,7 +1467,7 @@ button.set-row:hover{background:var(--row-hover)}
       <div>
         <div class="sec-h" style="margin-top:0">Daily Mark</div>
         <div class="kv"><span>Opens on the first person not marked yet</span><span></span></div>
-        <div class="kv"><span>Mark &amp; go to the next person: Full · Half · OT 1.5 · Double · Absent · Paid leave</span><span class="sc-keys"><kbd>1</kbd>/<kbd>P</kbd> <kbd>H</kbd>/<kbd>.</kbd> <kbd>O</kbd> <kbd>D</kbd>/<kbd>2</kbd> <kbd>0</kbd>/<kbd>A</kbd> <kbd>L</kbd></span></div>
+        <div class="kv"><span>Mark &amp; go to the next person: Full · Half · OT 1.5 · Double · Absent · L = paid leave tick</span><span class="sc-keys"><kbd>1</kbd>/<kbd>P</kbd> <kbd>H</kbd>/<kbd>.</kbd> <kbd>O</kbd> <kbd>D</kbd>/<kbd>2</kbd> <kbd>0</kbd>/<kbd>A</kbd> <kbd>L</kbd></span></div>
         <div class="kv"><span>Clear this person</span><span><kbd>Backspace</kbd></span></div>
         <div class="kv"><span>Mark everyone not marked yet</span><span><kbd>⇧</kbd> + the same key</span></div>
         <div class="kv"><span>Clear the whole day</span><span><kbd>⇧ Backspace</kbd></span></div>
@@ -1485,7 +1493,7 @@ button.set-row:hover{background:var(--row-hover)}
 // VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
 // The self-update below compares this with the live index.html.
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.2.7';
+const APP_VERSION = 'v1.2.8';
 document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
 
 // ══════════════════════════════════════════
@@ -1710,9 +1718,15 @@ on a computer, a phone or both — and every change shows up on all devices with
     <tr><td><span class="chip chip-full">1</span></td><td>Full day</td><td>1 day</td></tr>
     <tr><td><span class="chip chip-ot">1.5</span></td><td>Overtime</td><td>1.5 days</td></tr>
     <tr><td><span class="chip chip-dbl">2</span></td><td>Double</td><td>2 days</td></tr>
-    <tr><td><span class="chip chip-pl">PL</span></td><td>Paid leave — no work that day, but paid (e.g. a festival holiday given by you)</td><td>1 day's pay · not present, not absent</td></tr>
   </tbody>
 </table>
+<h3>Paid leave</h3>
+<p>For a day with no work that you still pay for — e.g. a festival holiday you give. Mark the value you pay (usually <b>1</b>), then tick the small <span class="chip chip-pl">PL</span> box that appears next to it (or press <kbd>L</kbd>).</p>
+<ul>
+  <li>The person is <b>paid at the value</b> (1 = a full day, ½ = half a day…) but is <b>not counted as present</b>. The value turns teal and the Register shows <span class="chip chip-pl">PL</span>.</li>
+  <li>The tick appears for ½, 1, 1.5 and 2 — not for 0 (unpaid). Untick it (or press <kbd>L</kbd> again) to make it a normal working day.</li>
+  <li>Whole team off: <b>Mark everyone → PL Paid leave</b> (<kbd>⇧L</kbd>). Click a day in the Register or Calendar to set it in the edit dialog too.</li>
+</ul>
 <h3>How saving works</h3>
 <ul>
   <li><b>Attendance saves the moment you choose a value</b> — no need to press anything else.</li>
@@ -1757,7 +1771,7 @@ on a computer, a phone or both — and every change shows up on all devices with
     <tr><td><kbd>H</kbd> or <kbd>.</kbd></td><td>Half day</td></tr>
     <tr><td><kbd>O</kbd></td><td>Overtime 1.5</td></tr>
     <tr><td><kbd>D</kbd> or <kbd>2</kbd></td><td>Double</td></tr>
-    <tr><td><kbd>L</kbd></td><td>Paid leave</td></tr>
+    <tr><td><kbd>L</kbd></td><td>Paid leave tick on / off (not marked yet → a full day of paid leave)</td></tr>
     <tr><td><kbd>0</kbd> or <kbd>A</kbd></td><td>Absent</td></tr>
     <tr><td><kbd>Backspace</kbd></td><td>Clear (the cursor stays on the person)</td></tr>
   </tbody>
@@ -1777,6 +1791,7 @@ on a computer, a phone or both — and every change shows up on all devices with
   <li><kbd>/</kbd> then a few letters of a name, then <kbd>Enter</kbd>, jumps to that person.</li>
   <li><kbd>[</kbd> / <kbd>]</kbd> change the day from anywhere on the list, including the Advance, Note and Remark boxes. Anything typed but not saved is saved first (it asks).</li>
   <li>Value keys only work on the value buttons, never while you're typing in a box — typing 1 in the Advance box just types 1.</li>
+  <li>If no row has the cursor (e.g. you clicked an empty part of the page), a value key marks the <b>first person not marked yet</b> and carries on from there. If everyone is marked, it just brings the cursor back to the first person.</li>
   <li>Every mark and clear can be undone with <kbd>⌘Z</kbd>.</li>
 </ul>
 `},
@@ -1928,7 +1943,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>Daily Mark</h3>
 <table class="doc-t">
   <tbody>
-    <tr><td><kbd>1</kbd>/<kbd>P</kbd> · <kbd>H</kbd>/<kbd>.</kbd> · <kbd>O</kbd> · <kbd>D</kbd>/<kbd>2</kbd> · <kbd>0</kbd>/<kbd>A</kbd> · <kbd>L</kbd></td><td>Mark Full · Half · OT 1.5 · Double · Absent · Paid leave and go to the next person</td></tr>
+    <tr><td><kbd>1</kbd>/<kbd>P</kbd> · <kbd>H</kbd>/<kbd>.</kbd> · <kbd>O</kbd> · <kbd>D</kbd>/<kbd>2</kbd> · <kbd>0</kbd>/<kbd>A</kbd> · <kbd>L</kbd></td><td>Mark Full · Half · OT 1.5 · Double · Absent and go to the next person · <kbd>L</kbd> paid leave tick on / off</td></tr>
     <tr><td><kbd>Backspace</kbd></td><td>Clear this person</td></tr>
     <tr><td><kbd>⇧</kbd> + a value key</td><td>Mark everyone not marked yet with that value</td></tr>
     <tr><td><kbd>⇧ Backspace</kbd></td><td>Clear the whole day</td></tr>
@@ -1969,8 +1984,8 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>A balance looks different from what I expected</h3>
 <p>Check the opening balance, settlements (salary paid) and the wage history. Remember a <b>Deduct</b> doesn't change the final balance. The Ledger shows every line that makes up the balance.</p>
 <h3>How do I record a holiday?</h3>
-<p><b>Paid holiday</b> (e.g. a festival you pay for): <b>Mark everyone not marked yet → PL Paid leave</b> (<kbd>⇧L</kbd> on a computer). Everyone gets a full day's pay, and the register shows <span class="chip chip-pl">PL</span> instead of present.
-If the day is already marked, the same button asks "Change everyone to Paid leave?".</p>
+<p><b>Paid holiday</b> (e.g. a festival you pay for): <b>Mark everyone not marked yet → PL Paid leave</b> (<kbd>⇧L</kbd> on a computer). Everyone not marked gets a full day of paid leave, and the register shows <span class="chip chip-pl">PL</span> instead of present.
+If the day is already marked, the same button asks "Mark everyone as paid leave?" — their values stay (0 becomes 1). For one person, tick <span class="chip chip-pl">PL</span> next to their value.</p>
 <p><b>Unpaid holiday:</b> use <b>Absent</b> (<kbd>⇧0</kbd>) instead, with a remark like "Holiday" where useful.</p>
 </div>
 <h3>Still stuck?</h3>
@@ -2235,6 +2250,15 @@ async function deleteUserDoc(userId) {
   await deleteDoc(doc(db, 'users', userId));
   setCache('users', getData('users', []).filter(u => u.id !== userId));
 }
+// Staff: a day's value and its paid-leave tick, written together (pl false removes the tick)
+async function saveDay(userId, date, value, pl) {
+  const att = getData('attendance', {});
+  if (!att[userId]) att[userId] = {};
+  att[userId][date] = value;
+  if (pl) att[userId][plKey(date)] = true; else delete att[userId][plKey(date)];
+  setCache('attendance', att);
+  await setDoc(doc(db, 'attendance', userId), { [date]: value, [plKey(date)]: pl ? true : deleteField() }, { merge: true });
+}
 async function saveAttendance(userId, date, value) {
   const att = getData('attendance', {});
   if (!att[userId]) att[userId] = {};
@@ -2313,10 +2337,21 @@ let tempWageHistory = [];
 let dailySelectedDate = todayStr();
 
 const ATT_LABELS = { '0':'Absent','0.5':'Half Day','1':'Full Day','1.5':'Overtime','2':'Double','PL':'Paid leave' };
-// Paid leave ('PL', v1.2.7): no work that day but paid as one full day. Never counts as present or absent.
+// Paid leave (v1.2.8): a tick on a marked day — '<date>_pl': true next to the value. Pay comes from the value
+// (½ / 1 / 1.5 / 2); a paid-leave day is never counted as present. The value 'PL' is the v1.2.7 form (= 1 + tick),
+// converted by syncPaidLeaveValues().
 const PL = 'PL';
+const plKey = date => date + '_pl';
 function attPay(v) { return v === PL ? 1 : (Number(v) || 0); }   // days paid for a day's value
 function attVal(s) { return s === PL ? PL : Number(s); }          // value from a data-val / <select> string
+function isPLDay(ua, date) { return !!ua && (ua[date] === PL || !!ua[plKey(date)]); }
+function isPresentDay(ua, date) { return attPay(ua?.[date]) > 0 && !isPLDay(ua, date); }
+function dayLabel(ua, date) {
+  const v = ua?.[date];
+  if (v === undefined) return 'Not marked';
+  if (!isPLDay(ua, date)) return ATT_LABELS[String(v)] || String(v);
+  return attPay(v) === 1 ? 'Paid leave' : `Paid leave (${ATT_LABELS[String(v)]})`;
+}
 const ATT_COLORS = { '0':'att-0','0.5':'att-half','1':'att-1','1.5':'att-ot','2':'att-double','PL':'att-pl' };
 const COLORS = ['#C1602F','#4E7DB5','#5C8A6B','#8A5A2B','#3F6E8C','#9C5B8F','#B08A2E','#6B7F3A'];   // same as NEW_COLORS
 
@@ -2361,7 +2396,8 @@ function avatarHtml(u, size) {
 }
 // Status chip for an attendance value (undefined = not marked)
 const ATT_CHIP = { '0':'chip-abs', '0.5':'chip-half', '1':'chip-full', '1.5':'chip-ot', '2':'chip-dbl', 'PL':'chip-pl' };
-function attChip(v) {
+function attChip(v, ua, date) {
+  if (v !== undefined && ua && isPLDay(ua, date)) return `<span class="chip dot chip-pl">${esc(dayLabel(ua, date))}</span>`;
   return v !== undefined
     ? `<span class="chip dot ${ATT_CHIP[String(v)] || 'chip-none'}">${ATT_LABELS[String(v)] || esc(v)}</span>`
     : '<span class="chip chip-none">Not Marked</span>';
@@ -2502,10 +2538,10 @@ function checkNightSummary() {
   if (users.length === 0) return;
   const att   = getData('attendance', {});
   const today = todayStr();
-  const present  = users.filter(u => att[u.id]?.[today] > 0);
+  const present  = users.filter(u => isPresentDay(att[u.id], today));
   const absent   = users.filter(u => att[u.id]?.[today] === 0);
   const unmarked = users.filter(u => att[u.id]?.[today] === undefined);
-  const onLeave  = users.filter(u => att[u.id]?.[today] === PL);
+  const onLeave  = users.filter(u => isPLDay(att[u.id], today));
   const lines = [
     `📊 Today's Attendance Summary`,
     `✅ Present: ${present.map(u=>u.name).join(', ') || 'None'}`,
@@ -2557,6 +2593,7 @@ function startApp() {
   scheduleNotifications();
   checkNightSummary();
   syncOpeningBalanceDates();
+  syncPaidLeaveValues();
 }
 
 function setupNav() {
@@ -2642,7 +2679,7 @@ function updateCounts() {
   if (staffRole) {
     const users = getData('users', []).filter(u => u.role !== 'admin' && u.active !== false);
     const att = getData('attendance', {}); const t = todayStr();
-    const present = users.filter(u => Number(att[u.id]?.[t]) > 0).length;
+    const present = users.filter(u => isPresentDay(att[u.id], t)).length;
     document.getElementById('shopDate').textContent = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short' });
     document.getElementById('shopLine').textContent = users.length ? `${present} of ${users.length} present today` : 'No staff yet';
     document.getElementById('shopBar').style.width = users.length ? `${Math.round(present / users.length * 100)}%` : '0';
@@ -2828,7 +2865,7 @@ function renderAdminHome() {
   let presentToday = 0, absentToday = 0, leaveToday = 0, unmarked = 0;
   users.forEach(u => {
     const v = att[u.id]?.[today];
-    if (v === PL) leaveToday++;
+    if (v !== undefined && isPLDay(att[u.id], today)) leaveToday++;
     else if (v > 0) presentToday++;
     else if (v === 0) absentToday++;
     else unmarked++;
@@ -2868,7 +2905,7 @@ function renderAdminHome() {
           <div class="x"><b class="staff-name">${esc(u.name)}</b>
           <small class="staff-role">${esc(u.role)}</small></div>
         </div>
-        <div>${attChip(v)}</div>
+        <div>${attChip(v, att[u.id], today)}</div>
         ${advCell}
         <div class="c2 text-sm muted" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${remark ? '📝 ' + esc(remark) : '<span class="faint">—</span>'}</div>
         <div class="r c-hide">${v !== undefined ? `<button class="att-clear-btn" title="Clear today's attendance" onclick="clearDailyAtt(${jsArg(u.id)})">✕</button>` : `<button class="pill sm" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})">Mark</button>`}</div>
@@ -2930,7 +2967,7 @@ function renderEmpHome() {
     const v = att[currentUser.id][today];
     document.getElementById('alreadyMarkedCard').style.display = '';
     document.getElementById('markedValue').textContent  = v;
-    document.getElementById('markedLabel').textContent  = ATT_LABELS[String(v)];
+    document.getElementById('markedLabel').textContent  = dayLabel(att[currentUser.id], today);
   } else if (isPast11pm) {
     document.getElementById('cutoffCard').style.display = '';
   } else {
@@ -3013,8 +3050,13 @@ async function confirmAttendance() {
 // DAILY ATTENDANCE (Admin)
 // ══════════════════════════════════════════
 // Daily Mark values (in button order) and their selected-button classes
-const DM_VALS    = [0, 0.5, 1, 1.5, 2, PL];
-const DM_CLASSES = ['sel-0','sel-half','sel-1','sel-ot','sel-double','sel-pl'];
+const DM_VALS    = [0, 0.5, 1, 1.5, 2];
+const DM_CLASSES = ['sel-0','sel-half','sel-1','sel-ot','sel-double'];
+// The small "PL" tick next to a marked value (not in the Tab path — the L key toggles it)
+function plTogHtml(userId, on) {
+  return `<button class="pl-tog ${on ? 'on' : ''}" tabindex="-1" aria-pressed="${on}" title="Paid leave — no work that day, paid at this value (L)"
+    onclick="togglePaidLeave(${jsArg(userId)})" onkeydown="dmQuickKey(event,${jsArg(userId)})">PL</button>`;
+}
 
 // Rows the user tapped in Daily Mark since it was last drawn (Save All only writes these)
 let dailyTouched = new Set();
@@ -3044,12 +3086,14 @@ function renderDailyAtt() {
 
   const vals     = DM_VALS;
   const btnClass = DM_CLASSES;
-  const names    = ['Absent','Half','Full','OT','Double','Leave'];
+  const names    = ['Absent','Half','Full','OT','Double'];
   // A redraw (e.g. a change from another device) keeps the keyboard where it was
   const ae = document.activeElement;
   const keepFocus = ae && ae.id && ae.closest && ae.closest('#dailyAttList') ? ae.id : null;
   list.innerHTML = users.map(u => {
-    const cur    = att[u.id]?.[date];
+    const raw    = att[u.id]?.[date];
+    const cur    = raw === PL ? 1 : raw;            // v1.2.7 'PL' = 1 + paid-leave tick
+    const pl     = raw !== undefined && isPLDay(att[u.id], date);
     const stopV  = vals.includes(cur) ? cur : 0;   // the one value Tab lands on
     const remark = att[u.id]?.[date + '_remark'] || '';
     // Existing advances for this user on this date
@@ -3060,13 +3104,14 @@ function renderDailyAtt() {
     return `<div class="admin-att-row" id="attrow_${u.id}">
       <div class="admin-att-top who">${avatarHtml(u)}<div class="x"><b class="staff-name">${esc(u.name)}</b><small>${esc(u.role)}</small></div></div>
       <div class="admin-att-options" id="attopts_${u.id}">
-        ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i]:''}" id="attbtn_${u.id}_${v}"
+        ${vals.map((v,i) => `<div class="admin-att-btn ${cur===v?btnClass[i] + (pl ? ' pl-on' : ''):''}" id="attbtn_${u.id}_${v}"
           tabindex="${v === stopV ? 0 : -1}"
-          data-userid="${u.id}" data-val="${v}" data-idx="${i}" ${v === PL ? 'title="Paid leave — no work, paid as a full day (L)"' : ''}
+          data-userid="${u.id}" data-val="${v}" data-idx="${i}"
           onclick="setDailyAtt(${jsArg(u.id)},${jsArg(v)})"
           onkeydown="attBtnKeydown(event,${jsArg(u.id)},${jsArg(v)},${i})">
           <span>${v===0.5?'½':v}</span><small>${names[i]}</small>
         </div>`).join('')}
+        ${attPay(cur) > 0 ? plTogHtml(u.id, pl) : ''}
         ${cur !== undefined ? `<button class="att-clear-btn" title="Clear (Backspace)" onclick="confirmClearAtt(${jsArg(u.id)})" onkeydown="dmQuickKey(event,${jsArg(u.id)})">✕</button>` : ''}
       </div>
       <div class="daily-adv-inputs">
@@ -3091,38 +3136,64 @@ function renderDailyAtt() {
   updateDailyTotal();
 }
 
-async function setDailyAtt(userId, val) {
+async function setDailyAtt(userId, val, plWanted) {
   dailyTouched.add(userId);
   const date = dailySelectedDate;
-  const prev = getData('attendance', {})[userId]?.[date];
-  const saving = saveAttendance(userId, date, val);   // the local copy changes at once
+  const ua = getData('attendance', {})[userId] || {};
+  const prev = ua[date], prevPl = isPLDay(ua, date);
+  // The paid-leave tick stays when the value changes (it's a separate tick) — but never on 0 (unpaid)
+  const pl = attPay(val) > 0 && (plWanted !== undefined ? plWanted : prevPl);
+  const saving = saveDay(userId, date, val, pl);   // the local copy changes at once
   // Show it straight away (only this person's row — typed fields elsewhere stay)
   updateBulkCount();
   syncDailyRow(userId);
-  if (prev !== val) {
+  if (prev !== val || prevPl !== pl) {
     const name = getData('users', []).find(x => x.id === userId)?.name || 'Staff';
-    pushUndo(`${name} → ${ATT_LABELS[String(val)]}`, [{ userId, date, prev }]);
+    pushUndo(`${name} → ${pl ? dayLabel({ [date]: val, [plKey(date)]: true }, date) : ATT_LABELS[String(val)]}${!pl && prevPl && prev === val ? ' (no paid leave)' : ''}`, [{ userId, date, prev, prevPl }]);
   }
   try { await saving; }
   catch (e) {
     console.error('Mark failed', e);
     const att = getData('attendance', {});
-    if (att[userId]) { if (prev === undefined) delete att[userId][date]; else att[userId][date] = prev; setCache('attendance', att); }
+    if (att[userId]) {
+      if (prev === undefined) delete att[userId][date]; else att[userId][date] = prev;
+      if (prevPl) att[userId][plKey(date)] = true; else delete att[userId][plKey(date)];
+      setCache('attendance', att);
+    }
     if (date === dailySelectedDate) syncDailyRow(userId);
     updateBulkCount();
     showToast('⚠️ Could not save — check internet and try again');
   }
 }
 
+// The PL tick / L key: paid leave on or off. Not marked (or 0) → a full day of paid leave.
+function togglePaidLeave(userId) {
+  const ua = getData('attendance', {})[userId] || {};
+  const v = ua[dailySelectedDate];
+  if (isPLDay(ua, dailySelectedDate)) setDailyAtt(userId, v === PL ? 1 : v, false);
+  else setDailyAtt(userId, attPay(v) > 0 ? v : 1, true);
+}
+
 // Show a person's current value in their Daily Mark row without redrawing it (typed boxes stay)
 function syncDailyRow(userId) {
   const row = document.getElementById('attrow_' + userId);
   if (!row) return;
-  const v = getData('attendance', {})[userId]?.[dailySelectedDate];
+  const ua = getData('attendance', {})[userId] || {};
+  const raw = ua[dailySelectedDate];
+  const v = raw === PL ? 1 : raw;
+  const pl = raw !== undefined && isPLDay(ua, dailySelectedDate);
   const vals = DM_VALS, classes = DM_CLASSES;
   row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
   const idx = vals.indexOf(v);
-  if (idx >= 0) document.getElementById(`attbtn_${userId}_${v}`)?.classList.add(classes[idx]);
+  if (idx >= 0) document.getElementById(`attbtn_${userId}_${v}`)?.classList.add(classes[idx], ...(pl ? ['pl-on'] : []));
+  // PL tick: shown for any paid value (not 0, not unmarked)
+  const optsEl = row.querySelector('.admin-att-options');
+  let tog = optsEl?.querySelector('.pl-tog');
+  if (attPay(v) > 0) {
+    if (!tog && optsEl) { optsEl.querySelector('.att-clear-btn')?.insertAdjacentHTML('beforebegin', plTogHtml(userId, pl)); tog = optsEl.querySelector('.pl-tog');
+      if (!tog) { optsEl.insertAdjacentHTML('beforeend', plTogHtml(userId, pl)); tog = optsEl.querySelector('.pl-tog'); } }
+    tog?.classList.toggle('on', pl); tog?.setAttribute('aria-pressed', String(pl));
+  } else if (tog) { const had = tog === document.activeElement; tog.remove(); if (had) dmStop(userId)?.focus({ preventScroll: true }); }
   // Tab stop: the value the keyboard is on (arrows), else the person's value, else 0
   const ae = document.activeElement;
   dmSetStop(userId, ae?.classList?.contains('admin-att-btn') && row.contains(ae) ? attVal(ae.dataset.val) : (idx >= 0 ? v : 0));
@@ -3154,19 +3225,20 @@ function clearDailyAtt(userId) { confirmClearAtt(userId, todayStr()); }
 
 async function doClearAtt(userId, date = dailySelectedDate) {
   const att = getData('attendance', {});
-  const prev = att[userId]?.[date];
+  const prev = att[userId]?.[date], prevPl = isPLDay(att[userId], date);
   if (att[userId] && att[userId][date] !== undefined) {
     delete att[userId][date];
+    delete att[userId][plKey(date)];
     setCache('attendance', att);
     try {
-      await updateDoc(doc(db, 'attendance', userId), { [date]: deleteField() });
+      await updateDoc(doc(db, 'attendance', userId), { [date]: deleteField(), [plKey(date)]: deleteField() });
     } catch(e) {
       console.log('Clear att error:', e);
     }
   }
   if (prev !== undefined) {
     const name = getData('users', []).find(x => x.id === userId)?.name || 'Staff';
-    pushUndo(`Cleared ${name} (${fmtDate(date)})`, [{ userId, date, prev }]);
+    pushUndo(`Cleared ${name} (${fmtDate(date)})`, [{ userId, date, prev, prevPl }]);
   } else showToast('✅ Attendance cleared!');
   updateBulkCount();
 
@@ -3292,7 +3364,7 @@ function updateDailyTotal() {
     <div class="dm-total-amt"><b class="${typed ? 'unsaved' : ''}">${fmtMoney(total)}</b><small>${esc(sub)}</small></div>`;
 }
 
-// Undo: each entry is a list of { userId, date, prev } (prev undefined = was not marked)
+// Undo: each entry is a list of { userId, date, prev, prevPl } (prev undefined = was not marked)
 const undoStack = [];
 function pushUndo(label, changes) {
   if (!changes.length) return;
@@ -3301,14 +3373,17 @@ function pushUndo(label, changes) {
   showToast(label, { undo: true });
 }
 // Write several attendance values in one go (one network round trip)
-async function writeAttendance(changes, valueOf) {
+// plOf(c) sets the paid-leave tick; without it the tick stays as it is. Clearing or 0 always removes it.
+async function writeAttendance(changes, valueOf, plOf) {
   const att = getData('attendance', {});
   const batch = writeBatch(db);
   changes.forEach(c => {
     const v = valueOf(c);
     if (!att[c.userId]) att[c.userId] = {};
+    const pl = attPay(v) > 0 && (plOf ? !!plOf(c) : isPLDay(att[c.userId], c.date));
     if (v === undefined) delete att[c.userId][c.date]; else att[c.userId][c.date] = v;
-    batch.set(doc(db, 'attendance', c.userId), { [c.date]: v === undefined ? deleteField() : v }, { merge: true });
+    if (pl) att[c.userId][plKey(c.date)] = true; else delete att[c.userId][plKey(c.date)];
+    batch.set(doc(db, 'attendance', c.userId), { [c.date]: v === undefined ? deleteField() : v, [plKey(c.date)]: pl ? true : deleteField() }, { merge: true });
   });
   setCache('attendance', att);
   await batch.commit();
@@ -3327,7 +3402,7 @@ async function undoLast() {
   const u = undoStack.pop();
   if (!u) { showToast('Nothing to undo'); return; }
   try {
-    await writeAttendance(u.changes, c => c.prev);
+    await writeAttendance(u.changes, c => c.prev, c => !!c.prevPl);
     showToast(`↩ Undone: ${u.label}`);
   } catch (e) {
     console.error('Undo failed', e);
@@ -3348,14 +3423,14 @@ async function bulkMark(val) {
     if (!confirm(`Everyone already has attendance for ${fmtDate(date)}.\nChange everyone to ${ATT_LABELS[String(val)]}?\n(You can undo this.)`)) return;
     targets = users;
   }
-  const changes = targets.map(u => ({ userId: u.id, date, prev: att[u.id]?.[date] })).filter(c => c.prev !== val);
+  const changes = targets.map(u => ({ userId: u.id, date, prev: att[u.id]?.[date], prevPl: isPLDay(att[u.id], date) })).filter(c => c.prev !== val);
   if (!changes.length) { showToast('Nothing to change'); return; }
   showLoader(true);
   try {
     await writeAttendance(changes, () => val);
   } catch (e) {
     console.error('Bulk mark failed', e);
-    await writeAttendance(changes, c => c.prev).catch(() => {});
+    await writeAttendance(changes, c => c.prev, c => c.prevPl).catch(() => {});
     showLoader(false);
     showToast('⚠️ Could not save — check internet and try again');
     redrawAttendanceViews(changes);
@@ -3371,7 +3446,7 @@ async function bulkMark(val) {
 async function clearAllDay() {
   const date = dailySelectedDate;
   const att  = getData('attendance', {});
-  const changes = dailyMarkUsers().filter(u => att[u.id]?.[date] !== undefined).map(u => ({ userId: u.id, date, prev: att[u.id][date] }));
+  const changes = dailyMarkUsers().filter(u => att[u.id]?.[date] !== undefined).map(u => ({ userId: u.id, date, prev: att[u.id][date], prevPl: isPLDay(att[u.id], date) }));
   if (!changes.length) { showToast('Nobody is marked for this day'); return; }
   if (!confirm(`Clear attendance for all ${changes.length} people on ${fmtDate(date)}?\nRemarks and advances stay. You can undo this.`)) return;
   showLoader(true);
@@ -3380,6 +3455,45 @@ async function clearAllDay() {
   showLoader(false);
   redrawAttendanceViews(changes);
   pushUndo(`Cleared ${changes.length} ${changes.length === 1 ? 'person' : 'people'} (${fmtDate(date)})`, changes);
+}
+
+// "Paid leave" in Mark everyone / ⇧L: tick paid leave for everyone not marked yet (as a full day). If everyone
+// is marked, after asking: tick it for everyone, keeping their values (0 becomes 1).
+async function bulkPaidLeave() {
+  const date  = dailySelectedDate;
+  const users = dailyMarkUsers();
+  const att   = getData('attendance', {});
+  if (!users.length) return;
+  let targets = users.filter(u => att[u.id]?.[date] === undefined);
+  if (!targets.length) {
+    if (!confirm(`Everyone already has attendance for ${fmtDate(date)}.\nMark everyone as paid leave?\nTheir values stay (anyone at 0 becomes 1). You can undo this.`)) return;
+    targets = users;
+  }
+  const changes = targets.map(u => ({ userId: u.id, date, prev: att[u.id]?.[date], prevPl: isPLDay(att[u.id], date) })).filter(c => !c.prevPl);
+  if (!changes.length) { showToast('Everyone is already on paid leave'); return; }
+  showLoader(true);
+  try { await writeAttendance(changes, c => attPay(c.prev) > 0 ? c.prev : 1, () => true); }
+  catch (e) {
+    console.error('Bulk paid leave failed', e);
+    await writeAttendance(changes, c => c.prev, c => c.prevPl).catch(() => {});
+    showLoader(false); showToast('⚠️ Could not save — check internet and try again'); redrawAttendanceViews(changes); return;
+  }
+  showLoader(false);
+  redrawAttendanceViews(changes);
+  changes.forEach(c => dailyTouched.add(c.userId));
+  pushUndo(`Paid leave for ${changes.length} ${changes.length === 1 ? 'person' : 'people'} (${fmtDate(date)})`, changes);
+  if (matchMedia('(hover:hover) and (pointer:fine)').matches) dmFocusPerson(users[0].id);
+}
+
+// v1.2.7 stored paid leave as the value 'PL' — turn those into 1 + the tick (admin, once; one batch)
+async function syncPaidLeaveValues() {
+  if (currentUser?.role !== 'admin') return;
+  const att = getData('attendance', {});
+  const fix = [];
+  Object.entries(att).forEach(([userId, ua]) => Object.entries(ua || {}).forEach(([k, v]) => { if (isDayKey(k) && v === PL) fix.push({ userId, date: k }); }));
+  if (!fix.length) return;
+  try { await writeAttendance(fix, () => 1, () => true); console.info(`Paid leave days converted: ${fix.length}`); }
+  catch (e) { console.warn('Could not convert paid leave days', e); }
 }
 
 // Find a person: "/" then type, Enter jumps to their first value
@@ -3563,11 +3677,12 @@ function renderRegister() {
     let absent = 0, paidLeave = 0;
     days.forEach(({ ds }, i) => {
       const v = ua[ds];
-      if (v === PL) paidLeave++;
+      const pl = v !== undefined && isPLDay(ua, ds);
+      if (pl) paidLeave++;
       const remark = ua[ds + '_remark'] || '';
-      const info = v !== undefined ? REG_CODES[String(v)] : null;
+      const info = v === undefined ? null : pl ? { code:'PL', cls:'rt-pl', label: dayLabel(ua, ds) } : REG_CODES[String(v)];
       if (v === 0) absent++;
-      if (Number(v) > 0) presentPerDay[i]++;
+      if (isPresentDay(ua, ds)) presentPerDay[i]++;
       if (ds > today) { html += '<td><span class="rt rt-future"></span></td>'; return; }
       const tip = `${u.name} · ${fmtDate(ds)} · ${info ? info.label : 'Not marked'}${remark ? ' · ' + remark : ''}`;
       html += `<td><span class="rt ${info ? info.cls : ''} ${ds === today ? 'rt-today' : ''}" title="${esc(tip)}"
@@ -3635,10 +3750,10 @@ function renderCalGrid(gridId, labelId, empId, year, month, isAdmin) {
     const remark  = empAtt[dateStr + '_remark'] || '';
     const isFuture = dateStr > today;
     let cls = 'cal-day';
-    if (v !== undefined) cls += ' ' + ATT_COLORS[String(v)];
+    if (v !== undefined) cls += ' ' + (isPLDay(empAtt, dateStr) ? 'att-pl' : ATT_COLORS[String(v)]);
     if (dateStr === today) cls += ' today';
     if (isFuture) cls += ' future';
-    const tip = `${fmtDate(dateStr)} · ${v !== undefined ? ATT_LABELS[String(v)] : 'Not marked'}${remark ? ' · ' + remark : ''}`;
+    const tip = `${fmtDate(dateStr)} · ${dayLabel(empAtt, dateStr)}${remark ? ' · ' + remark : ''}`;
     const editClick = isAdmin && !isFuture ? `onclick="openEditAttModal(${jsArg(empId)},${jsArg(dateStr)})"` : '';
     html += `<div class="${cls}" title="${esc(tip)}" ${editClick}>${d}${remark ? '<i class="rdot"></i>' : ''}</div>`;
   }
@@ -3664,7 +3779,7 @@ function renderEmpMonthSummary() {
   const month  = monthStr(empCalYear, empCalMonth);
   let total = 0, earned = 0, absent = 0, paidLeave = 0;
   Object.entries(empAtt).forEach(([d,v]) => {
-    if (isDayKey(d) && d.startsWith(month)) { total += attPay(v); earned += attPay(v) * getWageForDate(currentUser, d); if (v === 0) absent++; if (v === PL) paidLeave++; }
+    if (isDayKey(d) && d.startsWith(month)) { total += attPay(v); earned += attPay(v) * getWageForDate(currentUser, d); if (v === 0) absent++; if (isPLDay(empAtt, d)) paidLeave++; }
   });
   const adv = getAdvanceBalance(currentUser.id);
   document.getElementById('empMonthSummary').innerHTML = `
@@ -3866,12 +3981,12 @@ function openHisabDetail(userId, ym) {
     const ds=`${ym}-${String(d).padStart(2,'0')}`;
     const v=att[ds];
     let cls='cal-day';
-    if(v===0){cls+=' att-0';absentD++;}
+    if(v!==undefined&&isPLDay(att,ds)){cls+=' att-pl';plD++;}
+    else if(v===0){cls+=' att-0';absentD++;}
     else if(v===0.5){cls+=' att-half';halfD++;}
     else if(v===1){cls+=' att-1';fullD++;}
     else if(v===1.5){cls+=' att-ot';otD++;}
     else if(v===2){cls+=' att-double';otD++;}
-    else if(v===PL){cls+=' att-pl';plD++;}
     else if(ds<=todayStr()) unmarked++;
     if(ds>todayStr()) cls+=' future';
     const remark=att[ds+'_remark']||'';
@@ -4046,7 +4161,7 @@ async function exportDetailPDF(userId, ym) {
     const remark=att[ds+'_remark']||'';
     const dayWage=getWageForDate(u,ds);
     const earned=v!==undefined?attPay(v)*dayWage:0;
-    const status=v===undefined?'Not marked':ATT_LABELS[String(v)]||String(v);
+    const status=dayLabel(att,ds);
     const dayName=new Date(yr,mo-1,d).toLocaleString('en-IN',{weekday:'short'});
     if(v!==undefined){tDays+=attPay(v);tEarned+=earned;}
     if(d%2===0){doc.setFillColor(248,250,255);doc.rect(margin,y-2,180,7,'F');}
@@ -4196,7 +4311,7 @@ function renderStaff() {
       <div class="who">${avatarHtml(u)}<div class="x"><b class="staff-name">${esc(u.name)}${isInactive?'<span class="inactive-tag">Inactive</span>':''}</b><small class="staff-role">${esc(u.role)}${u.phone ? ' · ' + esc(u.phone) : ''}</small></div></div>
       <div class="mono text-sm c-hide">${esc(u.userId)}</div>
       <div class="r mono fw700 staff-wage c-hide">${fmtMoney(u.wage)}/day</div>
-      <div>${attChip(att[u.id]?.[today])}</div>
+      <div>${attChip(att[u.id]?.[today], att[u.id], today)}</div>
       <div class="r mono fw700 c-hide ${bal > 0 ? 'text-red' : 'faint'}">${bal > 0 ? fmtMoney(bal) : '—'}</div>
       <div class="mono text-sm muted c-hide">${fmtDate(u.joinDate)}</div>
     </div>`;
@@ -4733,24 +4848,31 @@ function openEditAttModal(userId, date) {
   const existingRemark = att[userId]?.[date + '_remark'] || '';
   document.getElementById('editAttInfo').innerHTML   = u ? `<div class="who">${avatarHtml(u)}<div class="x"><b>${esc(u.name)}</b><small>${esc(u.role)}</small></div></div>` : '<b>Unknown</b>';
   document.getElementById('editAttDate').value       = date;
-  document.getElementById('editAttValue').value      = cur !== undefined ? String(cur) : '1';
+  document.getElementById('editAttValue').value      = cur !== undefined ? String(cur === PL ? 1 : cur) : '1';
+  document.getElementById('editAttPl').checked       = cur !== undefined && isPLDay(att[userId], date);
+  editAttPlShow();
   document.getElementById('editAttRemark').value     = existingRemark;
   openModal('editAttModal');
 }
 
+function editAttPlShow() {
+  document.getElementById('editAttPlRow').style.display = Number(document.getElementById('editAttValue').value) > 0 ? '' : 'none';
+}
 async function saveEditedAttendance() {
   const date   = document.getElementById('editAttDate').value;
   const val    = attVal(document.getElementById('editAttValue').value);
+  const pl     = attPay(val) > 0 && document.getElementById('editAttPl').checked;
   const remark = document.getElementById('editAttRemark').value.trim();
   if (!editAttUserId||!date) return;
-  const prevVal = getData('attendance', {})[editAttUserId]?.[date];
+  const ua = getData('attendance', {})[editAttUserId] || {};
+  const prevVal = ua[date], prevPl = isPLDay(ua, date);
   showLoader(true);
-  await saveAttendance(editAttUserId, date, val);
+  await saveDay(editAttUserId, date, val, pl);
   await saveRemark(editAttUserId, date, remark);
   showLoader(false);
-  if (prevVal !== val) {
+  if (prevVal !== val || prevPl !== pl) {
     const name = getData('users', []).find(x => x.id === editAttUserId)?.name || 'Staff';
-    pushUndo(`${name} → ${ATT_LABELS[String(val)]} (${fmtDate(date)})`, [{ userId: editAttUserId, date, prev: prevVal }]);
+    pushUndo(`${name} → ${dayLabel({ [date]: val, [plKey(date)]: pl }, date)} (${fmtDate(date)})`, [{ userId: editAttUserId, date, prev: prevVal, prevPl }]);
   } else showToast('✅ Attendance updated!');
   closeModal('editAttModal');
   renderHome();
@@ -5016,8 +5138,9 @@ function dmQuickKey(e, userId) {
   const v = dmKeyValue(e);
   if (v !== undefined) {
     e.preventDefault(); e.stopPropagation();
-    setDailyAtt(userId, v);             // saved in the background: the keyboard never waits for the network
-    dmSetStop(userId, v);
+    if (v === PL) togglePaidLeave(userId);   // L: paid-leave tick on / off
+    else { setDailyAtt(userId, v); dmSetStop(userId, v); }   // saved in the background: the keyboard never waits
+    if (v === PL) { const nv = getData('attendance', {})[userId]?.[dailySelectedDate]; if (DM_VALS.includes(nv)) dmSetStop(userId, nv); }
     const next = dmNeighbour(userId, 1);
     if (next) dmFocusPerson(next.id); else document.getElementById('saveAllBtn')?.focus();
     return true;
@@ -5122,8 +5245,17 @@ function initKeyboardShortcuts() {
     // ⇧ + a value key → "Mark everyone not marked yet"; ⇧ Backspace → Clear all
     if (e.shiftKey && isStaffRole(currentUser)) {
       const v = dmKeyValue(e);
-      if (v !== undefined) { e.preventDefault(); bulkMark(v); return; }
+      if (v !== undefined) { e.preventDefault(); v === PL ? bulkPaidLeave() : bulkMark(v); return; }
       if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); clearAllDay(); return; }
+    }
+    // A value key while no row has the cursor: mark the first person not marked yet (and carry on from there);
+    // if everyone is marked, only bring the cursor back to the first person
+    if (!e.shiftKey && dmKeyValue(e) !== undefined && !document.activeElement?.closest?.('#dailyAttList')) {
+      const att = getData('attendance', {}), users = dailyMarkUsers();
+      const u = users.find(x => att[x.id]?.[dailySelectedDate] === undefined);
+      e.preventDefault();
+      if (u) { dmFocusPerson(u.id); dmQuickKey(e, u.id); } else if (users[0]) dmFocusPerson(users[0].id);
+      return;
     }
     if (e.key === '[')                    { e.preventDefault(); dailyPrevDay(); }
     else if (e.key === ']')               { e.preventDefault(); dailyNextDay(); }
@@ -5469,7 +5601,7 @@ function buildLedger(u, fromVal, toVal) {
     if (!n) return;
     const w = getWageForDate(u, k);
     all.push({ date: k, type: 'earned', amount: n * w, effect: n * w, days: n,
-               note: `${ATT_LABELS[String(v)] || String(n)} @ ${fmtMoney(w)}/day` });
+               note: `${dayLabel(att, k)} @ ${fmtMoney(w)}/day` });
   });
   advances.forEach(a => {
     all.push({ date: a.date || '', type: a.type, amount: Number(a.amount) || 0, effect: entryEffect(a),
@@ -5807,6 +5939,7 @@ window.attBtnKeydown = attBtnKeydown;
 window.remarkKeydown = remarkKeydown;
 window.dmQuickKey = dmQuickKey;
 window.updateDailyTotal = updateDailyTotal;
+Object.assign(window, { togglePaidLeave, bulkPaidLeave, editAttPlShow });
 Object.assign(window, { openOpeningBalance, editOpeningBalance, saveOpeningBalance });
 Object.assign(window, { advComboOpen, advComboInput, advComboKey, advComboBlur, advComboPick });
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
@@ -5838,6 +5971,14 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.8</span><span class="wn-date">November 2026 — paid leave as a tick</span></div>
+      <ul>
+        <li>☑️ <b>Paid leave is now a small PL tick</b> next to a person's value, instead of a sixth button on every row. It works with ½, 1, 1.5 or 2 — they're paid at that value but not counted as present</li>
+        <li>⌨️ <kbd>L</kbd> turns the tick on / off; <kbd>⇧L</kbd> and <b>Mark everyone → Paid leave</b> still do the whole team; the edit dialog has a Paid leave tick too</li>
+        <li>🎯 Pressing a value key when no row has the cursor now marks the first person not marked yet</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.7</span><span class="wn-date">November 2026 — paid leave</span></div>
       <ul>
         <li>🌴 <b>Paid leave (PL)</b> — for days with no work that you still pay, like a festival holiday. Paid as a full day, but never counted as present or absent</li>

@@ -52,8 +52,8 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 - Shown sections use `style.display = ''` (not `'block'`) so their CSS grid/flex layout applies.
 
 ## Keyboard (v1.2.3 — the owner asked for one-key marking on top of the Tab path)
-- Daily Mark value keys on a person's value buttons / ✕ (`dmQuickKey`, `dmKeyValue`): `1`/`P` full, `H`/`.` half,
-  `O` 1.5, `D`/`2` double, `0`/`A` absent, `L` paid leave → marks and moves to the next person; `Backspace` clears (stays).
+- Daily Mark value keys on a person's value buttons / ✕ (`dmQuickKey`, `dmKeyValue`; `L` = paid-leave tick; with no row focused a value key goes to the first unmarked person): `1`/`P` full, `H`/`.` half,
+  `O` 1.5, `D`/`2` double, `0`/`A` absent → marks and moves to the next person; `Backspace` clears (stays).
   Digits are read from `e.code`, so ⇧ + the same key = `bulkMark(v)` and ⇧Backspace = `clearAllDay()`
   (in `initKeyboardShortcuts`). Never active while typing in a box.
 - The five value buttons are one Tab stop (roving tabindex: `dmSetStop` / `dmStop` / `dmFocusPerson`): Tab lands
@@ -80,9 +80,11 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   the hidden id. No native `<select>` for picking people.
 
 ## Data + logic (don't duplicate)
-- Attendance values: numbers `0 0.5 1 1.5 2`, or the string `'PL'` (paid leave, v1.2.7: no work, paid as one day,
-  never present or absent). Pay with `attPay(v)`, parse UI strings with `attVal(s)`; Daily Mark order `DM_VALS` /
-  `DM_CLASSES`; key `L`. Employees can't mark PL (rules allow only 0–1.5 for them).
+- Attendance values: numbers `0 0.5 1 1.5 2` (pay). Paid leave (v1.2.8) is a separate tick `'<date>_pl': true` on a
+  paid value — paid at the value, never present (`isPLDay`, `isPresentDay`, `dayLabel`, `attChip(v, ua, date)`).
+  Staff write value + tick with `saveDay` / `writeAttendance(changes, valueOf, plOf)`; undo entries carry `prevPl`.
+  Daily Mark: `.pl-tog` next to ✕ (not in the Tab path), key `L` (`togglePaidLeave`), ⇧L `bulkPaidLeave`. The v1.2.7
+  value `'PL'` (= 1 + tick) is converted by `syncPaidLeaveValues()`; `attPay` still reads it. Employees can't mark it.
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,
   `buildLedger`. A regular "Deduct" is record-only; "Opening Balance (Pending Salary)" counts.
 - Opening balance (v1.2.6): an advances doc whose note contains "Opening Balance" (`isOpeningBal`, `OB_NOTE`):
