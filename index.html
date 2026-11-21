@@ -284,7 +284,15 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .lrow.k:hover{background:var(--row-hover)}
 .lrow.sel{background:var(--clay-soft);box-shadow:inset 4px 0 0 var(--clay-fill)}
 .lrow .r,.lhead .r{text-align:right;justify-self:end}
-.cols-today{grid-template-columns:minmax(200px,1.4fr) 140px minmax(0,1.4fr) 92px}
+.cols-today{grid-template-columns:minmax(190px,1.4fr) 124px 104px minmax(0,1.3fr) 92px}
+.cols-today>:nth-child(3){padding-right:16px}
+.today-adv{font-family:var(--mono);font-weight:800;color:var(--red);font-size:13px;white-space:nowrap}
+.today-adv small{display:block;font-family:var(--sans);font-weight:600;color:var(--ink3);font-size:11px;overflow:hidden;text-overflow:ellipsis;max-width:104px;margin-left:auto}
+.today-adv-total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 18px;border-top:1px solid rgba(26,24,18,.12)}
+.today-adv-total:empty{display:none}
+.today-adv-total .lbl{margin:0}
+.today-adv-total b{font-family:var(--mono);font-size:17px;font-weight:800;color:var(--red)}
+.today-adv-total small{color:var(--ink2);font-size:12px;margin-left:8px}
 .cols-staff{grid-template-columns:minmax(220px,1.6fr) 120px 110px 120px 120px 130px}
 .cols-req{grid-template-columns:minmax(200px,1.3fr) minmax(0,1.6fr) 120px 110px 190px}
 .cell-l{display:none;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-right:6px}
@@ -630,6 +638,10 @@ table.reg{border-collapse:separate;border-spacing:0;font-size:11px;min-width:100
   .lrow{grid-template-columns:minmax(0,1fr) auto!important;gap:6px 10px;padding:12px 14px}
   .lrow>.c2{grid-column:1/-1}
   .lrow>.c-hide{display:none}
+  .lrow>.c-empty{display:none}
+  .lrow>.today-adv{grid-column:1/-1;padding-right:0}
+  .lrow>.today-adv small{display:inline;margin-left:6px;max-width:none}
+  .today-adv-total{padding:12px 14px}
   .cell-l{display:inline}
   .admin-att-row{grid-template-columns:minmax(0,1fr);gap:9px;padding:14px}
   .daily-adv-chips{grid-column:1/-1;margin:0}
@@ -718,7 +730,7 @@ body:not(.role-emp) .emp-only{display:none!important}
 [data-theme="dark"] .seg button.on,[data-theme="dark"] .seg .tab.active{background:rgba(255,255,255,.14);color:var(--ink)}
 [data-theme="dark"] .brand-ver{background:rgba(255,255,255,.08)}
 [data-theme="dark"] :is(.lrow,.lhead,.card-h,.dm-head,.admin-att-row,.req-card,.mini-list .mi,.set-row,.kv,.adv-line,.notif-item,.dm-foot){border-color:rgba(255,255,255,.07)}
-[data-theme="dark"] .dm-total{border-color:rgba(255,255,255,.12)}
+[data-theme="dark"] .dm-total,[data-theme="dark"] .today-adv-total{border-color:rgba(255,255,255,.12)}
 [data-theme="dark"] .reg :is(th,td){border-color:rgba(255,255,255,.07)!important}
 [data-theme="dark"] .reg tbody tr:hover td{background:rgba(255,255,255,.04)}
 [data-theme="dark"] .rt:not([class*="rt-"]),[data-theme="dark"] .reg-legend i.rt-empty{box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
@@ -802,7 +814,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.5</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.6</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -828,7 +840,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.5</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.6</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -917,8 +929,9 @@ button.set-row:hover{background:var(--row-hover)}
           <div class="grid-2">
             <div class="card">
               <div class="card-h"><h2>Today's attendance</h2><span class="h" id="todaySub"></span><div class="sp"></div><button class="pill sm" onclick="navTo('daily')">Open Daily Mark</button></div>
-              <div class="lhead cols-today"><span>Staff</span><span>Status</span><span>Remark</span><span class="r"></span></div>
+              <div class="lhead cols-today"><span>Staff</span><span>Status</span><span class="r">Advance</span><span>Remark</span><span class="r"></span></div>
               <div id="todayAttendanceList"></div>
+              <div class="today-adv-total" id="todayAdvTotal"></div>
             </div>
             <div class="stack">
               <div class="card">
@@ -1462,7 +1475,7 @@ button.set-row:hover{background:var(--row-hover)}
 // VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
 // The self-update below compares this with the live index.html.
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.2.5';
+const APP_VERSION = 'v1.2.6';
 document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
 
 // ══════════════════════════════════════════
@@ -1671,7 +1684,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <p>The first page you see. Everything here updates live.</p>
 <ul>
   <li><b>Tiles:</b> total active staff, present today, absent (and how many are not marked yet), pending requests and advances given this month. Click a tile to open the related page.</li>
-  <li><b>Today's attendance:</b> everyone's status for today with their remark. Click a name to mark or change it, <b>✕</b> to clear it, <b>Mark</b> if nobody has marked them yet.</li>
+  <li><b>Today's attendance:</b> everyone's status for today, the <b>advance</b> they got today (with its note) and their remark; the total of today's advances is at the bottom. Click a name to mark or change it, <b>✕</b> to clear it, <b>Mark</b> if nobody has marked them yet.</li>
   <li><b>Pending requests:</b> approve ✓ or reject ✕ advance and leave requests right here.</li>
   <li><b>This month:</b> total days worked, wages earned, advances given and salary paid so far.</li>
 </ul>
@@ -1805,7 +1818,13 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>Deduct</h3>
 <p>Staff → person → <b>Deduct</b> records that part of an advance was recovered from salary. It's <b>for the record only</b> — it lowers their "advance balance" but doesn't change the final hisab balance (the advance was already subtracted).</p>
 <h3>Opening balance</h3>
-<p>When you add someone who already had a balance, enter it as an <b>opening balance</b>: <i>Advance</i> (they owe you) or <i>Pending salary</i> (you owe them). You can edit or delete it later from their card.</p>
+<p>An <b>opening balance</b> is what someone already owed — or was owed — when they joined (or when you started using the app):</p>
+<ul>
+  <li><b>Advance</b> — they owe you. It counts as <b>minus</b>, like an advance.</li>
+  <li><b>Pending salary</b> — you owe them. It counts as <b>plus</b>, like salary already earned.</li>
+</ul>
+<p>Enter it when you add the person, or later from their details (<b>Add opening balance</b>, or <kbd>O</kbd>). <b>Edit</b> and <b>Delete</b> are there too. It is dated on their <b>join date</b> so the Ledger counts it from the very start — change the "As of" date only if it belongs to another day; if you change someone's join date, the opening balance moves with it.</p>
+<p>It shows as its own line in the Hisab balance card (e.g. <i>Opening balance (advance) −₹2,000</i>), in the Hisab PDF and in the Ledger. It is not part of any month in the month-by-month table.</p>
 `},
 { id:'hisab', group:'Month end', title:'Hisab (salary account)', roles:'staff', body:`
 <p>Everyone's running account, month by month. On a computer the list on the left shows each person's <b>final balance</b>: <span class="text-green">+</span> means you owe them, <span class="text-red">−</span> means they owe you.</p>
@@ -1839,7 +1858,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <p>Click a person in Staff, or press <kbd>⌘K</kbd>, type part of their name and press <kbd>Enter</kbd>. The details open with the cursor on <b>+ Advance</b>:</p>
 <ul>
   <li><kbd>Enter</kbd> or <kbd>Space</kbd> presses the highlighted button; <kbd>Tab</kbd> / <kbd>⇧ Tab</kbd> move between buttons (the cursor stays inside the dialog).</li>
-  <li>Keys: <kbd>A</kbd> add advance · <kbd>D</kbd> deduct · <kbd>L</kbd> ledger · <kbd>E</kbd> edit. <kbd>Esc</kbd> closes and the cursor goes back to where you were.</li>
+  <li>Keys: <kbd>A</kbd> add advance · <kbd>D</kbd> deduct · <kbd>L</kbd> ledger · <kbd>E</kbd> edit · <kbd>O</kbd> add opening balance (when they have none). <kbd>Esc</kbd> closes and the cursor goes back to where you were.</li>
   <li>Quickest for an advance: <kbd>⌘K</kbd> → name → <kbd>⇧ Enter</kbd> opens Add advance for that person with the cursor on the amount.</li>
 </ul>
 <h3>Edit & wage history</h3>
@@ -2517,6 +2536,7 @@ function startApp() {
   switchPage('home');
   scheduleNotifications();
   checkNightSummary();
+  syncOpeningBalanceDates();
 }
 
 function setupNav() {
@@ -2811,9 +2831,16 @@ function renderAdminHome() {
   if (users.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>No staff added yet</p><small>Go to Staff to add employees</small></div>';
   } else {
+    const todayAdv = advances.filter(a => a.type === 'advance' && a.date === today && !isOpeningBal(a));
     list.innerHTML = users.map(u => {
       const v = att[u.id]?.[today];
       const remark = att[u.id]?.[today + '_remark'] || '';
+      const mine = todayAdv.filter(a => a.userId === u.id);
+      const advSum = mine.reduce((t, a) => t + (Number(a.amount) || 0), 0);
+      const advNote = mine.map(a => a.note).filter(n => n && n !== 'Daily advance').join(', ');
+      const advCell = advSum
+        ? `<div class="r today-adv" title="${esc(mine.map(a => fmtMoney(a.amount) + (a.note ? ' · ' + a.note : '')).join('\n'))}">${fmtMoney(advSum)}${mine.length > 1 ? ` <span class="faint">×${mine.length}</span>` : ''}${advNote ? `<small>${esc(advNote)}</small>` : ''}</div>`
+        : '<div class="r c-empty"><span class="faint">—</span></div>';
       return `<div class="lrow cols-today staff-item">
         <div class="who staff-info k" style="cursor:pointer" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})">
           ${avatarHtml(u)}
@@ -2821,11 +2848,18 @@ function renderAdminHome() {
           <small class="staff-role">${esc(u.role)}</small></div>
         </div>
         <div>${attChip(v)}</div>
+        ${advCell}
         <div class="c2 text-sm muted" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${remark ? '📝 ' + esc(remark) : '<span class="faint">—</span>'}</div>
         <div class="r c-hide">${v !== undefined ? `<button class="att-clear-btn" title="Clear today's attendance" onclick="clearDailyAtt(${jsArg(u.id)})">✕</button>` : `<button class="pill sm" onclick="openEditAttModal(${jsArg(u.id)},${jsArg(today)})">Mark</button>`}</div>
       </div>`;
     }).join('');
   }
+  const totEl = document.getElementById('todayAdvTotal');
+  const ids = new Set(users.map(u => u.id));
+  const shown = advances.filter(a => a.type === 'advance' && a.date === today && !isOpeningBal(a) && ids.has(a.userId));
+  const tot = shown.reduce((t, a) => t + (Number(a.amount) || 0), 0);
+  const ppl = new Set(shown.map(a => a.userId)).size;
+  totEl.innerHTML = tot ? `<span class="lbl">Total advances today</span><span><b>${fmtMoney(tot)}</b><small>${ppl} ${ppl === 1 ? 'person' : 'people'}</small></span>` : '';
 
   // Pending requests (approve / reject right here)
   const reqBox = document.getElementById('todayRequests');
@@ -3698,7 +3732,7 @@ function renderHisabSummary() {
     <div id="hisabFinalLabel" class="s">${esc(balLabel)}</div></div>
     <div class="sp"></div>
     <div style="min-width:220px;font-size:13px;display:grid;gap:4px;opacity:.95">
-      ${openingBalance !== 0 ? `<div class="flex-between"><span>Opening Balance</span><b class="mono">${openingBalance>=0?'+':''}${fmtMoney(Math.abs(openingBalance))}</b></div>` : ''}
+      ${openingBalance !== 0 ? `<div class="flex-between"><span>Opening balance (${openingBalance > 0 ? 'pending salary' : 'advance'})</span><b class="mono">${openingBalance > 0 ? '+' : '−'}${fmtMoney(Math.abs(openingBalance))}</b></div>` : ''}
       <div class="flex-between"><span>Earned</span><b class="mono">+${fmtMoney(totalEarned)}</b></div>
       <div class="flex-between"><span>Advances</span><b class="mono">−${fmtMoney(totalAdvances)}</b></div>
       ${totalSettlements > 0 ? `<div class="flex-between"><span>💵 Salary paid (settlements)</span><b class="mono">−${fmtMoney(totalSettlements)}</b></div>` : ''}
@@ -4267,7 +4301,8 @@ async function saveStaff() {
     if (openingBal > 0) {
       const balNote = openingBalType === 'pending_salary' ? 'Opening Balance (Pending Salary)' : 'Opening Balance (Advance)';
       const balType = openingBalType === 'pending_salary' ? 'deduction' : 'advance';
-      await addAdvance({ userId: newId, amount: openingBal, note: balNote, date: todayStr(), month: todayStr().substring(0,7), type: balType });
+      const obDate = joinDate || todayStr();
+      await addAdvance({ userId: newId, amount: openingBal, note: balNote, date: obDate, month: obDate.substring(0,7), type: balType });
     }
     showToast('✅ Staff added!');
   }
@@ -4281,6 +4316,7 @@ async function saveStaff() {
   showLoader(false);
   closeModal('addStaffModal');
   renderStaff();
+  syncOpeningBalanceDates();
 }
 
 function openStaffDetail(userId) {
@@ -4315,15 +4351,19 @@ function openStaffDetail(userId) {
       <button class="btn-secondary btn-sm" data-key="d" title="Deduct (D)" onclick="closeModal('staffDetailModal');openDeductModal(${jsArg(u.id)})">${svgi('minus', 15)}Deduct<kbd class="k-hint">D</kbd></button>
       <button class="btn-secondary btn-sm" data-key="l" title="Ledger (L)" onclick="openLedger(${jsArg(u.id)})">${svgi('book', 15)}Ledger<kbd class="k-hint">L</kbd></button>
     </div>
-    ${ob ? `<div class="sec-h">Opening balance</div>
-      <div class="box flex-between" style="flex-wrap:wrap">
-        <div><b>${esc(ob.note)}</b><div class="text-xs mono">${fmtDate(ob.date)}</div></div>
+    <div class="sec-h">Opening balance</div>
+    ${ob ? `<div class="box flex-between" style="flex-wrap:wrap">
+        <div><b>${ob.type === 'deduction' ? 'Pending salary — you owe them' : 'Advance — they owe you'}</b><div class="text-xs mono">as of ${fmtDate(ob.date)}</div></div>
         <div class="row-gap">
-          <span class="amt ${ob.type==='deduction'?'plus':'minus'}">${ob.type==='deduction'?'-':'+'}${fmtMoney(ob.amount)}</span>
-          <button class="pill sm" onclick="editOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)},${Number(ob.amount)||0},${jsArg(ob.type)})">Edit</button>
+          <span class="amt ${ob.type==='deduction'?'plus':'minus'}">${ob.type==='deduction'?'+':'−'}${fmtMoney(ob.amount)}</span>
+          <button class="pill sm" onclick="editOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)})">Edit</button>
           <button class="pill sm" style="color:var(--red)" onclick="deleteOpeningBalance(${jsArg(ob.id)},${jsArg(u.id)})">Delete</button>
         </div>
-      </div>` : ''}
+      </div>`
+    : `<div class="box flex-between" style="flex-wrap:wrap">
+        <div><b class="muted">None</b><div class="text-xs">Add one if they owed or were owed money when they joined.</div></div>
+        <button class="pill sm" data-key="o" title="Add opening balance (O)" onclick="openOpeningBalance(${jsArg(u.id)})">${svgi('plus', 14)}Add opening balance</button>
+      </div>`}
     <div class="sec-h">Advance / expense history</div>
     ${history.length===0
       ? '<div class="empty-state" style="padding:18px"><small>No records yet</small></div>'
@@ -4846,32 +4886,42 @@ function modalFocusables(m) {
     .filter(el => el.tabIndex >= 0 && !el.disabled && el.type !== 'hidden' && el.getClientRects().length);
 }
 function topModal() { const o = document.querySelectorAll('.modal-overlay.open'); return o[o.length - 1] || null; }
-function openModal(id, focusId) {
-  const m = document.getElementById(id);
-  const wasOpen = m.classList.contains('open');
-  const ae = document.activeElement;
-  const inDlg = ae?.closest?.('.modal-overlay');
-  if (!wasOpen) modalReturn[id] = inDlg ? (inDlg.id !== id ? modalReturn[inDlg.id] : null) || null
-                                        : (ae && ae !== document.body && ae.id !== 'searchInput' ? ae : null);
-  m.classList.add('open');
-  if (!focusId && wasOpen && m.contains(document.activeElement)) return;
-  // [data-autofocus] (e.g. + Advance in a person's details), else a form's first box, else the dialog itself
+// Default place for the cursor in a dialog: [data-autofocus], else a form's first box (computer only —
+// on phones that would pop up the keyboard), else the dialog itself
+function focusIntoModal(m) {
   const first = modalFocusables(m).find(el => !el.classList.contains('x-btn'));
-  let target = (focusId && document.getElementById(focusId)) || m.querySelector('[data-autofocus]');
-  // (on phones never a box: that would pop up the keyboard)
+  let target = m.querySelector('[data-autofocus]');
   if (!target && first?.matches('input:not([type=date]):not([type=checkbox]):not([type=radio]),select,textarea')
       && matchMedia('(hover:hover) and (pointer:fine)').matches) target = first;
   if (!target) { target = m.querySelector('.modal-sheet') || m; target.tabIndex = -1; }
   target.focus({ preventScroll: true });
+}
+function openModal(id, focusId) {
+  const m = document.getElementById(id);
+  const wasOpen = m.classList.contains('open');
+  const ae = document.activeElement;
+  if (!wasOpen) {
+    // Come back to: the page, or the dialog underneath when this one opens on top of it
+    const host = ae?.closest?.('.modal-overlay');
+    modalReturn[id] = ae && ae !== document.body && ae.id !== 'searchInput'
+      && (!host || (host.id !== id && host.classList.contains('open'))) ? ae : null;
+  }
+  m.classList.add('open');
+  if (focusId && document.getElementById(focusId)) { document.getElementById(focusId).focus({ preventScroll: true }); return; }
+  if (wasOpen && m.contains(document.activeElement)) return;
+  focusIntoModal(m);
 }
 function closeModal(id) {
   const m = document.getElementById(id);
   const had = m.classList.contains('open') && m.contains(document.activeElement);
   m.classList.remove('open');
   const back = modalReturn[id]; modalReturn[id] = null;
-  if (had && !topModal()) {
-    if (back?.isConnected && back.getClientRects().length) back.focus({ preventScroll: true });
-    else document.activeElement?.blur();                 // never leave the cursor in a closed dialog
+  if (had) {
+    const backHost = back?.closest?.('.modal-overlay');
+    const top = topModal();
+    if (back?.isConnected && back.getClientRects().length && (!backHost || backHost.classList.contains('open'))) back.focus({ preventScroll: true });
+    else if (top) focusIntoModal(top);                    // back into the dialog underneath
+    else document.activeElement?.blur();                  // never leave the cursor in a closed dialog
   }
   refreshIfPending();
 }
@@ -5002,7 +5052,7 @@ function initKeyboardShortcuts() {
     const typing  = isTypingTarget(e.target);
     const inDaily = currentPage === 'attendance' && currentAttTab === 'daily';
     const mod     = e.metaKey || e.ctrlKey;
-    const openDlg = document.querySelector('.modal-overlay.open');
+    const openDlg = topModal();                // the dialog on top when two are open
 
     // Enter saves in simple dialogs (Add advance, Edit attendance, Deduct, Password)
     if (e.key === 'Enter' && openDlg && openDlg.dataset.enter && e.target.tagName === 'INPUT' && openDlg.contains(e.target)) {
@@ -5489,30 +5539,71 @@ function removeWageHistoryEntry(fromDate) {
 let editingObId   = null;
 let editingObUser = null;
 
-function editOpeningBalance(advId, userId, currentAmount, currentType) {
-  editingObId   = advId;
+// Opening balance = what was owed when the person joined. It is dated on their join date (so the Ledger
+// counts it from the start) unless a different "as of" date is chosen (customDate).
+const OB_NOTE = { advance: 'Opening Balance (Advance)', deduction: 'Opening Balance (Pending Salary)' };
+function openObDialog(userId, ob) {
+  const u = getData('users', []).find(x => x.id === userId);
+  editingObId   = ob ? ob.id : null;
   editingObUser = userId;
-  document.getElementById('obEditAmount').value = currentAmount;
-  document.getElementById('obEditType').value   = currentType;
-  openModal('editObModal');
+  document.getElementById('obModalTitle').textContent = ob ? 'Edit opening balance' : 'Add opening balance';
+  document.getElementById('obModalWho').textContent = `${u?.name || ''} — what was owed when they joined (or when you started using the app).`;
+  document.getElementById('obEditAmount').value = ob ? Number(ob.amount) || '' : '';
+  document.getElementById('obEditType').value   = ob ? (ob.type === 'deduction' ? 'deduction' : 'advance') : 'advance';
+  document.getElementById('obEditDate').value   = (ob && ob.date) || u?.joinDate || todayStr();
+  openModal('editObModal', 'obEditAmount');
+}
+function openOpeningBalance(userId) { openObDialog(userId, null); }
+function editOpeningBalance(advId, userId) {
+  openObDialog(userId, getData('advances', []).find(a => a.id === advId) || { id: advId });
 }
 
 async function saveOpeningBalance() {
+  const u      = getData('users', []).find(x => x.id === editingObUser);
   const amount = Number(document.getElementById('obEditAmount').value);
-  const type   = document.getElementById('obEditType').value;
-  if (!amount || amount <= 0) { showToast('Please enter a valid amount'); return; }
+  const type   = document.getElementById('obEditType').value === 'deduction' ? 'deduction' : 'advance';
+  const date   = document.getElementById('obEditDate').value || u?.joinDate || todayStr();
+  if (!amount || amount <= 0) { showToast('Please enter a valid amount'); document.getElementById('obEditAmount').focus(); return; }
+  const data = { amount, type, note: OB_NOTE[type], date, month: date.slice(0, 7), customDate: !!(u?.joinDate && date !== u.joinDate) };
   showLoader(true);
   try {
-    await updateDoc(doc(db, 'advances', editingObId), { amount, type });
-    const advances = getData('advances', []);
-    const idx = advances.findIndex(a => a.id === editingObId);
-    if (idx >= 0) { advances[idx].amount = amount; advances[idx].type = type; }
-    setCache('advances', advances);
-    showToast('✅ Opening balance updated!');
+    if (editingObId) {
+      await updateDoc(doc(db, 'advances', editingObId), data);
+      const advances = getData('advances', []);
+      const a = advances.find(x => x.id === editingObId);
+      if (a) Object.assign(a, data);
+      setCache('advances', advances);
+      showToast('✅ Opening balance updated');
+    } else {
+      await addAdvance({ userId: editingObUser, ...data });
+      showToast('✅ Opening balance added');
+    }
     closeModal('editObModal');
     openStaffDetail(editingObUser);
-  } catch(e) { showToast('⚠️ Could not update'); }
+  } catch (e) { console.error(e); showToast('⚠️ Could not save — check internet and try again'); }
   showLoader(false);
+}
+
+// Opening balances follow the person's join date (one batch, only for those that differ; admin only).
+// Also moves the ones made before v1.2.6, which were dated on the day the person was added.
+async function syncOpeningBalanceDates() {
+  if (currentUser?.role !== 'admin') return;
+  const users = getData('users', []);
+  const advances = getData('advances', []);
+  const fix = advances.filter(a => {
+    if (!isOpeningBal(a) || a.customDate) return false;
+    const j = users.find(u => u.id === a.userId)?.joinDate;
+    return /^\d{4}-\d{2}-\d{2}$/.test(j || '') && a.date !== j;
+  });
+  if (!fix.length) return;
+  const batch = writeBatch(db);
+  fix.forEach(a => {
+    const j = users.find(u => u.id === a.userId).joinDate;
+    batch.update(doc(db, 'advances', a.id), { date: j, month: j.slice(0, 7) });
+    a.date = j; a.month = j.slice(0, 7);
+  });
+  try { await batch.commit(); setCache('advances', advances); console.info(`Opening balances dated on join date: ${fix.length}`); }
+  catch (e) { console.warn('Could not move opening balances', e); }
 }
 
 async function deleteOpeningBalance(advId, userId) {
@@ -5688,6 +5779,7 @@ window.attBtnKeydown = attBtnKeydown;
 window.remarkKeydown = remarkKeydown;
 window.dmQuickKey = dmQuickKey;
 window.updateDailyTotal = updateDailyTotal;
+Object.assign(window, { openOpeningBalance, editOpeningBalance, saveOpeningBalance });
 Object.assign(window, { advComboOpen, advComboInput, advComboKey, advComboBlur, advComboPick });
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
 window.populateCalEmpSelect = populateCalEmpSelect;
@@ -5718,6 +5810,16 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.6</span><span class="wn-date">November 2026 — opening balances, today's advances</span></div>
+      <ul>
+        <li>💰 <b>Today's attendance shows today's advances</b> — a new Advance column with the note, and the day's total at the bottom</li>
+        <li>📒 <b>Add an opening balance to anyone</b> — from their details (or press <kbd>O</kbd>), not only when adding them</li>
+        <li>📅 <b>Opening balances are dated on the join date</b> (existing ones moved too), so every Ledger range counts them correctly</li>
+        <li>➖ The Hisab card shows the opening balance with its sign and kind — e.g. "Opening balance (advance) −₹2,000"</li>
+        <li>🏷️ Changing an opening balance between advance and pending salary now updates its label too</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.5</span><span class="wn-date">November 2026 — dialogs and the keyboard</span></div>
       <ul>
         <li>⌨️ <b>The cursor moves into a dialog when it opens</b> — Enter / Space press the highlighted button, Tab stays inside, Esc closes and returns the cursor</li>
@@ -5975,14 +6077,16 @@ onAuthStateChanged(auth, async fbUser => {
 </div>
 
 <!-- ══════════ EDIT OPENING BALANCE ══════════ -->
-<div class="modal-overlay" id="editObModal">
+<div class="modal-overlay" id="editObModal" data-enter="saveOpeningBalance">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-head"><div class="modal-title">Edit opening balance</div><button class="x-btn" onclick="closeModal('editObModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
+    <div class="modal-head"><div class="modal-title" id="obModalTitle">Opening balance</div><button class="x-btn" onclick="closeModal('editObModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
+    <p class="hint" id="obModalWho" style="margin:-4px 0 12px"></p>
     <div class="form-row"><label>Amount (₹)</label><input type="number" id="obEditAmount" placeholder="e.g. 2000" min="1"></div>
     <div class="form-row"><label>Type</label>
       <select id="obEditType"><option value="advance">Advance (employee owes the company)</option><option value="deduction">Pending salary (company owes the employee)</option></select>
     </div>
+    <div class="form-row"><label>As of <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:600">— their join date unless you change it</span></label><input type="date" id="obEditDate"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('editObModal')">Cancel</button>
       <button class="btn-primary" onclick="saveOpeningBalance()">Save</button>

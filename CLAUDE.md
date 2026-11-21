@@ -82,6 +82,10 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
 ## Data + logic (don't duplicate)
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,
   `buildLedger`. A regular "Deduct" is record-only; "Opening Balance (Pending Salary)" counts.
+- Opening balance (v1.2.6): an advances doc whose note contains "Opening Balance" (`isOpeningBal`, `OB_NOTE`):
+  type `advance` = they owe (−), `deduction` = pending salary (+). Dated on the person's join date;
+  `syncOpeningBalanceDates()` (admin, at start and after saving staff) keeps it there unless `customDate`.
+  Added / edited in `openObDialog` (person details → Add opening balance, key O).
 - Live data: `startLiveData()` (onSnapshot listeners, role-scoped like the rules). Redraws wait while
   the user is busy (`isUserBusy`). Save All writes only rows tapped on this device (`dailyTouched`).
 - Always escape user text in HTML with `esc()`, and pass values into inline handlers with `jsArg()`.
