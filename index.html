@@ -829,7 +829,7 @@ button.set-row:hover{background:var(--row-hover)}
 <div id="loginScreen" class="screen active">
   <div class="login-brand">
     <div class="brand-tile lg"><i data-i="logo" data-s="26"></i></div>
-    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.8</span></div></div>
+    <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.9</span></div></div>
   </div>
   <div class="login-card">
     <h2>Welcome back</h2>
@@ -855,7 +855,7 @@ button.set-row:hover{background:var(--row-hover)}
   <aside class="rail" id="rail" aria-label="Main menu">
     <div class="rail-brand">
       <div class="brand-tile"><i data-i="logo" data-s="20"></i></div>
-      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.8</span></div></div>
+      <div><div class="brand-name">AttendPro</div><div class="brand-sub">Amar Furniture <span class="brand-ver">v1.2.9</span></div></div>
     </div>
     <div class="shop-card staff-only">
       <div class="live"><span>Live</span><span id="shopDate"></span></div>
@@ -1395,6 +1395,21 @@ button.set-row:hover{background:var(--row-hover)}
 </div>
 
 <!-- Edit attendance -->
+<div class="modal-overlay" id="plReasonModal" data-enter="savePlReason">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><div class="modal-title">Paid leave — reason</div><button class="x-btn" onclick="closeModal('plReasonModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
+    <p class="hint" id="plReasonWho" style="margin:-4px 0 12px"></p>
+    <div class="form-row"><label for="plReasonText">Reason <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:600">— required, saved as the day's remark</span></label>
+      <input type="text" id="plReasonText" placeholder="e.g. Diwali, festival holiday, family function" autocomplete="off"></div>
+    <div class="row-gap" id="plReasonRecent" style="margin:-6px 0 14px;flex-wrap:wrap"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('plReasonModal')">Cancel</button>
+      <button class="btn-primary" onclick="savePlReason()">Save paid leave</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="editAttModal" data-enter="saveEditedAttendance">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1412,8 +1427,8 @@ button.set-row:hover{background:var(--row-hover)}
         </select>
       </div>
     </div>
-    <label class="pl-check" id="editAttPlRow"><input type="checkbox" id="editAttPl"><span><b>Paid leave</b> — no work that day, paid at the value above</span></label>
-    <div class="form-row"><label>Remark</label><input type="text" id="editAttRemark" placeholder="e.g. No work, came late, village visit…"></div>
+    <label class="pl-check" id="editAttPlRow"><input type="checkbox" id="editAttPl" onchange="editAttPlShow()"><span><b>Paid leave</b> — no work that day, paid at the value above</span></label>
+    <div class="form-row"><label id="editAttRemarkLbl">Remark</label><input type="text" id="editAttRemark" placeholder="e.g. No work, came late, village visit…"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('editAttModal')">Cancel</button>
       <button class="btn-primary" onclick="saveEditedAttendance()">Save</button>
@@ -1493,7 +1508,7 @@ button.set-row:hover{background:var(--row-hover)}
 // VERSION — bump on every release (with CACHE_NAME in sw.js and a What's New entry).
 // The self-update below compares this with the live index.html.
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.2.8';
+const APP_VERSION = 'v1.2.9';
 document.querySelectorAll('.brand-ver').forEach(e => { e.textContent = APP_VERSION; });
 
 // ══════════════════════════════════════════
@@ -1721,11 +1736,12 @@ on a computer, a phone or both — and every change shows up on all devices with
   </tbody>
 </table>
 <h3>Paid leave</h3>
-<p>For a day with no work that you still pay for — e.g. a festival holiday you give. Mark the value you pay (usually <b>1</b>), then tick the small <span class="chip chip-pl">PL</span> box that appears next to it (or press <kbd>L</kbd>).</p>
+<p>For a day with no work that you still pay for — e.g. a festival holiday you give. Mark the value you pay (usually <b>1</b>), then tick the small <span class="chip chip-pl">PL</span> box that appears next to it (or press <kbd>L</kbd>). It asks for the <b>reason</b> (e.g. <i>Diwali</i>) — that's required, and it's saved as the day's remark. Reasons you used before are offered as one-click buttons.</p>
 <ul>
   <li>The person is <b>paid at the value</b> (1 = a full day, ½ = half a day…) but is <b>not counted as present</b>. The value turns teal and the Register shows <span class="chip chip-pl">PL</span>.</li>
   <li>The tick appears for ½, 1, 1.5 and 2 — not for 0 (unpaid). Untick it (or press <kbd>L</kbd> again) to make it a normal working day.</li>
-  <li>Whole team off: <b>Mark everyone → PL Paid leave</b> (<kbd>⇧L</kbd>). Click a day in the Register or Calendar to set it in the edit dialog too.</li>
+  <li>Whole team off: <b>Mark everyone → PL Paid leave</b> (<kbd>⇧L</kbd>) asks for the reason once and saves it for everyone (anyone's own remark is kept after it). Click a day in the Register or Calendar to set it in the edit dialog too — there the Remark becomes the required reason.</li>
+  <li>The reason shows wherever remarks show — the Remark box, Register (hover), Hisab month view, PDFs — and in the Ledger line ("Paid leave — Diwali @ ₹500/day"). A paid-leave day can't be left without a reason.</li>
 </ul>
 <h3>How saving works</h3>
 <ul>
@@ -1771,7 +1787,7 @@ on a computer, a phone or both — and every change shows up on all devices with
     <tr><td><kbd>H</kbd> or <kbd>.</kbd></td><td>Half day</td></tr>
     <tr><td><kbd>O</kbd></td><td>Overtime 1.5</td></tr>
     <tr><td><kbd>D</kbd> or <kbd>2</kbd></td><td>Double</td></tr>
-    <tr><td><kbd>L</kbd></td><td>Paid leave tick on / off (not marked yet → a full day of paid leave)</td></tr>
+    <tr><td><kbd>L</kbd></td><td>Paid leave tick on / off — asks for the reason (not marked yet → a full day of paid leave)</td></tr>
     <tr><td><kbd>0</kbd> or <kbd>A</kbd></td><td>Absent</td></tr>
     <tr><td><kbd>Backspace</kbd></td><td>Clear (the cursor stays on the person)</td></tr>
   </tbody>
@@ -1984,7 +2000,7 @@ on a computer, a phone or both — and every change shows up on all devices with
 <h3>A balance looks different from what I expected</h3>
 <p>Check the opening balance, settlements (salary paid) and the wage history. Remember a <b>Deduct</b> doesn't change the final balance. The Ledger shows every line that makes up the balance.</p>
 <h3>How do I record a holiday?</h3>
-<p><b>Paid holiday</b> (e.g. a festival you pay for): <b>Mark everyone not marked yet → PL Paid leave</b> (<kbd>⇧L</kbd> on a computer). Everyone not marked gets a full day of paid leave, and the register shows <span class="chip chip-pl">PL</span> instead of present.
+<p><b>Paid holiday</b> (e.g. a festival you pay for): <b>Mark everyone not marked yet → PL Paid leave</b> (<kbd>⇧L</kbd> on a computer), type the reason (e.g. Diwali) and press Enter. Everyone not marked gets a full day of paid leave, and the register shows <span class="chip chip-pl">PL</span> instead of present.
 If the day is already marked, the same button asks "Mark everyone as paid leave?" — their values stay (0 becomes 1). For one person, tick <span class="chip chip-pl">PL</span> next to their value.</p>
 <p><b>Unpaid holiday:</b> use <b>Absent</b> (<kbd>⇧0</kbd>) instead, with a remark like "Holiday" where useful.</p>
 </div>
@@ -3120,7 +3136,7 @@ function renderDailyAtt() {
       </div>
       <div class="daily-remark-row">
         <input type="text" id="remark_${u.id}"
-          placeholder="📝 Remark (e.g. no work, came late)"
+          placeholder="${pl ? '🌴 Reason for paid leave (required)' : '📝 Remark (e.g. no work, came late)'}"
           value="${esc(remark)}" data-orig="${esc(remark)}"
           onkeydown="remarkKeydown(event,${jsArg(u.id)})">
       </div>
@@ -3167,11 +3183,73 @@ async function setDailyAtt(userId, val, plWanted) {
 }
 
 // The PL tick / L key: paid leave on or off. Not marked (or 0) → a full day of paid leave.
-function togglePaidLeave(userId) {
+// Turning it on asks for the reason first (required, saved as the day's remark).
+function togglePaidLeave(userId, moveOn = false) {
+  const date = dailySelectedDate;
   const ua = getData('attendance', {})[userId] || {};
-  const v = ua[dailySelectedDate];
-  if (isPLDay(ua, dailySelectedDate)) setDailyAtt(userId, v === PL ? 1 : v, false);
-  else setDailyAtt(userId, attPay(v) > 0 ? v : 1, true);
+  const v = ua[date];
+  if (isPLDay(ua, date)) {
+    setDailyAtt(userId, v === PL ? 1 : v, false);
+    if (moveOn) dmMoveOn(userId);
+    return;
+  }
+  const box = document.getElementById('remark_' + userId);
+  askPlReason({ date, moveOn, prefill: box ? box.value.trim() : (ua[date + '_remark'] || ''),
+    changes: [{ userId, date, prev: v, prevPl: false, prevRemark: ua[date + '_remark'] || '' }] });
+}
+function dmMoveOn(userId) {
+  const next = dmNeighbour(userId, 1);
+  if (next) dmFocusPerson(next.id); else document.getElementById('saveAllBtn')?.focus();
+}
+
+// The reason dialog (one person, or everyone from Mark everyone / ⇧L)
+let plReasonCtx = null;
+function recentPlReasons() {
+  const rows = [];
+  Object.values(getData('attendance', {})).forEach(ua => Object.keys(ua || {}).forEach(k => {
+    if (isDayKey(k) && isPLDay(ua, k) && ua[k + '_remark']) rows.push([k, ua[k + '_remark']]);
+  }));
+  rows.sort((a, b) => b[0].localeCompare(a[0]));
+  return [...new Set(rows.map(r => r[1]))].slice(0, 5);
+}
+function askPlReason(ctx) {
+  plReasonCtx = ctx;
+  const n = ctx.changes.length;
+  const who = ctx.bulk ? `${n} ${n === 1 ? 'person' : 'people'}` : (getData('users', []).find(u => u.id === ctx.changes[0].userId)?.name || '');
+  document.getElementById('plReasonWho').textContent = `${who} · ${fmtDate(ctx.date)} — no work that day, still paid.`;
+  document.getElementById('plReasonText').value = ctx.prefill || '';
+  document.getElementById('plReasonRecent').innerHTML = recentPlReasons().map(r =>
+    `<button class="pill sm" tabindex="-1" onclick="document.getElementById('plReasonText').value=${jsArg(r)};savePlReason()">${esc(r)}</button>`).join('');
+  openModal('plReasonModal', 'plReasonText');
+  document.getElementById('plReasonText').select();
+}
+async function savePlReason() {
+  const ctx = plReasonCtx;
+  if (!ctx) return;
+  const reason = document.getElementById('plReasonText').value.trim();
+  if (!reason) { showToast('Write the reason for the paid leave'); document.getElementById('plReasonText').focus(); return; }
+  plReasonCtx = null;
+  closeModal('plReasonModal');
+  // Everyone at once: someone's own remark is kept after the reason
+  const remarkOf = c => ctx.bulk && c.prevRemark && c.prevRemark !== reason ? `${reason} · ${c.prevRemark}` : reason;
+  showLoader(true);
+  try { await writeAttendance(ctx.changes, c => attPay(c.prev) > 0 ? c.prev : 1, () => true, remarkOf); }
+  catch (e) {
+    console.error('Paid leave failed', e);
+    await writeAttendance(ctx.changes, c => c.prev, c => c.prevPl, c => c.prevRemark || '').catch(() => {});
+    showLoader(false); showToast('⚠️ Could not save — check internet and try again'); redrawAttendanceViews(ctx.changes); return;
+  }
+  showLoader(false);
+  ctx.changes.forEach(c => dailyTouched.add(c.userId));
+  syncRemarkBoxes(ctx.changes);
+  redrawAttendanceViews(ctx.changes);
+  const n = ctx.changes.length;
+  const name = getData('users', []).find(u => u.id === ctx.changes[0].userId)?.name || 'Staff';
+  pushUndo(ctx.bulk ? `Paid leave for ${n} ${n === 1 ? 'person' : 'people'} — ${reason} (${fmtDate(ctx.date)})` : `${name} → Paid leave — ${reason}`, ctx.changes);
+  if (!(currentPage === 'attendance' && currentAttTab === 'daily') || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  const uid = ctx.changes[0].userId;
+  if (ctx.bulk) dmFocusPerson(dailyMarkUsers()[0]?.id);
+  else if (ctx.moveOn) dmMoveOn(uid); else dmFocusPerson(uid);
 }
 
 // Show a person's current value in their Daily Mark row without redrawing it (typed boxes stay)
@@ -3186,6 +3264,8 @@ function syncDailyRow(userId) {
   row.querySelectorAll('.admin-att-btn').forEach(b => b.className = 'admin-att-btn');
   const idx = vals.indexOf(v);
   if (idx >= 0) document.getElementById(`attbtn_${userId}_${v}`)?.classList.add(classes[idx], ...(pl ? ['pl-on'] : []));
+  const remBox = document.getElementById('remark_' + userId);
+  if (remBox) remBox.placeholder = pl ? '🌴 Reason for paid leave (required)' : '📝 Remark (e.g. no work, came late)';
   // PL tick: shown for any paid value (not 0, not unmarked)
   const optsEl = row.querySelector('.admin-att-options');
   let tog = optsEl?.querySelector('.pl-tog');
@@ -3255,6 +3335,7 @@ async function saveAllAttendance() {
   let attSaved = 0;
   let advSaved = 0;
   let remSaved = 0;
+  let plKept   = 0;
 
   showLoader(true);
   try {
@@ -3294,8 +3375,8 @@ async function saveAllAttendance() {
       const newRemark = remEl.value.trim();
       const oldRemark = att[u.id]?.[date + '_remark'] || '';
       if (newRemark !== oldRemark) {
-        await saveRemark(u.id, date, newRemark);
-        remSaved++;
+        if (!newRemark && oldRemark && isPLDay(att[u.id], date)) { remEl.value = oldRemark; plKept++; }   // paid leave needs its reason
+        else { await saveRemark(u.id, date, newRemark); remSaved++; }
       }
     }
   }
@@ -3316,6 +3397,7 @@ async function saveAllAttendance() {
     if (remSaved > 0) parts.push(`${remSaved} remark${remSaved > 1 ? 's' : ''}`);
     showToast(`✅ Saved ${parts.join(' + ')}`);
   }
+  if (plKept) showToast(`⚠️ Paid leave needs a reason — kept it for ${plKept} ${plKept === 1 ? 'person' : 'people'}`);
   renderDailyAtt();
   renderHome();
   return true;
@@ -3374,7 +3456,8 @@ function pushUndo(label, changes) {
 }
 // Write several attendance values in one go (one network round trip)
 // plOf(c) sets the paid-leave tick; without it the tick stays as it is. Clearing or 0 always removes it.
-async function writeAttendance(changes, valueOf, plOf) {
+// remarkOf(c) (optional): the day's remark — a string ('' removes it) or undefined to leave it.
+async function writeAttendance(changes, valueOf, plOf, remarkOf) {
   const att = getData('attendance', {});
   const batch = writeBatch(db);
   changes.forEach(c => {
@@ -3383,10 +3466,24 @@ async function writeAttendance(changes, valueOf, plOf) {
     const pl = attPay(v) > 0 && (plOf ? !!plOf(c) : isPLDay(att[c.userId], c.date));
     if (v === undefined) delete att[c.userId][c.date]; else att[c.userId][c.date] = v;
     if (pl) att[c.userId][plKey(c.date)] = true; else delete att[c.userId][plKey(c.date)];
-    batch.set(doc(db, 'attendance', c.userId), { [c.date]: v === undefined ? deleteField() : v, [plKey(c.date)]: pl ? true : deleteField() }, { merge: true });
+    const fields = { [c.date]: v === undefined ? deleteField() : v, [plKey(c.date)]: pl ? true : deleteField() };
+    const r = remarkOf ? remarkOf(c) : undefined;
+    if (r !== undefined) {
+      const rk = c.date + '_remark';
+      if (r) { att[c.userId][rk] = r; fields[rk] = r; } else { delete att[c.userId][rk]; fields[rk] = deleteField(); }
+    }
+    batch.set(doc(db, 'attendance', c.userId), fields, { merge: true });
   });
   setCache('attendance', att);
   await batch.commit();
+}
+// Daily Mark remark boxes follow a remark written in code (paid-leave reason, undo)
+function syncRemarkBoxes(changes) {
+  changes.forEach(c => {
+    if (c.date !== dailySelectedDate || !('prevRemark' in c)) return;
+    const el = document.getElementById('remark_' + c.userId);
+    if (el) { el.value = getData('attendance', {})[c.userId]?.[c.date + '_remark'] || ''; el.dataset.orig = el.value; }
+  });
 }
 function redrawAttendanceViews(changes) {
   if (currentPage === 'attendance' && currentAttTab === 'daily') {
@@ -3402,7 +3499,8 @@ async function undoLast() {
   const u = undoStack.pop();
   if (!u) { showToast('Nothing to undo'); return; }
   try {
-    await writeAttendance(u.changes, c => c.prev, c => !!c.prevPl);
+    await writeAttendance(u.changes, c => c.prev, c => !!c.prevPl, c => 'prevRemark' in c ? (c.prevRemark || '') : undefined);
+    syncRemarkBoxes(u.changes);
     showToast(`↩ Undone: ${u.label}`);
   } catch (e) {
     console.error('Undo failed', e);
@@ -3469,20 +3567,9 @@ async function bulkPaidLeave() {
     if (!confirm(`Everyone already has attendance for ${fmtDate(date)}.\nMark everyone as paid leave?\nTheir values stay (anyone at 0 becomes 1). You can undo this.`)) return;
     targets = users;
   }
-  const changes = targets.map(u => ({ userId: u.id, date, prev: att[u.id]?.[date], prevPl: isPLDay(att[u.id], date) })).filter(c => !c.prevPl);
+  const changes = targets.map(u => ({ userId: u.id, date, prev: att[u.id]?.[date], prevPl: isPLDay(att[u.id], date), prevRemark: att[u.id]?.[date + '_remark'] || '' })).filter(c => !c.prevPl);
   if (!changes.length) { showToast('Everyone is already on paid leave'); return; }
-  showLoader(true);
-  try { await writeAttendance(changes, c => attPay(c.prev) > 0 ? c.prev : 1, () => true); }
-  catch (e) {
-    console.error('Bulk paid leave failed', e);
-    await writeAttendance(changes, c => c.prev, c => c.prevPl).catch(() => {});
-    showLoader(false); showToast('⚠️ Could not save — check internet and try again'); redrawAttendanceViews(changes); return;
-  }
-  showLoader(false);
-  redrawAttendanceViews(changes);
-  changes.forEach(c => dailyTouched.add(c.userId));
-  pushUndo(`Paid leave for ${changes.length} ${changes.length === 1 ? 'person' : 'people'} (${fmtDate(date)})`, changes);
-  if (matchMedia('(hover:hover) and (pointer:fine)').matches) dmFocusPerson(users[0].id);
+  askPlReason({ date, bulk: true, changes });   // the reason is required — saved after it's written
 }
 
 // v1.2.7 stored paid leave as the value 'PL' — turn those into 1 + the tick (admin, once; one batch)
@@ -4856,7 +4943,10 @@ function openEditAttModal(userId, date) {
 }
 
 function editAttPlShow() {
-  document.getElementById('editAttPlRow').style.display = Number(document.getElementById('editAttValue').value) > 0 ? '' : 'none';
+  const paid = Number(document.getElementById('editAttValue').value) > 0;
+  document.getElementById('editAttPlRow').style.display = paid ? '' : 'none';
+  const pl = paid && document.getElementById('editAttPl').checked;
+  document.getElementById('editAttRemarkLbl').textContent = pl ? 'Reason for paid leave (required)' : 'Remark';
 }
 async function saveEditedAttendance() {
   const date   = document.getElementById('editAttDate').value;
@@ -4864,15 +4954,16 @@ async function saveEditedAttendance() {
   const pl     = attPay(val) > 0 && document.getElementById('editAttPl').checked;
   const remark = document.getElementById('editAttRemark').value.trim();
   if (!editAttUserId||!date) return;
+  if (pl && !remark) { showToast('Write the reason for the paid leave'); document.getElementById('editAttRemark').focus(); return; }
   const ua = getData('attendance', {})[editAttUserId] || {};
-  const prevVal = ua[date], prevPl = isPLDay(ua, date);
+  const prevVal = ua[date], prevPl = isPLDay(ua, date), prevRemark = ua[date + '_remark'] || '';
   showLoader(true);
   await saveDay(editAttUserId, date, val, pl);
   await saveRemark(editAttUserId, date, remark);
   showLoader(false);
   if (prevVal !== val || prevPl !== pl) {
     const name = getData('users', []).find(x => x.id === editAttUserId)?.name || 'Staff';
-    pushUndo(`${name} → ${dayLabel({ [date]: val, [plKey(date)]: pl }, date)} (${fmtDate(date)})`, [{ userId: editAttUserId, date, prev: prevVal, prevPl }]);
+    pushUndo(`${name} → ${dayLabel({ [date]: val, [plKey(date)]: pl }, date)}${pl ? ' — ' + remark : ''} (${fmtDate(date)})`, [{ userId: editAttUserId, date, prev: prevVal, prevPl, prevRemark }]);
   } else showToast('✅ Attendance updated!');
   closeModal('editAttModal');
   renderHome();
@@ -5138,11 +5229,9 @@ function dmQuickKey(e, userId) {
   const v = dmKeyValue(e);
   if (v !== undefined) {
     e.preventDefault(); e.stopPropagation();
-    if (v === PL) togglePaidLeave(userId);   // L: paid-leave tick on / off
-    else { setDailyAtt(userId, v); dmSetStop(userId, v); }   // saved in the background: the keyboard never waits
-    if (v === PL) { const nv = getData('attendance', {})[userId]?.[dailySelectedDate]; if (DM_VALS.includes(nv)) dmSetStop(userId, nv); }
-    const next = dmNeighbour(userId, 1);
-    if (next) dmFocusPerson(next.id); else document.getElementById('saveAllBtn')?.focus();
+    if (v === PL) { togglePaidLeave(userId, true); return true; }   // L: paid-leave tick (asks the reason)
+    setDailyAtt(userId, v); dmSetStop(userId, v);                    // saved in the background: the keyboard never waits
+    dmMoveOn(userId);
     return true;
   }
   if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -5601,7 +5690,7 @@ function buildLedger(u, fromVal, toVal) {
     if (!n) return;
     const w = getWageForDate(u, k);
     all.push({ date: k, type: 'earned', amount: n * w, effect: n * w, days: n,
-               note: `${dayLabel(att, k)} @ ${fmtMoney(w)}/day` });
+               note: `${dayLabel(att, k)}${isPLDay(att, k) && att[k + '_remark'] ? ' — ' + att[k + '_remark'] : ''} @ ${fmtMoney(w)}/day` });
   });
   advances.forEach(a => {
     all.push({ date: a.date || '', type: a.type, amount: Number(a.amount) || 0, effect: entryEffect(a),
@@ -5939,7 +6028,7 @@ window.attBtnKeydown = attBtnKeydown;
 window.remarkKeydown = remarkKeydown;
 window.dmQuickKey = dmQuickKey;
 window.updateDailyTotal = updateDailyTotal;
-Object.assign(window, { togglePaidLeave, bulkPaidLeave, editAttPlShow });
+Object.assign(window, { togglePaidLeave, bulkPaidLeave, editAttPlShow, savePlReason });
 Object.assign(window, { openOpeningBalance, editOpeningBalance, saveOpeningBalance });
 Object.assign(window, { advComboOpen, advComboInput, advComboKey, advComboBlur, advComboPick });
 window.openAddAdvanceModalFor = openAddAdvanceModalFor;
@@ -5971,6 +6060,14 @@ onAuthStateChanged(auth, async fbUser => {
     <div class="modal-head"><div class="modal-title">What's new</div><button class="x-btn" onclick="closeModal('whatsNewModal')" aria-label="Close"><i data-i="x" data-s="15"></i></button></div>
     <div class="wn">
     <div class="wn-entry new">
+      <div class="wn-top"><span class="wn-ver">v1.2.9</span><span class="wn-date">November 2026 — reason for paid leave</span></div>
+      <ul>
+        <li>🌴 <b>Paid leave asks for a reason</b> (e.g. Diwali) — required, saved as the day's remark; reasons used before are one click</li>
+        <li>👥 <b>⇧L / Mark everyone → Paid leave</b> asks once for the whole team</li>
+        <li>📒 The reason shows in the Register, Hisab month view, PDFs and the Ledger line ("Paid leave — Diwali")</li>
+      </ul>
+    </div>
+    <div class="wn-entry">
       <div class="wn-top"><span class="wn-ver">v1.2.8</span><span class="wn-date">November 2026 — paid leave as a tick</span></div>
       <ul>
         <li>☑️ <b>Paid leave is now a small PL tick</b> next to a person's value, instead of a sixth button on every row. It works with ½, 1, 1.5 or 2 — they're paid at that value but not counted as present</li>

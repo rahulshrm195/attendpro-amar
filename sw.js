@@ -3,7 +3,7 @@
 // Version: 1.2.3
 // ══════════════════════════════════════════
 
-const CACHE_NAME = 'attendpro-v1.2.8';   // bump on each release (with APP_VERSION in index.html)
+const CACHE_NAME = 'attendpro-v1.2.9';   // bump on each release (with APP_VERSION in index.html)
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [

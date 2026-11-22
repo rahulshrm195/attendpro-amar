@@ -17,6 +17,7 @@
 - **v1.2.6** — opening balances: add from a person's details (O), dated on the join date (existing ones moved, follow join-date edits unless a custom "as of" date), sign + kind on the Hisab card, label follows the type; Today's attendance gets an Advance column + day total.
 - **v1.2.7** — Paid leave ('PL'): paid as a full day, not present / absent; Daily Mark button + L / ⇧L, edit dialog, register code + count, calendars, Hisab month view, PDFs, Today.
 - **v1.2.8** — paid leave becomes a tick (`<date>_pl`) on any paid value instead of a sixth button; L toggles, ⇧L / Mark everyone for the team; edit-dialog tick; v1.2.7 'PL' values converted. Value keys with no row focused mark the first person not marked yet.
+- **v1.2.9** — paid leave needs a reason (dialog, saved as the day's remark; recent reasons one click; ⇧L asks once; Save all / edit dialog won't leave it empty; Ledger shows it).
 
 ## Planned features
 
