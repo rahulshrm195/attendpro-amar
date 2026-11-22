@@ -85,6 +85,8 @@ Staff attendance, advances and hisab for Amar Furniture. A single-page PWA on Gi
   Staff write value + tick with `saveDay` / `writeAttendance(changes, valueOf, plOf)`; undo entries carry `prevPl`.
   Daily Mark: `.pl-tog` next to ✕ (not in the Tab path), key `L` (`togglePaidLeave`), ⇧L `bulkPaidLeave`. The v1.2.7
   value `'PL'` (= 1 + tick) is converted by `syncPaidLeaveValues()`; `attPay` still reads it. Employees can't mark it.
+  Turning paid leave on always asks a reason (`askPlReason` → `savePlReason`, `#plReasonModal`), stored as the day's
+  `_remark` via `writeAttendance(…, remarkOf)`; undo entries carry `prevRemark`. Never leave a paid-leave day without one.
 - Money: one calculation for every screen and PDF — `entryEffect`, `monthWork`, `computeHisab`,
   `buildLedger`. A regular "Deduct" is record-only; "Opening Balance (Pending Salary)" counts.
 - Opening balance (v1.2.6): an advances doc whose note contains "Opening Balance" (`isOpeningBal`, `OB_NOTE`):
